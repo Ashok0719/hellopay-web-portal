@@ -1,0 +1,472 @@
+'use client';
+
+import { Suspense, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Smartphone, CheckCircle, Clock, Upload, ShieldCheck, Zap, AlertCircle, Copy, Check, QrCode as QrIcon } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import api from '@/lib/api';
+import Link from 'next/link';
+
+function AppButton({ icon, label, onClick }: { icon: string, label: string, onClick: () => void }) {
+  return (
+    <button 
+      onClick={onClick}
+      className="flex flex-col items-center gap-3 p-5 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md hover:border-emerald-200 transition-all active:scale-95 group"
+    >
+      <div className="w-12 h-12 flex items-center justify-center p-2 rounded-2xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
+        <img src={icon} alt={label} className="w-full h-full object-contain" />
+      </div>
+      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-emerald-600 transition-colors">{label}</span>
+    </button>
+  );
+}
+
+function PayContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const orderId = searchParams.get('orderId');
+  const amount = searchParams.get('amount');
+  const upiIntent = searchParams.get('upiIntent') || '';
+  const transactionId = searchParams.get('txnId');
+  const sellerIdNum = searchParams.get('sellerId');
+  const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [sellerQr, setSellerQr] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState({ isOpen: false, title: '', message: '', type: 'alert' as 'alert' | 'confirm', onConfirm: () => {} });
+
+  useEffect(() => {
+    const fetchTx = async () => {
+      if (!transactionId) return;
+      try {
+        const { data } = await api.get(`/stocks/transactions/${transactionId}`);
+        if (data.success) {
+           setCreatedAt(data.transaction.createdAt);
+           setSellerQr(data.transaction.sellerId?.qrCode || null);
+        }
+      } catch (err) {
+        console.error('Neural Fetch Failure:', err);
+      }
+    };
+    fetchTx();
+  }, [transactionId]);
+
+  useEffect(() => {
+    if (!createdAt) return;
+    const endTime = new Date(createdAt).getTime() + 20 * 60 * 1000;
+    
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const diff = Math.max(0, Math.floor((endTime - now) / 1000));
+      setTimeLeft(diff);
+      
+      if (diff <= 0) {
+        clearInterval(interval);
+        setError('SESSION TIMEOUT: Decentralized window closed. Redirecting to hub...');
+        setTimeout(() => router.push('/dashboard'), 3000);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [createdAt, router]);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [utr, setUtr] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'verifying' | 'success' | 'failed'>('idle');
+  const [showAppSelector, setShowAppSelector] = useState(false);
+
+  const receiverUpi = upiIntent ? upiIntent.match(/pa=([^&]+)/)?.[1] : 'Loading...';
+
+  const handlePayNow = (app?: string) => {
+    if (!upiIntent) return;
+    let finalIntent = upiIntent;
+    
+    // Deep-linking logic for Android/iOS UPI Apps
+    if (app === 'paytm') finalIntent = upiIntent.replace('upi://', 'paytmmp://');
+    if (app === 'phonepe') finalIntent = upiIntent.replace('upi://', 'phonepe://');
+    if (app === 'gpay') finalIntent = upiIntent.replace('upi://', 'tez://');
+    if (app === 'freecharge') finalIntent = upiIntent.replace('upi://', 'freecharge://');
+    if (app === 'mobikwik') finalIntent = upiIntent.replace('upi://', 'mobikwik://');
+    
+    window.location.href = finalIntent;
+    setShowAppSelector(false);
+  };
+
+  const copyUpi = () => {
+    if (receiverUpi) {
+      navigator.clipboard.writeText(decodeURIComponent(receiverUpi));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const verifyPayment = async () => {
+    if (!file && !utr) {
+      setError('Neural Proof Required: Attachment or UTR string missing');
+      return;
+    }
+    if (!transactionId) return;
+    
+    setLoading(true);
+    setStatus('uploading');
+    setError('');
+
+    const formData = new FormData();
+    if (file) formData.append('screenshot', file);
+    if (utr) formData.append('utr', utr);
+    formData.append('transactionId', transactionId);
+
+    try {
+      setStatus('verifying');
+      const { data } = await api.post(`/stocks/transactions/${transactionId}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (data.success && data.status !== 'PENDING_REVIEW') {
+        setStatus('success');
+      } else if (data.status === 'PENDING_REVIEW') {
+        setStatus('idle');
+        setNotice({
+           isOpen: true,
+           title: "Signal Discrepancy",
+           message: "Your identity signal has been forwarded to the Administrative Review Node for manual verification.",
+           type: 'alert',
+           onConfirm: () => router.push('/dashboard/payment-history')
+        });
+      } else {
+        setStatus('failed');
+        setError(data.message || 'Identity Verification Matrix Failed');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Neural Link Error: Protocol Mismatch');
+      setStatus('failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   const handleCancelBuy = async () => {
+    setNotice({
+       isOpen: true,
+       title: "Neural Alert",
+       message: "Are you sure you want to cancel this rotation session and release the split units?",
+       type: 'confirm',
+       onConfirm: async () => {
+          try {
+            await api.post(`/stocks/transactions/${transactionId}/cancel`);
+            router.push('/dashboard');
+          } catch (err) {
+            setNotice({ isOpen: true, title: "Link Fault", message: "Could not establish cancel protocol.", type: 'alert', onConfirm: () => {} });
+          }
+       }
+    });
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xs">
+          <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mb-10 mx-auto shadow-2xl shadow-emerald-200">
+            <CheckCircle className="text-white" size={48} />
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 italic uppercase tracking-tighter">Rotation Bound!</h1>
+          <p className="text-slate-500 font-bold mt-4 leading-relaxed">Neural Protocol Completed. ₹{amount} has been merged into your asset wallet.</p>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="mt-12 px-10 py-6 bg-slate-900 rounded-[32px] text-white font-black uppercase italic shadow-2xl active:scale-95 transition-all w-full tracking-widest text-xs"
+          >
+            Back to Dashboard
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24 max-w-lg mx-auto shadow-2xl border-x border-slate-100">
+      
+      {/* Dynamic Header */}
+      <div className="bg-white p-6 flex items-center justify-between sticky top-0 z-50 border-b border-slate-50 shadow-sm">
+        <button onClick={() => router.back()} className="p-2 border border-slate-100 rounded-2xl text-slate-400 hover:bg-slate-50 transition-all">
+          <ArrowLeft size={24} />
+        </button>
+        <div className="text-center">
+          <h1 className="text-lg font-black italic uppercase text-slate-800 tracking-tighter leading-none">Security Checkout</h1>
+          <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-1">HelloPay Neural Protected</p>
+        </div>
+        <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+           <ShieldCheck size={24} />
+        </div>
+      </div>
+
+      <div className="p-6">
+        {/* Real-time Countdown Heartbeat */}
+        {timeLeft !== null && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-amber-50 border border-amber-100 rounded-[32px] p-6 flex items-center justify-between shadow-sm relative overflow-hidden group"
+          >
+            <div className="absolute top-0 right-0 w-32 h-full bg-amber-500/5 -skew-x-12 translate-x-16 group-hover:translate-x-0 transition-transform duration-1000" />
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={`p-4 bg-white rounded-2xl shadow-sm ${timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-amber-500 anim-float'}`}>
+                <Clock size={24} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase text-amber-600 tracking-[0.2em] italic mb-1">Decentralized Window</span>
+                <span className={`text-3xl font-black italic tracking-tighter tabular-nums leading-none ${timeLeft < 300 ? 'text-red-600' : 'text-slate-800'}`}>
+                  {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                </span>
+              </div>
+            </div>
+            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${timeLeft < 300 ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-white text-slate-400 border border-slate-100 shadow-sm'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${timeLeft < 300 ? 'bg-white animate-ping' : 'bg-amber-400'}`} />
+              {timeLeft < 300 ? 'Urgent Signal' : 'Signal Active'}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Transaction Telemetry Card */}
+        <div className="bg-slate-900 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden mb-8 group">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[60px]" />
+           <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/10 rounded-full blur-[80px]" />
+           
+           <div className="relative z-10 text-center">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4 block italic">Settlement Signal</span>
+              <div className="text-6xl font-black italic tracking-tighter tabular-nums mb-4 drop-shadow-[0_4px_12px_rgba(255,255,255,0.1)]">₹{(Number(amount) || 0).toLocaleString()}</div>
+              
+              <div className="inline-flex flex-col items-center gap-2 p-6 bg-white/5 border border-white/10 rounded-[32px] w-full">
+                 <h4 className="text-[10px] font-black uppercase text-emerald-400 tracking-widest italic opacity-80">You are paying to node:</h4>
+                 <div className="text-xl font-black italic text-white tracking-widest leading-none mb-1 shadow-glow">{sellerIdNum || 'SYSTEM_HUB'}</div>
+                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Digital Asset ID Binding Verified</p>
+              </div>
+           </div>
+        </div>
+
+        {/* Payment Logic Matrix */}
+        <div className="space-y-6">
+           <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
+               <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic">Receiver Terminal</h3>
+                  <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[9px] font-black uppercase tracking-widest">Online Signal</div>
+               </div>
+
+               <div className="flex flex-col items-center mb-10 group">
+                  <div className="bg-white p-5 rounded-[40px] shadow-[0_20px_80px_rgba(0,0,0,0.08)] border-4 border-slate-50 relative">
+                     {sellerQr ? (
+                       <>
+                         <img 
+                           src={sellerQr.startsWith('http') ? sellerQr : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${sellerQr}`} 
+                           alt="Seller QR" 
+                           className="w-48 h-48 opacity-90 group-hover:scale-105 transition-transform object-contain" 
+                         />
+                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            <QrIcon size={40} className="text-slate-900 bg-white/80 p-2 rounded-xl backdrop-blur-sm shadow-xl" />
+                         </div>
+                       </>
+                     ) : (
+                       <div className="flex flex-col items-center gap-4 text-slate-300 italic py-10">
+                          <QrIcon size={64} className="opacity-20" />
+                          <span className="text-[10px] uppercase font-black tracking-widest opacity-40">No Scanner Provided</span>
+                       </div>
+                     )}
+                  </div>
+                  <div className="mt-8 flex items-center gap-4 bg-slate-50 px-8 py-5 rounded-[24px] border border-slate-100 w-full group">
+                    <div className="p-3 bg-white rounded-2xl shadow-sm text-emerald-600"><Smartphone size={20} /></div>
+                    <div className="flex-1 overflow-hidden">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">UPI Identity Profile</p>
+                       <p className="text-sm font-black text-slate-700 truncate tracking-tight">{receiverUpi ? decodeURIComponent(receiverUpi) : 'Node Identity Loading...'}</p>
+                    </div>
+                    <button onClick={copyUpi} className={`p-3 rounded-2xl transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-slate-400 hover:text-emerald-600 shadow-sm'}`}>
+                       {copied ? <Check size={18} /> : <Copy size={18} />}
+                    </button>
+                  </div>
+               </div>
+
+               <div className="space-y-4">
+                  <button 
+                    onClick={() => setShowAppSelector(!showAppSelector)}
+                    className="w-full py-6 bg-emerald-600 text-white rounded-[32px] flex items-center justify-center gap-4 font-black uppercase italic shadow-2xl shadow-emerald-200 hover:bg-emerald-700 active:scale-95 transition-all group"
+                  >
+                    <Zap className="fill-white group-hover:animate-bounce" size={24} /> PAY WITH UPI APP
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showAppSelector && (
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="grid grid-cols-3 gap-4"
+                      >
+                         <AppButton icon="https://img.icons8.com/color/48/paytm.png" label="Paytm" onClick={() => handlePayNow('paytm')} />
+                         <AppButton icon="https://img.icons8.com/color/48/phonepe.png" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
+                         <AppButton icon="https://img.icons8.com/color/48/google-pay.png" label="GPay" onClick={() => handlePayNow('gpay')} />
+                         <AppButton icon="https://img.icons8.com/color/48/freecharge.png" label="Freecharge" onClick={() => handlePayNow('freecharge')} />
+                         <AppButton icon="https://img.icons8.com/color/48/mobikwik.png" label="MobiKwik" onClick={() => handlePayNow('mobikwik')} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+               </div>
+           </div>
+
+           <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 italic">Confirmation Portal</h3>
+              
+              <div className="space-y-6">
+                 <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">Reference ID (UTR String)</label>
+                    <input 
+                      type="text" 
+                      value={utr}
+                      onChange={(e) => setUtr(e.target.value)}
+                      placeholder="12-DIGIT UTR NUMBER"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
+                    />
+                 </div>
+                 
+                 <div className="flex items-center gap-4 py-2">
+                    <div className="h-px bg-slate-100 flex-1" />
+                    <span className="text-[9px] font-black text-slate-300 uppercase italic">Neural Sync Or</span>
+                    <div className="h-px bg-slate-100 flex-1" />
+                 </div>
+
+                 {!file ? (
+                   <label className="block p-12 border-4 border-dashed border-slate-50 rounded-[40px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
+                     <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                     <div className="w-20 h-20 bg-slate-50 rounded-[32px] mx-auto flex items-center justify-center mb-6 text-slate-300 group-hover:text-emerald-500 transition-all group-hover:scale-110 shadow-inner">
+                        <Upload size={32} />
+                     </div>
+                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-emerald-600 transition-colors">Attach Evidence</span>
+                   </label>
+                 ) : (
+                   <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                         <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={24} /></div>
+                         <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
+                            <span className="text-[9px] font-bold text-emerald-400 truncate max-w-[120px]">{file.name}</span>
+                         </div>
+                      </div>
+                      <button onClick={() => setFile(null)} className="p-4 bg-white rounded-2xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
+                         <AlertCircle size={20} />
+                      </button>
+                   </div>
+                 )}
+
+                 {error && (
+                   <div className="p-5 bg-red-50 border border-red-100 rounded-3xl text-red-500 text-[10px] font-bold leading-relaxed flex items-start gap-4">
+                      <AlertCircle size={18} className="shrink-0" />
+                      <div>
+                         <span className="uppercase tracking-[0.2em] font-black block mb-1 underline decoration-red-200">Protocol Fault Mismatch</span>
+                         {error}
+                      </div>
+                   </div>
+                 )}
+
+                 <button 
+                    onClick={verifyPayment}
+                    disabled={loading || (!file && !utr)}
+                    className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
+                  >
+                    {status === 'verifying' ? (
+                      <div className="flex items-center gap-3">
+                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                         <span className="animate-pulse tracking-[0.4em]">BOT SCANNING...</span>
+                      </div>
+                    ) : (
+                      <>INITIALIZE AUTO-VERIFY <ArrowLeft className="rotate-180" size={20} /></>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={handleCancelBuy}
+                    className="w-full py-4 bg-white border border-slate-100 text-slate-400 font-black rounded-[32px] uppercase italic tracking-[0.1em] active:scale-95 transition-all text-[10px]"
+                  >
+                    Cancel Order
+                  </button>
+              </div>
+           </div>
+        </div>
+
+        <div className="mt-12 text-center">
+           <div className="flex items-center justify-center gap-6 opacity-30 grayscale mb-6">
+              <img src="https://img.icons8.com/color/48/phonepe.png" className="h-6" />
+              <img src="https://img.icons8.com/color/48/paytm.png" className="h-6" />
+              <img src="https://img.icons8.com/color/48/google-pay.png" className="h-6" />
+              <img src="https://img.icons8.com/color/48/amazon-pay.png" className="h-6" />
+           </div>
+           <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 italic flex items-center justify-center gap-2">
+              <ShieldCheck size={12} className="text-emerald-500" /> Neural Security Mesh Protected
+           </p>
+        </div>
+
+        <NeuralNotice 
+           isOpen={notice.isOpen}
+           title={notice.title}
+           message={notice.message}
+           type={notice.type}
+           onConfirm={() => {
+              setNotice({ ...notice, isOpen: false });
+              notice.onConfirm();
+           }}
+           onClose={() => setNotice({ ...notice, isOpen: false })}
+        />
+      </div>
+    </div>
+  );
+}
+
+function NeuralNotice({ isOpen, title, message, type, onConfirm, onClose }: any) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
+       <motion.div 
+         initial={{ scale: 0.9, opacity: 0 }}
+         animate={{ scale: 1, opacity: 1 }}
+         className="bg-white rounded-[40px] p-10 max-w-sm w-full text-center shadow-2xl relative overflow-hidden"
+       >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto mb-6 shadow-inner">
+             <AlertCircle size={48} className="drop-shadow-sm" />
+          </div>
+          <h3 className="text-xl font-black uppercase tracking-tight text-slate-800 mb-4 italic">{title}</h3>
+          <p className="text-sm font-bold text-slate-500 leading-relaxed mb-8">{message}</p>
+          
+          <div className="flex flex-col gap-3">
+             <button 
+                onClick={onConfirm}
+                className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all hover:bg-slate-800"
+             >
+                {type === 'confirm' ? 'Confirm Signal' : 'Understood Signal'}
+             </button>
+             {type === 'confirm' && (
+                <button 
+                   onClick={onClose}
+                   className="w-full py-4 bg-white text-slate-400 rounded-[24px] font-black uppercase tracking-widest text-[9px] active:scale-95 transition-all"
+                >
+                   Abort
+                </button>
+             )}
+          </div>
+       </motion.div>
+    </div>
+  );
+}
+
+export default function PayPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-black text-emerald-600 uppercase tracking-[0.5em] animate-pulse italic">Neural Signal Initializing...</div>}>
+      <PayContent />
+    </Suspense>
+  );
+}

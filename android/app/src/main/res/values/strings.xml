@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HelloPay</string>
+    <string name="title_activity_main">HelloPay</string>
+    <string name="package_name">com.hellopay.app</string>
+    <string name="custom_url_scheme">com.hellopay.app</string>
+</resources>
