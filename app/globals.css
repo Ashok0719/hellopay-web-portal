@@ -72,6 +72,11 @@ body {
   animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
 .scroll-smooth-native {
   @apply overflow-y-auto;
   -webkit-overflow-scrolling: touch;

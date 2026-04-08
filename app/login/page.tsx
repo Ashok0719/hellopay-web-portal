@@ -116,10 +116,14 @@ function NeuralBackground() {
   return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />;
 }
 
+import { auth, googleProvider } from '@/lib/firebase';
+import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [pin, setPin] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -128,15 +132,14 @@ export default function LoginPage() {
   const autoAttempted = useRef(false);
 
   useEffect(() => {
-    // Neural Matrix Warmup: Wake up the Render backend immediately
+    // Neural Matrix Warmup
     api.get('/health').catch(() => {});
 
     const timer = setTimeout(() => {
       if (!identifier && !autoAttempted.current) {
-        // Only auto-login if the user hasn't started typing
         handleGuestLogin();
       }
-    }, 4000); // 4s delay to allow manual focus
+    }, 4000); 
     return () => clearTimeout(timer);
   }, []);
 
@@ -159,15 +162,34 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError('');
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+      
+      const { data } = await api.post('/auth/firebase-login', { idToken });
+      setToken(data.token);
+      setUser(data);
+      router.push('/dashboard');
+    } catch (err: any) {
+      console.error('Google Auth Failed:', err);
+      setError(err.response?.data?.message || 'Google Authentication Refused');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const pinString = pin.join('');
     if (!identifier) return setError('ID Required: Mobile or Email');
-    if (pinString.length < 4) return setError('Security Failure: PIN Incomplete');
     
     setLoading(true);
     setError('');
     try {
+      // 1. Try Standard Neural Node Login (PIN)
       const { data } = await api.post('/auth/login', { 
         identifier, 
         otp: "1234", 
@@ -177,6 +199,20 @@ export default function LoginPage() {
       setUser(data);
       router.push('/dashboard');
     } catch (err: any) {
+      // 2. Intelligence Fallback: If identifier is Email, attempt Firebase Auth
+      if (identifier.includes('@')) {
+        try {
+           const result = await signInWithEmailAndPassword(auth, identifier, pinString);
+           const idToken = await result.user.getIdToken();
+           const { data } = await api.post('/auth/firebase-login', { idToken });
+           setToken(data.token);
+           setUser(data);
+           router.push('/dashboard');
+           return;
+        } catch (fireErr) {
+           setError('Neural Identity mismatch detected.');
+        }
+      }
       setError(err.response?.data?.message || 'Neural Identification Refused');
     } finally {
       setLoading(false);
@@ -191,12 +227,11 @@ export default function LoginPage() {
       const { data } = await api.post('/auth/guest');
       setToken(data.token);
       setUser(data);
-      // Brief pause for neural sequence animation
       setTimeout(() => {
         router.push('/dashboard');
       }, 1500);
     } catch (err: any) {
-      setError('Neural Matrix Offline: Guest Signal Lost');
+      setError('Neural Matrix Offline');
       setGuestLoading(false);
     }
   };
@@ -313,6 +348,23 @@ export default function LoginPage() {
                       >
                         {loading ? 'SYNCHRONIZING...' : 'ACTIVATE SIGNAL'}
                         {!loading && <ArrowRight size={18} />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        disabled={googleLoading}
+                        className="w-full py-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-4 group/google relative overflow-hidden active:scale-95"
+                      >
+                         {googleLoading ? (
+                           <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                         ) : (
+                           <>
+                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                             Continue with Google
+                           </>
+                         )}
+                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/google:animate-[shimmer_2s_infinite]" />
                       </button>
 
                       <button
