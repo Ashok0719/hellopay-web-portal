@@ -1010,16 +1010,16 @@ function DepositModal({ isOpen, onClose, onSelect, config }: any) {
         initial={{ y: "100%" }} 
         animate={{ y: 0 }} 
         exit={{ y: "100%" }}
-        className="w-full max-w-lg bg-white rounded-t-[48px] p-8 pb-12 shadow-2xl relative overflow-hidden min-h-[500px]"
+        className="w-full max-w-lg bg-white rounded-t-[40px] p-6 pb-12 shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]"
       >
-        <div className="flex justify-between items-center mb-8">
-           <h2 className="text-xl font-bold text-center w-full text-emerald-800">
-             Choose <span className="text-emerald-600">your payment</span>
+        <div className="flex justify-between items-center mb-6 shrink-0">
+           <h2 className="text-lg font-bold text-center w-full text-emerald-800">
+             Choose <span className="text-emerald-600">payment</span>
            </h2>
-           <button onClick={handleClose} className="text-slate-400 font-bold text-xs uppercase hover:text-red-500 transition-colors absolute top-10 right-8">Close</button>
+           <button onClick={handleClose} className="p-2 -mr-2 text-slate-400 font-bold text-[10px] uppercase hover:text-red-500 transition-colors">Close</button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto no-scrollbar pr-1">
           {/* Enhanced Amount Selector */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
             {plans.map((p: any, idx: number) => (
@@ -1177,11 +1177,11 @@ function WalletHubModal({ isOpen, onClose, user, setUser, onDeposit, setNotice }
         initial={{ y: "100%" }} 
         animate={{ y: 0 }} 
         exit={{ y: "100%" }}
-        className="w-full max-w-lg bg-white rounded-t-[48px] p-8 shadow-2xl relative overflow-hidden"
+        className="w-full max-w-lg bg-white rounded-t-[40px] p-6 pb-12 shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]"
       >
         <div className="flex justify-between items-center mb-6">
            <h2 className="text-xl font-bold text-center w-full text-slate-800">Wallet <span className="text-yellow-500">Hub</span></h2>
-           <button onClick={() => onClose(false)} className="text-slate-400 font-bold text-xs absolute top-8 right-8">Close</button>
+           <button onClick={() => onClose(false)} className="px-4 py-2 -mr-2 text-slate-400 font-bold text-[10px] uppercase bg-slate-50 rounded-xl">Close</button>
         </div>
 
         <div className="bg-slate-900 rounded-[32px] p-6 text-white mb-6 relative overflow-hidden shadow-xl">
@@ -1200,7 +1200,7 @@ function WalletHubModal({ isOpen, onClose, user, setUser, onDeposit, setNotice }
            </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto no-scrollbar pr-1 pb-6 space-y-4">
            {/* UPI Setup */}
            <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-100">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Receiving UPI ID</label>
@@ -1273,14 +1273,14 @@ function TeamModal({ isOpen, onClose, user, referralStats }: any) {
         initial={{ y: "100%" }} 
         animate={{ y: 0 }} 
         exit={{ y: "100%" }}
-        className="w-full max-w-lg bg-white rounded-t-[48px] p-8 shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-lg bg-white rounded-t-[40px] p-6 shadow-3xl relative overflow-hidden flex flex-col max-h-[85vh]"
       >
         <div className="flex justify-between items-center mb-6 shrink-0">
-           <h2 className="text-xl font-bold text-center w-full text-slate-800">Team <span className="text-indigo-500">Hub</span></h2>
-           <button onClick={onClose} className="text-slate-400 font-bold text-xs absolute top-8 right-8">Close</button>
+           <h2 className="text-lg font-bold text-center w-full text-slate-800">Team <span className="text-indigo-500">Hub</span></h2>
+           <button onClick={onClose} className="px-4 py-2 -mr-2 text-slate-400 font-bold text-[10px] uppercase bg-slate-50 rounded-xl">Close</button>
         </div>
 
-        <div className="overflow-y-auto no-scrollbar pb-6">
+        <div className="overflow-y-auto no-scrollbar pr-1 pb-6">
            <div className="bg-slate-900 border border-white/5 rounded-[40px] p-8 text-white shadow-2xl mb-8 overflow-hidden relative neo-card">
               <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
               <div className="flex items-center justify-between mb-8">

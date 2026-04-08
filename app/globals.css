@@ -31,6 +31,20 @@ body {
   font-feature-settings: "cv11", "ss01";
   min-height: 100vh;
   overflow-x: hidden;
+  /* Neural Shrink: Smaller base font for mobile fitting */
+  font-size: 14px; 
+}
+
+/* Accuracy Fitting: Force viewport lock */
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 12px;
+  }
 }
 
 .glass-panel {
