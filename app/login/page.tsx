@@ -18,8 +18,9 @@ function NeuralBackground() {
     if (!ctx) return;
 
     let particles: any[] = [];
-    const particleCount = 80;
+    const particleCount = 40; // Balanced density for performance
     let mouse = { x: 0, y: 0 };
+    let frameId: number;
 
     const resize = () => {
       if (!canvas) return;
@@ -27,33 +28,27 @@ function NeuralBackground() {
       canvas.height = window.innerHeight;
     };
 
-    class Particle {
+    const Particle = class {
       x: number; y: number; vx: number; vy: number; size: number; baseSize: number;
       constructor() {
-        if (!canvas) {
-          this.x = 0; this.y = 0; this.vx = 0; this.vy = 0; this.baseSize = 0; this.size = 0;
-          return;
-        }
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
-        this.baseSize = Math.random() * 1.5 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = (Math.random() - 0.5) * 0.3;
+        this.baseSize = Math.random() * 1.2 + 0.4;
         this.size = this.baseSize;
       }
       update() {
-        if (!canvas) return;
         this.x += this.vx;
         this.y += this.vy;
 
-        // Mouse Parallax / Attraction
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 200) {
-          this.x += dx * 0.01;
-          this.y += dy * 0.01;
-          this.size = this.baseSize * 1.5;
+        const dist = dx * dx + dy * dy; // Avoid sqrt for distance check
+        if (dist < 40000) { // 200^2
+          this.x += dx * 0.005;
+          this.y += dy * 0.005;
+          this.size = this.baseSize * 1.3;
         } else {
           this.size = this.baseSize;
         }
@@ -66,37 +61,40 @@ function NeuralBackground() {
         if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(99, 102, 241, 0.5)';
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
         ctx.fill();
       }
-    }
+    };
 
     const init = () => {
       particles = [];
-      for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+      for (let i = 0; i < particleCount; i++) particles.push(new (Particle as any)());
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
+        const p1 = particles[i];
+        p1.update();
+        p1.draw();
+        // Optimized Connection Loop (reduced frequency)
         for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 150) {
-            ctx.strokeStyle = `rgba(99, 102, 241, ${0.2 * (1 - dist/150)})`;
-            ctx.lineWidth = 0.5;
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < 15000) { // ~120px
+            ctx.strokeStyle = `rgba(99, 102, 241, ${0.1 * (1 - distSq/15000)})`;
+            ctx.lineWidth = 0.4;
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
             ctx.stroke();
           }
         }
       }
-      requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -130,7 +128,9 @@ export default function LoginPage() {
   const autoAttempted = useRef(false);
 
   useEffect(() => {
-    // Neural Matrix Initialisation: Wait for stabilized uplink before auto-attempt
+    // Neural Matrix Warmup: Wake up the Render backend immediately
+    api.get('/health').catch(() => {});
+
     const timer = setTimeout(() => {
       if (!identifier && !autoAttempted.current) {
         // Only auto-login if the user hasn't started typing
