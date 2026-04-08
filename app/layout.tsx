@@ -27,7 +27,6 @@ export const metadata: Metadata = {
   },
 }
 
-import LightningManager from './LightningManager'
 import FirebaseManager from './FirebaseManager'
 
 export default function RootLayout({
@@ -38,7 +37,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${outfit.variable}`}>
       <body className="font-outfit antialiased transition-colors duration-700">
-        <LightningManager />
         <FirebaseManager />
         {children}
         <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
