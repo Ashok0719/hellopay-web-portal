@@ -89,10 +89,8 @@ export default function Dashboard() {
         if (refResp.status === 'fulfilled')    setReferralStats(refResp.value.data);
 
       } catch (err) {
-        if (token !== 'guest_token_demo_123') {
-          logout();
-          router.push('/login');
-        }
+        logout();
+        router.push('/login');
       } finally {
         setIsLoading(false);
       }

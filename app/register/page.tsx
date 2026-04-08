@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Smartphone, ArrowRight, Zap, Mail, ShieldCheck, UserCircle, HandCoins, Sparkles, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
 
 function NeuralBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -85,7 +87,7 @@ function NeuralBackground() {
     return () => window.removeEventListener('resize', resize);
   }, []);
 
-  return <canvas id="register-neural-canvas" className="absolute inset-0 z-0 pointer-events-none opacity-50" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-50" />;
 }
 
 export default function RegisterPage() {
@@ -158,6 +160,25 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+      
+      const { data } = await api.post('/auth/firebase-login', { idToken });
+      setToken(data.token);
+      setUser(data);
+      router.push('/dashboard');
+    } catch (err: any) {
+      console.error('Google Auth Failed:', err);
+      setError(err.response?.data?.message || 'Google Authentication Refused');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (successData) {
     return (
       <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center px-6 font-sans relative overflow-hidden">
@@ -191,7 +212,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-10 sm:py-20 px-6 font-sans relative overflow-x-hidden overflow-y-auto scroll-smooth-native">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-10 sm:py-20 px-6 font-sans relative overflow-x-hidden overflow-y-auto">
       <NeuralBackground />
       
       {/* 3D Animated Background Elements */}
@@ -215,15 +236,15 @@ export default function RegisterPage() {
         animate={{ y: 0, opacity: 1 }}
         className="relative z-10 flex flex-col items-center mb-10"
       >
-        <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[24px] flex items-center justify-center shadow-[0_0_40px_rgba(79,70,229,0.3)] relative group cursor-pointer border border-indigo-400/30">
-           <Zap className="text-white fill-white drop-shadow-md group-hover:scale-110 transition-transform" size={40} />
+        <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[24px] flex items-center justify-center shadow-[0_0_40px_rgba(79,70,229,0.3)] border border-indigo-400/30">
+           <Zap className="text-white fill-white drop-shadow-md" size={40} />
         </div>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[520px] p-1 shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[48px] bg-gradient-to-b from-slate-800/60 to-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto"
+        className="w-full max-w-[520px] p-1 shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[48px] bg-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto"
       >
         <div className="p-10 sm:p-12">
             <div className="text-center mb-10">
@@ -253,7 +274,7 @@ export default function RegisterPage() {
                       required
                       type="text"
                       placeholder="FULL NAME"
-                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-base sm:text-xs tracking-widest uppercase focus:bg-black/50"
+                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -269,7 +290,7 @@ export default function RegisterPage() {
                           required
                           type="text"
                           placeholder="MOBILE"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-emerald-500 shadow-inner text-base sm:text-xs tracking-widest focus:bg-black/50"
+                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-emerald-500 shadow-inner text-base sm:text-xs tracking-widest"
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       />
@@ -281,7 +302,7 @@ export default function RegisterPage() {
                       <input
                           type="email"
                           placeholder="EMAIL"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest focus:bg-black/50"
+                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       />
@@ -290,8 +311,6 @@ export default function RegisterPage() {
 
               {/* OTP Style PIN Matrix */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white/5 p-6 rounded-[32px] border border-white/5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-[40px] pointer-events-none" />
-                
                 <div>
                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block italic ml-2">Create Security PIN</label>
                    <div className="flex gap-2">
@@ -301,7 +320,7 @@ export default function RegisterPage() {
                          ref={(el) => { baseRefs.current[idx] = el; }}
                          type="password"
                          maxLength={1}
-                         className="w-full aspect-square bg-black/40 border border-white/10 rounded-2xl text-center text-white font-black text-lg focus:border-amber-500 focus:bg-black/60 shadow-inner transition-all outline-none"
+                         className="w-full aspect-square bg-black/40 border border-white/10 rounded-2xl text-center text-white font-black text-lg focus:border-amber-500 outline-none"
                          value={pinBase[idx]}
                          onChange={(e) => handlePinChange(idx, e.target.value, false)}
                          onKeyDown={(e) => handlePinKeyDown(idx, e, false)}
@@ -319,7 +338,7 @@ export default function RegisterPage() {
                          ref={(el) => { confirmRefs.current[idx] = el; }}
                          type="password"
                          maxLength={1}
-                         className="w-full aspect-square bg-black/40 border border-white/10 rounded-2xl text-center text-white font-black text-lg focus:border-amber-500 focus:bg-black/60 shadow-inner transition-all outline-none"
+                         className="w-full aspect-square bg-black/40 border border-white/10 rounded-2xl text-center text-white font-black text-lg focus:border-amber-500 outline-none"
                          value={pinConfirm[idx]}
                          onChange={(e) => handlePinChange(idx, e.target.value, true)}
                          onKeyDown={(e) => handlePinKeyDown(idx, e, true)}
@@ -329,38 +348,54 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Highlighted Referral Section */}
+              {/* Referral Section */}
               <div className="group relative bg-indigo-500/10 border border-indigo-400/20 rounded-3xl overflow-hidden mt-2">
-                  <div className="absolute top-0 right-0 w-40 h-full bg-gradient-to-l from-indigo-500/20 to-transparent pointer-events-none" />
-                  <label className="absolute -top-1 left-7 translate-y-1/2 text-[9px] font-black text-indigo-300 uppercase tracking-widest bg-slate-900/80 px-2 rounded-md backdrop-blur-md">Referral Hub (Optional)</label>
-                  
                   <div className="absolute bottom-4 left-6 flex items-center text-indigo-400 pointer-events-none">
                       <HandCoins size={20} />
                   </div>
                   <input
                       type="text"
                       placeholder="ENTER VIP CODE"
-                      className="w-full bg-transparent py-7 pb-4 pl-16 pr-8 text-white font-black placeholder:text-indigo-400/50 outline-none focus:bg-indigo-500/5 transition-all text-sm tracking-[0.2em] uppercase"
+                      className="w-full bg-transparent py-7 pb-4 pl-16 pr-8 text-white font-black placeholder:text-indigo-400/50 outline-none text-sm tracking-[0.2em] uppercase"
                       value={formData.referralCode}
                       onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/4 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)]">
                      <Sparkles size={12} className="text-white fill-white animate-pulse" />
-                     <span className="text-[9px] font-black text-white uppercase tracking-widest drop-shadow-sm">+₹100 BONUS</span>
+                     <span className="text-[9px] font-black text-white uppercase tracking-widest">+₹100 BONUS</span>
                   </div>
               </div>
 
-              <div className="pt-8">
+              <div className="pt-8 space-y-6">
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-[position:right_center] text-white font-black rounded-3xl shadow-[0_0_40px_rgba(99,102,241,0.4)] active:scale-95 transition-all duration-500 disabled:opacity-50 flex items-center justify-center gap-4 text-sm uppercase tracking-[0.2em]"
+                    className="w-full py-6 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-black rounded-3xl shadow-xl active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-4 text-xs uppercase tracking-[0.2em]"
                 >
                     {loading ? 'SYNCHRONIZING MESH...' : 'ACTIVATE NEURAL LINK'}
                     <ArrowRight size={20} />
                 </button>
+
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/5"></div>
+                  </div>
+                  <div className="relative flex justify-center text-[9px] uppercase font-black tracking-[0.3em]">
+                    <span className="bg-slate-900/60 backdrop-blur-3xl px-4 text-slate-500">Quick Identity Sync</span>
+                  </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={loading}
+                    className="w-full py-5 bg-white text-slate-900 font-black rounded-3xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-4 text-[10px] uppercase tracking-widest"
+                >
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                    Connect with Google
+                </button>
                 
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-10 text-center">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 text-center">
                   Already bound? <Link href="/login" className="text-indigo-400 hover:text-indigo-300 underline decoration-indigo-400/30 underline-offset-4 transition-colors">Initialize Login Signal</Link>
                 </p>
               </div>
@@ -369,11 +404,11 @@ export default function RegisterPage() {
       </motion.div>
 
       {/* Footer Info */}
-      <div className="relative z-10 mt-16 text-center group cursor-default">
-        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none mb-4 opacity-50 group-hover:opacity-100 transition-opacity">Neural Registry Connection: Encrypted</p>
-        <div className="flex items-center justify-center gap-3 text-slate-800 opacity-20 group-hover:opacity-60 transition-opacity">
+      <div className="relative z-10 mt-16 text-center opacity-50 group-hover:opacity-100 transition-opacity">
+        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] italic mb-4">Neural Registry Connection: Encrypted</p>
+        <div className="flex items-center justify-center gap-3 text-slate-800">
            <ShieldCheck size={14} />
-           <span className="text-[8px] font-black uppercase tracking-widest">Global ISO-27001 Security Infrastructure Protocol</span>
+           <span className="text-[8px] font-black uppercase tracking-widest">Global ISO-27001 Security Protocol</span>
         </div>
       </div>
     </div>

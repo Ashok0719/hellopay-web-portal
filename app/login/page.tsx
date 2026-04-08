@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Smartphone, Mail, Lock, ArrowRight, Zap, ShieldCheck, UserCircle, Fingerprint, Sparkles, Box, Compass, Globe, Radio } from 'lucide-react';
+import { Smartphone, Zap, ArrowRight, UserCircle, Lock, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
+import { auth, googleProvider } from '@/lib/firebase';
+import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
 
 function NeuralBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,129 +20,87 @@ function NeuralBackground() {
     if (!ctx) return;
 
     let particles: any[] = [];
-    const particleCount = 40; // Balanced density for performance
-    let mouse = { x: 0, y: 0 };
-    let frameId: number;
+    const particleCount = 40;
 
     const resize = () => {
-      if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
 
-    const Particle = class {
-      x: number; y: number; vx: number; vy: number; size: number; baseSize: number;
+    class Particle {
+      x: number; y: number; vx: number; vy: number; size: number;
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
-        this.baseSize = Math.random() * 1.2 + 0.4;
-        this.size = this.baseSize;
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.size = Math.random() * 2 + 1;
       }
       update() {
         this.x += this.vx;
         this.y += this.vy;
-
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const dist = dx * dx + dy * dy; // Avoid sqrt for distance check
-        if (dist < 40000) { // 200^2
-          this.x += dx * 0.005;
-          this.y += dy * 0.005;
-          this.size = this.baseSize * 1.3;
-        } else {
-          this.size = this.baseSize;
-        }
-
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
+        if (this.y < 0 || this.y > window.innerHeight) this.vy *= -1;
       }
-
       draw() {
         if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.2)';
         ctx.fill();
       }
-    };
+    }
 
     const init = () => {
       particles = [];
-      for (let i = 0; i < particleCount; i++) particles.push(new (Particle as any)());
+      for (let i = 0; i < particleCount; i++) particles.push(new Particle());
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
       for (let i = 0; i < particles.length; i++) {
-        const p1 = particles[i];
-        p1.update();
-        p1.draw();
-        // Optimized Connection Loop (reduced frequency)
+        particles[i].update();
+        particles[i].draw();
         for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p1.x - p2.x;
-          const dy = p1.y - p2.y;
-          const distSq = dx * dx + dy * dy;
-          if (distSq < 15000) { // ~120px
-            ctx.strokeStyle = `rgba(99, 102, 241, ${0.1 * (1 - distSq/15000)})`;
-            ctx.lineWidth = 0.4;
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.strokeStyle = `rgba(99, 102, 241, ${0.1 * (1 - dist/150)})`;
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
           }
         }
       }
-      frameId = requestAnimationFrame(animate);
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
+      requestAnimationFrame(animate);
     };
 
     window.addEventListener('resize', resize);
-    window.addEventListener('mousemove', handleMouseMove);
     resize();
     init();
     animate();
-    return () => {
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
+    return () => window.removeEventListener('resize', resize);
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />;
 }
-
-import { auth, googleProvider } from '@/lib/firebase';
-import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [pin, setPin] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [guestLoading, setGuestLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
   const { setToken, setUser } = useAuthStore();
   const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const autoAttempted = useRef(false);
 
   useEffect(() => {
     // Neural Matrix Warmup
     api.get('/health').catch(() => {});
-
-    const timer = setTimeout(() => {
-      if (!identifier && !autoAttempted.current) {
-        handleGuestLogin();
-      }
-    }, 4000); 
-    return () => clearTimeout(timer);
   }, []);
 
   const handlePinChange = (index: number, value: string) => {
@@ -189,7 +149,6 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      // 1. Try Standard Neural Node Login (PIN)
       const { data } = await api.post('/auth/login', { 
         identifier, 
         otp: "1234", 
@@ -199,7 +158,6 @@ export default function LoginPage() {
       setUser(data);
       router.push('/dashboard');
     } catch (err: any) {
-      // 2. Intelligence Fallback: If identifier is Email, attempt Firebase Auth
       if (identifier.includes('@')) {
         try {
            const result = await signInWithEmailAndPassword(auth, identifier, pinString);
@@ -219,41 +177,20 @@ export default function LoginPage() {
     }
   };
 
-  const handleGuestLogin = async () => {
-    autoAttempted.current = true;
-    setGuestLoading(true);
-    setError('');
-    try {
-      const { data } = await api.post('/auth/guest');
-      setToken(data.token);
-      setUser(data);
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1500);
-    } catch (err: any) {
-      setError('Neural Matrix Offline');
-      setGuestLoading(false);
-    }
-  };
-
-
   return (
     <div className="min-h-screen relative flex items-center justify-center px-6 overflow-hidden bg-[#020617] font-outfit">
       <NeuralBackground />
       
       {/* Decorative Orbs */}
-      <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse-slow" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse-slow" />
+      <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="glass-panel rounded-[2.5rem] p-10 neural-glow relative overflow-hidden group">
-          {/* Animated Internal Border */}
-          <div className="absolute inset-0 border border-white/5 rounded-[2.5rem] group-hover:border-indigo-500/20 transition-colors duration-500" />
-          
+        <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
           <div className="relative z-10">
             {/* Header */}
             <div className="text-center mb-10">
@@ -272,142 +209,101 @@ export default function LoginPage() {
               <p className="text-slate-500 text-[10px] uppercase tracking-[0.4em] mt-3 font-semibold">Neural Wallet Matrix</p>
             </div>
 
-            <AnimatePresence mode="wait">
-              {guestLoading ? (
-                <motion.div 
-                  key="loading"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="py-16 flex flex-col items-center justify-center space-y-8"
-                >
-                  <div className="relative">
-                    <div className="w-20 h-20 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-                    <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-indigo-400 animate-pulse" size={24} />
-                  </div>
-                  <div className="text-center space-y-2">
-                    <h2 className="text-sm font-bold text-white uppercase tracking-widest">Initialising Node</h2>
-                    <p className="text-slate-500 text-[8px] uppercase tracking-[0.3em] font-bold animate-pulse">Establishing Secure Uplink...</p>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div 
-                  key="form"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="space-y-6"
-                >
-                  {error && (
-                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] uppercase font-bold tracking-wider flex items-center gap-3 animate-shake">
-                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-                      {error}
+            <div className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-6">
+                {/* Email/Phone Input */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Identity Node</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors">
+                      <Smartphone size={18} />
                     </div>
+                    <input
+                      type="text"
+                      placeholder="Mobile or Email"
+                      className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white placeholder:text-slate-700 outline-none focus:border-indigo-500/50 transition-all"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* PIN Input */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Neural PIN</label>
+                  <div className="flex justify-between gap-3">
+                    {pin.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        ref={(el) => { pinRefs.current[idx] = el; }}
+                        type="password"
+                        maxLength={1}
+                        className="w-full h-16 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-2xl font-bold text-white focus:border-indigo-500/50 outline-none transition-all"
+                        value={digit}
+                        onChange={(e) => handlePinChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(idx, e)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {error && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-3"
+                  >
+                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                    {error}
+                  </motion.div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                >
+                  {loading ? 'INITIALIZING...' : 'INITIALIZE LINK'}
+                  <ArrowRight size={20} />
+                </button>
+              </form>
+
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/5"></div>
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.3em]">
+                  <span className="bg-slate-900/40 px-4 text-slate-600">Neural Social Link</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={googleLoading}
+                  className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 hover:bg-slate-50"
+                >
+                  {googleLoading ? (
+                    <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                      Continue with Google
+                    </>
                   )}
-
-                  <form onSubmit={handleLogin} className="space-y-6">
-                    <div className="space-y-5">
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-400 transition-colors">
-                          <UserCircle size={20} />
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="MOBILE OR EMAIL"
-                          className="w-full input-neural rounded-2xl py-5 pl-14 pr-6 text-sm font-bold tracking-widest uppercase"
-                          value={identifier}
-                          onChange={(e) => setIdentifier(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="space-y-3 px-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                          <Lock size={12} className="text-indigo-500" /> Secure Node Access PIN
-                        </label>
-                        <div className="flex justify-between gap-3">
-                          {pin.map((digit, idx) => (
-                            <input
-                              key={idx}
-                              ref={(el) => { pinRefs.current[idx] = el }}
-                              type="password"
-                              maxLength={1}
-                              className="w-[22%] aspect-square input-neural rounded-xl text-center text-2xl font-bold text-white shadow-lg"
-                              value={digit}
-                              onChange={(e) => handlePinChange(idx, e.target.value)}
-                              onKeyDown={(e) => handleKeyDown(idx, e)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 pt-4">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full btn-neural rounded-2xl py-5 flex items-center justify-center gap-3 text-xs"
-                      >
-                        {loading ? 'SYNCHRONIZING...' : 'ACTIVATE SIGNAL'}
-                        {!loading && <ArrowRight size={18} />}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleGoogleLogin}
-                        disabled={googleLoading}
-                        className="w-full py-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-4 group/google relative overflow-hidden active:scale-95"
-                      >
-                         {googleLoading ? (
-                           <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                         ) : (
-                           <>
-                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                             Continue with Google
-                           </>
-                         )}
-                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/google:animate-[shimmer_2s_infinite]" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleGuestLogin}
-                        className="w-full py-4 rounded-2xl border border-white/5 hover:bg-white/5 transition-all text-slate-400 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 group/guest"
-                      >
-                        <Radio size={14} className="text-emerald-500 group-hover/guest:animate-pulse" />
-                        {error ? 'Retry Guest Signal' : 'Enter via Guest Node'}
-                      </button>
-                    </div>
-                  </form>
-
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="mt-8 flex items-center justify-between px-2 text-[10px] font-bold uppercase tracking-widest">
-              <Link href="/register" className="text-slate-500 hover:text-white transition-colors flex items-center gap-2">
-                <Fingerprint size={14} className="text-indigo-500" /> Create Node
-              </Link>
-              <button className="text-slate-500 hover:text-white transition-all opacity-60">
-                Reset Access
-              </button>
+                </button>
+                
+                <div className="text-center pt-2">
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-loose">
+                    New Identity? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create Node</Link>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Footer Support */}
-        <div className="mt-12 text-center space-y-6">
-          <div className="flex items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-             <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-5" />
-             <img src="https://img.icons8.com/color/48/mastercard.png" alt="MC" className="h-5" />
-             <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-4" />
-          </div>
-          <div className="flex items-center justify-center gap-2 text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic">
-            <ShieldCheck size={10} className="text-indigo-500/50" />
-            <span>Neural Registry Protected Node</span>
-          </div>
-        </div>
-
       </motion.div>
     </div>
   );
 }
-
