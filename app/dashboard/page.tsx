@@ -240,7 +240,7 @@ export default function Dashboard() {
             setNotice={setNotice}
           />
         )}
-        {activeTab === 'statistics' && <StatisticsView key="stats" user={user} />}
+        {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} setShowWalletHub={setShowWalletHub} router={router} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} />}
       </AnimatePresence>
@@ -546,7 +546,7 @@ function HomeView({ user, history, listings, openTeam, config, setActiveTab, han
 }
 
 // --- Statistics View ---
-function StatisticsView({ user }: any) {
+function StatisticsView({ user, config }: any) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -584,7 +584,7 @@ function StatisticsView({ user }: any) {
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
           <MiniStatBox label="In Process Amount" value="₹ 0.00" />
           <MiniStatBox label="In Process Orders" value="0" />
-          <MiniStatBox label="Commission Rate" value="4.00 %" />
+          <MiniStatBox label="Commission Rate" value={`${user?.referralPercent || config?.globalCashbackPercent || 4}.00 %`} />
           <MiniStatBox label="Estimated Income" value="₹ 0.00" />
         </div>
       </div>
@@ -686,7 +686,7 @@ function PaymentView({ user, config, handleClaim, listings }: any) {
     return l.amount >= min && l.amount <= max;
   });
 
-  const profitRate = config?.profitPercentage || 4;
+  const profitRate = user?.profitPercent || config?.profitPercentage || 8;
   const myTradable = Math.floor((user?.walletBalance || 0) / 100) * 100;
 
   return (
