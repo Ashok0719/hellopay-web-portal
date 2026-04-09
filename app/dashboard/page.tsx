@@ -316,7 +316,7 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-20 bg-white border-t border-slate-100 flex items-center justify-around px-2 z-50">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-20 bg-white border-t border-slate-100 flex items-center justify-between px-6 z-50 pb-safe">
         <BottomNavItem 
           icon={<HomeIcon active={activeTab === 'home'} />} 
           label="Home" 
@@ -324,25 +324,39 @@ export default function Dashboard() {
           onClick={() => setActiveTab('home')} 
         />
         <BottomNavItem 
-          icon={<CreditCard className={activeTab === 'payment' ? 'text-emerald-500' : 'text-slate-400'} size={24} />} 
+          icon={<CreditCard className={activeTab === 'payment' ? 'text-emerald-500' : 'text-slate-400'} size={22} />} 
           label="Payment" 
           active={activeTab === 'payment'} 
           onClick={() => setActiveTab('payment')} 
         />
         
         {/* Middle Wallet Button (Yellow Hub) */}
-        <div className="relative -top-3">
+        <div className="relative -top-5">
           <button 
             onClick={() => setActiveTab('wallet')}
-            className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl shadow-yellow-100 border-4 border-slate-50 active:scale-95 hover:scale-105 transition-all ${activeTab === 'wallet' ? 'bg-[#eab308]' : 'bg-[#facc15]'}`}
+            className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl shadow-yellow-200/50 border-4 border-white active:scale-95 hover:scale-105 transition-all ${activeTab === 'wallet' ? 'bg-[#eab308]' : 'bg-[#facc15]'}`}
           >
-            <div className="p-2 bg-slate-900/10 rounded-xl">
-               <Wallet className="text-slate-800" size={28} />
+            <div className="p-2 bg-black/5 rounded-xl">
+               <Wallet className="text-slate-900" size={26} />
             </div>
           </button>
         </div>
 
-        <DepositModal 
+        <BottomNavItem 
+          icon={<Users className={activeTab === 'statistics' ? 'text-emerald-500' : 'text-slate-400'} size={22} />} 
+          label="Team" 
+          active={activeTab === 'statistics'} 
+          onClick={() => setActiveTab('statistics')} 
+        />
+        <BottomNavItem 
+          icon={<CircleUser className={activeTab === 'my' ? 'text-emerald-500' : 'text-slate-400'} size={22} />} 
+          label="My" 
+          active={activeTab === 'my'} 
+          onClick={() => setActiveTab('my')} 
+        />
+      </nav>
+
+      <DepositModal 
           isOpen={showDepositModal} 
           onClose={() => setShowDepositModal(false)}
           config={config}
@@ -352,19 +366,6 @@ export default function Dashboard() {
           }}
         />
 
-        <BottomNavItem 
-          icon={<Users className={activeTab === 'statistics' ? 'text-emerald-500' : 'text-slate-400'} size={24} />} 
-          label="Statistics" 
-          active={activeTab === 'statistics'} 
-          onClick={() => setActiveTab('statistics')} 
-        />
-        <BottomNavItem 
-          icon={<CircleUser className={activeTab === 'my' ? 'text-emerald-500' : 'text-slate-400'} size={24} />} 
-          label="My" 
-          active={activeTab === 'my'} 
-          onClick={() => setActiveTab('my')} 
-        />
-      </nav>
 
       <SupportChatModal isOpen={showSupportChat} onClose={() => setShowSupportChat(false)} user={user} />
       <NeuralNotice 
@@ -450,14 +451,20 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                      <div>
                         <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-2">Neural Asset Value</h2>
                         <div className="flex items-center gap-4">
-                           <h1 className="text-6xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
+                           <h1 className="text-5xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
                            <button 
                              onClick={forceSync}
                              className={`p-2 rounded-full hover:bg-white/10 transition-all ${isSyncing ? 'animate-spin opacity-100' : 'opacity-40'}`}
                            >
-                             <RefreshCcw size={20} className="text-indigo-400" />
+                             <RefreshCcw size={16} className="text-indigo-400" />
                            </button>
                         </div>
+                        {user?.totalDeposited < 100 && user?.referralBonusAmount > 0 && (
+                          <div className="mt-2 flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
+                             <span className="text-[9px] font-black text-yellow-500 uppercase tracking-widest">₹{user.referralBonusAmount} Locked (Min Deposit ₹100 Required)</span>
+                          </div>
+                        )}
                      </div>
                   </div>
                   <button onClick={() => setActiveTab('payment')} className="w-16 h-16 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
@@ -931,11 +938,11 @@ function PaymentView({ user, config, handleClaim, listings }: any) {
 
 function QuickActionItem({ icon, label, onClick }: any) {
   return (
-    <div onClick={onClick} className="flex flex-col items-center gap-2 cursor-pointer group active:scale-95 transition-all">
-      <div className="w-16 h-16 bg-white rounded-3xl shadow-sm border border-slate-50 flex items-center justify-center group-hover:shadow-md group-hover:-translate-y-0.5 transition-all">
+    <div onClick={onClick} className="flex flex-col items-center gap-1.5 cursor-pointer group active:scale-95 transition-all w-full">
+      <div className="w-14 h-14 bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex items-center justify-center group-hover:shadow-md group-hover:-translate-y-0.5 transition-all">
          {icon}
       </div>
-      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">{label}</span>
+      <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">{label}</span>
     </div>
   );
 }
