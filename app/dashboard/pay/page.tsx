@@ -78,7 +78,7 @@ function PayContent() {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'verifying' | 'success' | 'failed'>('idle');
   const [showAppSelector, setShowAppSelector] = useState(false);
 
-  const receiverUpi = upiIntent ? upiIntent.match(/pa=([^&]+)/)?.[1] : 'Loading...';
+  const receiverUpi = upiIntent ? (upiIntent.split('pa=')[1] ? upiIntent.split('pa=')[1].split('&')[0] : 'Loading...') : 'Loading...';
 
   const [timeSpent, setTimeSpent] = useState<number>(0);
 
@@ -133,7 +133,6 @@ function PayContent() {
       return;
     }
     
-    // Feature 2: Validation (12-22 digits)
     if (utr.length < 12 || utr.length > 22) {
       setError('Invalid UTR: Must be 12-22 digits');
       return;
@@ -146,27 +145,23 @@ function PayContent() {
     setError('');
 
     try {
-      // PHASE 1: Verify UTR (Feature 2 & 4)
       const utrResp = await api.post('/stocks/verify-utr', { utr, transactionId });
       
-      if (utrResp.data.success) {
-        if (utrResp.data.status === 'success') {
-          if (file) {
-            const formData = new FormData();
-            formData.append('screenshot', file);
-            formData.append('transactionId', transactionId);
-            formData.append('utr', utr);
-            formData.append('timeSpent', timeSpent.toString());
-            api.post('/stocks/verify-screenshot', formData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-            }).catch(console.error);
-          }
-          setStatus('success');
-          return;
+      if (utrResp.data.success && utrResp.data.status === 'success') {
+        if (file) {
+          const formData = new FormData();
+          formData.append('screenshot', file);
+          formData.append('transactionId', transactionId);
+          formData.append('utr', utr);
+          formData.append('timeSpent', timeSpent.toString());
+          api.post('/stocks/verify-screenshot', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }).catch(console.error);
         }
+        setStatus('success');
+        return;
       }
 
-      // PHASE 2: Screenshot OCR (Feature 3)
       if (file) {
         setStatus('uploading');
         const formData = new FormData();
@@ -190,6 +185,9 @@ function PayContent() {
             type: 'alert',
             onConfirm: () => router.push('/dashboard/payment-history')
           });
+        } else {
+          setStatus('failed');
+          setError('Verification Failed: Data Mismatch');
         }
       } else {
         setStatus('idle');
@@ -201,7 +199,6 @@ function PayContent() {
           onConfirm: () => {}
         });
       }
-
     } catch (err: any) {
       setError(err.response?.data?.message || 'Verification Error');
       setStatus('failed');
@@ -316,43 +313,42 @@ function PayContent() {
                   <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[9px] font-black uppercase tracking-widest">Online Signal</div>
                </div>
 
-                  <div className="mt-8 flex items-center gap-4 bg-slate-50 px-8 py-5 rounded-[24px] border border-slate-100 w-full group">
-                    <div className="p-3 bg-white rounded-2xl shadow-sm text-emerald-600"><Smartphone size={20} /></div>
-                    <div className="flex-1 overflow-hidden">
-                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">UPI Identity Profile</p>
-                       <p className="text-sm font-black text-slate-700 truncate tracking-tight">{receiverUpi ? decodeURIComponent(receiverUpi) : 'Node Identity Loading...'}</p>
-                    </div>
-                    <button onClick={copyUpi} className={`p-3 rounded-2xl transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-slate-400 hover:text-emerald-600 shadow-sm'}`}>
-                       {copied ? <Check size={18} /> : <Copy size={18} />}
-                    </button>
-                  </div>
+               <div className="mt-8 flex items-center gap-4 bg-slate-50 px-8 py-5 rounded-[24px] border border-slate-100 w-full group">
+                 <div className="p-3 bg-white rounded-2xl shadow-sm text-emerald-600"><Smartphone size={20} /></div>
+                 <div className="flex-1 overflow-hidden">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">UPI Identity Profile</p>
+                    <p className="text-sm font-black text-slate-700 truncate tracking-tight">{receiverUpi}</p>
+                 </div>
+                 <button onClick={copyUpi} className={`p-3 rounded-2xl transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-slate-400 hover:text-emerald-600 shadow-sm'}`}>
+                    {copied ? <Check size={18} /> : <Copy size={18} />}
+                 </button>
                </div>
+           </div>
 
-               <div className="space-y-4">
-                  <button 
-                    onClick={() => setShowAppSelector(!showAppSelector)}
-                    className="w-full py-6 bg-emerald-600 text-white rounded-[32px] flex items-center justify-center gap-4 font-black uppercase italic shadow-2xl shadow-emerald-200 hover:bg-emerald-700 active:scale-95 transition-all group"
+           <div className="space-y-4">
+              <button 
+                onClick={() => setShowAppSelector(!showAppSelector)}
+                className="w-full py-6 bg-emerald-600 text-white rounded-[32px] flex items-center justify-center gap-4 font-black uppercase italic shadow-2xl shadow-emerald-200 hover:bg-emerald-700 active:scale-95 transition-all group"
+              >
+                <Zap className="fill-white group-hover:animate-bounce" size={24} /> PAY WITH UPI APP
+              </button>
+              
+              <AnimatePresence>
+                {showAppSelector && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="grid grid-cols-3 gap-4"
                   >
-                    <Zap className="fill-white group-hover:animate-bounce" size={24} /> PAY WITH UPI APP
-                  </button>
-                  
-                  <AnimatePresence>
-                    {showAppSelector && (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="grid grid-cols-3 gap-4"
-                      >
-                         <AppButton icon="https://img.icons8.com/color/48/paytm.png" label="Paytm" onClick={() => handlePayNow('paytm')} />
-                         <AppButton icon="https://img.icons8.com/color/48/phonepe.png" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
-                         <AppButton icon="https://img.icons8.com/color/48/google-pay.png" label="GPay" onClick={() => handlePayNow('gpay')} />
-                         <AppButton icon="https://img.icons8.com/color/48/freecharge.png" label="Freecharge" onClick={() => handlePayNow('freecharge')} />
-                         <AppButton icon="https://img.icons8.com/color/48/mobikwik.png" label="MobiKwik" onClick={() => handlePayNow('mobikwik')} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-               </div>
+                     <AppButton icon="https://img.icons8.com/color/48/paytm.png" label="Paytm" onClick={() => handlePayNow('paytm')} />
+                     <AppButton icon="https://img.icons8.com/color/48/phonepe.png" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
+                     <AppButton icon="https://img.icons8.com/color/48/google-pay.png" label="GPay" onClick={() => handlePayNow('gpay')} />
+                     <AppButton icon="https://img.icons8.com/color/48/freecharge.png" label="Freecharge" onClick={() => handlePayNow('freecharge')} />
+                     <AppButton icon="https://img.icons8.com/color/48/mobikwik.png" label="MobiKwik" onClick={() => handlePayNow('mobikwik')} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
            </div>
 
            <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
