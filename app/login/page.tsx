@@ -97,6 +97,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { setToken, setUser } = useAuthStore();
   const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [setupMode, setSetupMode] = useState(false);
+  const [setupData, setSetupData] = useState({ name: '', pin: ['', '', '', ''] });
+  const [tempUser, setTempUser] = useState<any>(null);
 
   useEffect(() => {
     // Neural Matrix Warmup
