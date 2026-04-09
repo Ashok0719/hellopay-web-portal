@@ -139,6 +139,14 @@ export default function Dashboard() {
     });
 
     socket.on('userStatusChanged', (data) => {
+      console.log('Neural Signal: Identity Status Shift', data);
+      
+      // Global Refresh Signal
+      if (data.action === 'refresh') {
+        forceSync();
+        return;
+      }
+
       if (user && data.userId === user._id) {
         setUser({ 
           ...user, 
@@ -147,7 +155,9 @@ export default function Dashboard() {
           totalDeposited: data.totalDeposited !== undefined ? data.totalDeposited : user.totalDeposited,
           totalWithdrawn: data.totalWithdrawn !== undefined ? data.totalWithdrawn : user.totalWithdrawn,
           rewardBalance: data.rewardBalance !== undefined ? data.rewardBalance : user.rewardBalance,
-          totalRewards: data.totalRewards !== undefined ? data.totalRewards : user.totalRewards
+          totalRewards: data.totalRewards !== undefined ? data.totalRewards : user.totalRewards,
+          referralPercent: data.referralPercent !== undefined ? data.referralPercent : user.referralPercent,
+          profitPercent: data.profitPercent !== undefined ? data.profitPercent : user.profitPercent
         });
       }
     });
