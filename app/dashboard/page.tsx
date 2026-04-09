@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SupportChatModal from './SupportChatModal';
 import NeuralNotice from './NeuralNotice';
@@ -1086,13 +1086,43 @@ function DepositModal({ isOpen, onClose, onSelect, config }: any) {
 
 function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   const [upiId, setUpiId] = useState(user?.upiId || '');
-  const [pin, setPin] = useState('');
+  const [pin, setPin] = useState(['', '', '', '']);
+  const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [qrFile, setQrFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
+  const handlePinChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const digit = value.slice(-1);
+    const newPin = [...pin];
+    newPin[index] = digit;
+    setPin(newPin);
+    if (digit && index < 3) {
+      pinRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !pin[index] && index > 0) {
+      pinRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const data = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
+    if (!data) return;
+    const newPin = [...pin];
+    data.split('').forEach((char, idx) => { newPin[idx] = char; });
+    setPin(newPin);
+    const focusIdx = Math.min(data.length, 3);
+    pinRefs.current[focusIdx]?.focus();
+  };
+
   const handleSaveUpi = async () => {
-    if (!upiId || !pin) return setNotice({ 
+    const pinString = pin.join('');
+    if (!upiId || pinString.length < 4) return setNotice({ 
        isOpen: true, 
        title: "Authorization Required", 
        message: "A 4-digit Security PIN and a valid UPI ID are required to bind your node."
@@ -1101,8 +1131,8 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     setIsSaving(true);
     const formData = new FormData();
     formData.append('upiId', upiId);
-    formData.append('pin', pin);
-    formData.append('currentPin', pin);
+    formData.append('pin', pinString);
+    formData.append('currentPin', pinString);
     if (qrFile) formData.append('qrCode', qrFile);
 
     try {
@@ -1236,7 +1266,8 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     setVerificationState('success');
     setIsSaving(true);
     try {
-      const { data } = await api.post('/save-upi', { upiId, pin });
+      const pinString = pin.join('');
+      const { data } = await api.post('/save-upi', { upiId, pin: pinString });
       if (data.success) {
         setNotice({
           isOpen: true,
@@ -1323,14 +1354,22 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
          
          <div>
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Security PIN</label>
-            <input 
-               type="password"
-               maxLength={4}
-               value={pin}
-               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-               className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-yellow-500 bg-white" 
-               placeholder="****"
-            />
+            <div className="flex justify-between gap-3">
+              {pin.map((digit, idx) => (
+                <input
+                  key={idx}
+                  ref={(el) => { pinRefs.current[idx] = el; }}
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={1}
+                  className={`w-full h-16 bg-slate-50 border rounded-3xl text-center text-xl font-bold transition-all duration-300 ${pin[idx] ? 'border-yellow-400 bg-yellow-50/20 shadow-[0_4px_15px_rgba(250,204,21,0.1)]' : 'border-slate-100 bg-white'}`}
+                  value={digit}
+                  onChange={(e) => handlePinChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(idx, e)}
+                  onPaste={handlePaste}
+                />
+              ))}
+            </div>
          </div>
 
          <div className="flex flex-col gap-4">

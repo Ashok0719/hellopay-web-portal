@@ -107,21 +107,54 @@ export default function LoginPage() {
   }, []);
 
   const handlePinChange = (index: number, value: string) => {
-    if (value.length > 1) value = value[0];
     if (!/^\d*$/.test(value)) return;
+    const digit = value.slice(-1); // Take the last digit if multiple (e.g., from autofill)
 
     const newPin = [...pin];
-    newPin[index] = value;
+    newPin[index] = digit;
     setPin(newPin);
 
-    if (value && index < 3) {
+    if (digit && index < 3) {
       pinRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-submit if complete
+    if (newPin.every(d => d !== '') && index === 3) {
+      setTimeout(() => {
+        const loginBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+        loginBtn?.click();
+      }, 50);
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !pin[index] && index > 0) {
-      pinRefs.current[index - 1]?.focus();
+    if (e.key === 'Backspace') {
+      if (!pin[index] && index > 0) {
+        pinRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const data = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
+    if (!data) return;
+
+    const newPin = [...pin];
+    data.split('').forEach((char, idx) => {
+      newPin[idx] = char;
+    });
+    setPin(newPin);
+
+    // Focus last or next empty
+    const focusIdx = Math.min(data.length, 3);
+    pinRefs.current[focusIdx]?.focus();
+    
+    if (data.length === 4) {
+      setTimeout(() => {
+        const loginBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+        loginBtn?.click();
+      }, 50);
     }
   };
 
@@ -283,11 +316,13 @@ export default function LoginPage() {
                           key={idx}
                           ref={(el) => { pinRefs.current[idx] = el; }}
                           type="password"
+                          inputMode="numeric"
                           maxLength={1}
-                          className="w-full h-16 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-2xl font-bold text-white focus:border-indigo-500/50 outline-none transition-all"
+                          className={`w-full h-16 bg-slate-950/50 border rounded-2xl text-center text-2xl font-bold text-white outline-none transition-all duration-300 ${pin[idx] ? 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'border-white/10'}`}
                           value={digit}
                           onChange={(e) => handlePinChange(idx, e.target.value)}
                           onKeyDown={(e) => handleKeyDown(idx, e)}
+                          onPaste={handlePaste}
                         />
                       ))}
                     </div>
@@ -384,10 +419,19 @@ export default function LoginPage() {
                         key={idx}
                         ref={(el) => { pinRefs.current[idx + 10] = el; }}
                         type="password"
+                        inputMode="numeric"
                         maxLength={1}
-                        className="w-full h-16 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-2xl font-bold text-white focus:border-indigo-500/50 outline-none transition-all"
+                        className={`w-full h-16 bg-slate-950/50 border rounded-2xl text-center text-2xl font-bold text-white outline-none transition-all duration-300 ${setupData.pin[idx] ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border-white/10'}`}
                         value={digit}
                         onChange={(e) => handleSetupPinChange(idx, e.target.value)}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const data = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
+                          if (!data) return;
+                          const newSPin = [...setupData.pin];
+                          data.split('').forEach((char, i) => { newSPin[i] = char; });
+                          setSetupData({ ...setupData, pin: newSPin });
+                        }}
                       />
                     ))}
                   </div>
