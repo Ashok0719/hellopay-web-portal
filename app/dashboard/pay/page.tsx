@@ -260,26 +260,6 @@ function PayContent() {
                   <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[9px] font-black uppercase tracking-widest">Online Signal</div>
                </div>
 
-               <div className="flex flex-col items-center mb-10 group">
-                  <div className="bg-white p-5 rounded-[40px] shadow-[0_20px_80px_rgba(0,0,0,0.08)] border-4 border-slate-50 relative">
-                     {sellerQr ? (
-                       <>
-                         <img 
-                           src={sellerQr.startsWith('http') ? sellerQr : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${sellerQr}`} 
-                           alt="Seller QR" 
-                           className="w-48 h-48 opacity-90 group-hover:scale-105 transition-transform object-contain" 
-                         />
-                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                            <QrIcon size={40} className="text-slate-900 bg-white/80 p-2 rounded-xl backdrop-blur-sm shadow-xl" />
-                         </div>
-                       </>
-                     ) : (
-                       <div className="flex flex-col items-center gap-4 text-slate-300 italic py-10">
-                          <QrIcon size={64} className="opacity-20" />
-                          <span className="text-[10px] uppercase font-black tracking-widest opacity-40">No Scanner Provided</span>
-                       </div>
-                     )}
-                  </div>
                   <div className="mt-8 flex items-center gap-4 bg-slate-50 px-8 py-5 rounded-[24px] border border-slate-100 w-full group">
                     <div className="p-3 bg-white rounded-2xl shadow-sm text-emerald-600"><Smartphone size={20} /></div>
                     <div className="flex-1 overflow-hidden">
