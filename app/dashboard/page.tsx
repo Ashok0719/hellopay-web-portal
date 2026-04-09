@@ -20,6 +20,7 @@ import {
   Home, 
   User as UserIcon, 
   Zap, 
+  HelpCircle,
   Star,
   ArrowRight, 
   ShieldCheck, 
@@ -29,6 +30,8 @@ import {
   RefreshCcw, 
   ChevronRight, 
   Camera,
+  Users,
+  TrendingUp,
   Search,
   Bell,
   Activity,
@@ -1161,6 +1164,93 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     reader.readAsDataURL(file);
   };
 
+  const [verificationState, setVerificationState] = useState<'idle' | 'opening' | 'waiting' | 'success' | 'failed' | 'suspicious'>('idle');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // STEP 1: STRICT REGEX & VALIDATION
+  const upiRegex = /^(?!.*\.\.)(?!.*__)(?!.*\.-)(?!.*-\.)[a-z0-9]+([._-]?[a-z0-9]+)*@[a-z]{2,}$/;
+  const validHandles = ['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'ybl', 'ibl', 'axl', 'apl', 'paytm', 'upi'];
+  
+  const validateUpi = (id: string) => {
+    if (!upiRegex.test(id)) return false;
+    const [user, handle] = id.split('@');
+    if (user.length < 5) return false;
+    if (!/\d/.test(user)) return false; // Must contain at least 1 number
+    if (!validHandles.includes(handle)) return false;
+    return true;
+  };
+
+  const isUpiValid = validateUpi(upiId);
+
+  // STEP 3 & 4: APP VERIFICATION FLOW
+  const handleVerifyIntent = () => {
+    if (!isUpiValid) return;
+    
+    setVerificationState('opening');
+    localStorage.setItem("upi_verify_start", Date.now().toString());
+    
+    const upiLink = `upi://pay?pa=${upiId}&pn=Verify&am=1&cu=INR`;
+    
+    // Auto detect return (Step 4)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const startTime = parseInt(localStorage.getItem("upi_verify_start") || "0");
+        const duration = (Date.now() - startTime) / 1000;
+        
+        localStorage.removeItem("upi_verify_start");
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+        // STEP 6: SMART LOGIC
+        if (duration < 3) {
+           setVerificationState('failed');
+        } else if (duration >= 5 && duration <= 35) {
+           setVerificationState('waiting');
+           setShowConfirmModal(true);
+        } else {
+           setVerificationState('idle');
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.location.href = upiLink;
+  };
+
+  const confirmVerification = async (confirmed: boolean) => {
+    setShowConfirmModal(false);
+    if (!confirmed) {
+      setVerificationState('failed');
+      return;
+    }
+
+    // STEP 7: BACKEND SAVE
+    setVerificationState('success');
+    setIsSaving(true);
+    try {
+      const { data } = await api.post('/stocks/save-upi', { upiId, pin });
+      if (data.success) {
+        setNotice({
+          isOpen: true,
+          title: "Neural Sync Valid ✅",
+          message: "UPI Identity verified via Deep Link Matrix. Registry successfully updated.",
+          type: 'alert',
+          onConfirm: () => {}
+        });
+      }
+    } catch (err: any) {
+      setVerificationState('failed');
+      setNotice({
+        isOpen: true,
+        title: "Protocol Fault",
+        message: err.response?.data?.message || "Registry update failed",
+        type: 'alert',
+        onConfirm: () => {}
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const myTradable = Math.floor((user?.walletBalance || 0) / 100) * 100;
   const numUnits = myTradable / 100;
 
@@ -1171,7 +1261,7 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <h2 className="text-2xl font-bold text-center text-emerald-600 mb-6">Wallet Hub</h2>
+      <h2 className="text-2xl font-bold text-center text-emerald-600 mb-6 uppercase italic tracking-tighter">Wallet Hub</h2>
 
       <div className="bg-slate-900 rounded-[32px] p-8 text-white mb-6 relative overflow-hidden shadow-2xl">
          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -1183,23 +1273,43 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
                <span>Virtual Split Strategy</span>
                <span className="text-yellow-500 font-bold">1 Unit = ₹100</span>
             </div>
-            <p className="text-xs font-bold text-slate-300 leading-relaxed">
-              You have <span className="text-yellow-400">{numUnits}</span> units listed in marketplace. Balance is untouched until sold.
+            <p className="text-xs font-bold text-slate-300 leading-relaxed italic">
+              You have <span className="text-yellow-400">{numUnits}</span> units listed. Registry status: <span className="text-emerald-400">{user?.isUpiVerified ? 'VERIFIED' : 'PENDING'}</span>
             </p>
          </div>
       </div>
 
-      <div className="p-8 bg-white rounded-[40px] border border-slate-100 shadow-sm space-y-8 mb-4">
+      <div className="p-8 bg-white rounded-[40px] border border-slate-100 shadow-sm space-y-8 mb-4 relative overflow-hidden">
+         {/* STEP 9: UI STATES LIGHTS */}
+         {verificationState !== 'idle' && (
+           <div className="absolute top-4 right-8 flex items-center gap-2">
+              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{verificationState}...</span>
+              <div className={`w-2 h-2 rounded-full animate-pulse ${verificationState === 'success' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
+           </div>
+         )}
+
          <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Receiving UPI ID</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1 flex justify-between">
+              Receiving UPI ID
+              {upiId && (
+                <span className={`text-[9px] ${isUpiValid ? 'text-emerald-500' : 'text-red-500'}`}>
+                  {isUpiValid ? 'VALID FORMAT ✅' : 'INVALID UPI ❌'}
+                </span>
+              )}
+            </label>
             <div className="relative">
               <input 
                  value={upiId}
-                 onChange={(e) => setUpiId(e.target.value)}
-                 className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold placeholder:opacity-30 focus:outline-yellow-500 focus:bg-white transition-all" 
-                 placeholder="yourname@upi"
+                 onChange={(e) => setUpiId(e.target.value.toLowerCase().trim())}
+                 className={`w-full px-8 py-5 rounded-3xl text-sm font-bold transition-all border ${isUpiValid ? 'bg-emerald-50/20 border-emerald-100 focus:outline-emerald-500' : 'bg-slate-50 border-slate-100 focus:outline-yellow-500'}`} 
+                 placeholder="name123@upi"
               />
             </div>
+            {!isUpiValid && upiId && (
+              <p className="text-[8px] font-black text-red-400 mt-3 ml-2 uppercase tracking-widest leading-relaxed">
+                Min 5 chars, 1 number, handle: axis/sbi/hdfc/icici/upi/paytm/ybl/ibl/axl/apl
+              </p>
+            )}
          </div>
          
          <div>
@@ -1209,22 +1319,46 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
                maxLength={4}
                value={pin}
                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-               className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold placeholder:opacity-30 focus:outline-yellow-500 focus:bg-white transition-all" 
+               className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-yellow-500 bg-white" 
                placeholder="****"
             />
          </div>
 
+         <div className="flex flex-col gap-4">
+            <button 
+               onClick={handleVerifyIntent}
+               disabled={!isUpiValid || verificationState === 'opening'}
+               className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl active:scale-95 transition-all text-xs flex items-center justify-center gap-3 disabled:opacity-20 translate-y-2"
+            >
+               <Zap size={18} className="fill-yellow-400 text-yellow-400" /> Verify with UPI App
+            </button>
 
-         <button 
-           onClick={handleSaveUpi}
-           disabled={isSaving}
-           className="w-full py-5 bg-yellow-400 text-slate-900 font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl shadow-yellow-100 active:scale-95 transition-all text-sm mt-4 hover:bg-yellow-500"
-         >
-            {isSaving ? 'Synchronizing...' : 'Save & Sync Wallet'}
-         </button>
+            <button 
+               onClick={handleSaveUpi}
+               disabled={isSaving || !user?.isUpiVerified && verificationState !== 'success'}
+               className="w-full py-5 bg-yellow-400 text-slate-900 font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl shadow-yellow-100 active:scale-95 transition-all text-[11px] mt-4 hover:bg-yellow-500 disabled:grayscale"
+            >
+               {isSaving ? 'Synchronizing...' : 'Save & Sync Registry'}
+            </button>
+         </div>
       </div>
 
-      <p className="text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-10">Neural Rotation Protocol Active</p>
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
+           <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} className="bg-white rounded-[40px] p-10 max-w-sm w-full text-center shadow-2xl border border-slate-100 italic">
+              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto mb-8 shadow-inner"><HelpCircle size={40} /></div>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-slate-800 mb-4 italic">Confirmation Portal</h3>
+              <p className="text-sm font-bold text-slate-500 leading-relaxed mb-10 italic">Did you see the <span className="text-emerald-600">Account Holder Name</span> and <span className="text-slate-800 underline">₹1 verification signal</span> in your UPI app?</p>
+              
+              <div className="flex flex-col gap-4">
+                 <button onClick={() => confirmVerification(true)} className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Yes, Verified ✅</button>
+                 <button onClick={() => confirmVerification(false)} className="w-full py-4 bg-white text-slate-400 rounded-[24px] font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all underline decoration-slate-200 uppercase">Abort Protocol</button>
+              </div>
+           </motion.div>
+        </div>
+      )}
+
+      <p className="text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-10">Neural Rotation Protocol Active v3.2</p>
     </motion.div>
   );
 }
