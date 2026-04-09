@@ -240,7 +240,10 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      console.error('Google Auth Error:', err);
+      console.error('--- NEURAL AUTH DEBUGGER ---');
+      console.error('Error Code:', err.code);
+      console.error('Error Message:', err.message);
+      console.error('Full Error Object:', err);
       const msg = err.response?.data?.message || err.message || 'Google Auth Failed';
       setError(msg);
     } finally {
