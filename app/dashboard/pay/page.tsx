@@ -83,14 +83,19 @@ function PayContent() {
   const [timeSpent, setTimeSpent] = useState<number>(0);
 
   const handlePayNow = (app?: string) => {
-    if (!upiIntent) return;
-    let finalIntent = upiIntent;
+    if (!upiIntent) {
+      setError("Neural Signal Lost: UPI Intent data is missing. Please re-initiate the payment.");
+      return;
+    }
+    
+    // Normalize and handle deep linking
+    let finalIntent = upiIntent.startsWith('upi%3A') ? decodeURIComponent(upiIntent) : upiIntent;
     
     // Feature 2: Start Timing
     const startTime = Date.now();
     localStorage.setItem("upi_txn_start", startTime.toString());
 
-    // Auto detect return (Step 3 & 4)
+    // Auto detect return
     const handleReturn = () => {
       if (document.visibilityState === 'visible') {
         const start = parseInt(localStorage.getItem("upi_txn_start") || "0");
@@ -102,14 +107,31 @@ function PayContent() {
     };
     document.addEventListener("visibilitychange", handleReturn);
 
-    // Deep-linking logic for Android/iOS UPI Apps
-    if (app === 'paytm') finalIntent = upiIntent.replace('upi://', 'paytmmp://');
-    if (app === 'phonepe') finalIntent = upiIntent.replace('upi://', 'phonepe://');
-    if (app === 'gpay') finalIntent = upiIntent.replace('upi://', 'tez://');
-    if (app === 'freecharge') finalIntent = upiIntent.replace('upi://', 'freecharge://');
-    if (app === 'mobikwik') finalIntent = upiIntent.replace('upi://', 'mobikwik://');
+    // Deep-linking protocol mapping
+    if (app === 'paytm') finalIntent = finalIntent.replace(/upi:\/\//i, 'paytmmp://');
+    else if (app === 'phonepe') finalIntent = finalIntent.replace(/upi:\/\//i, 'phonepe://');
+    else if (app === 'gpay') finalIntent = finalIntent.replace(/upi:\/\//i, 'tez://');
     
-    window.location.href = finalIntent;
+    console.log('[Neural Redirect]', finalIntent);
+    
+    try {
+      // Use location.assign for better PWA compatibility
+      window.location.assign(finalIntent);
+      
+      // Secondary fallback: if nothing happens after 2 seconds, show manual instructions
+      setTimeout(() => {
+        setNotice({
+          isOpen: true,
+          title: "Redirection Signal Weak",
+          message: "If your UPI app didn't open automatically, please copy the UPI ID below and pay manually in your preferred app.",
+          type: 'alert',
+          onConfirm: () => {}
+        });
+      }, 2500);
+    } catch (e) {
+      window.location.href = finalIntent;
+    }
+
     setShowAppSelector(false);
   };
 

@@ -25,9 +25,12 @@ export default function FirebaseManager() {
         console.log('[Auth] Persistent Session Restored via Neural Cookie');
       })
       .catch((err) => {
-        if (token) {
-            console.warn('[Auth] Persistent Token Expired or Invalid');
+        const status = err.response?.status;
+        if (status === 401 || status === 403) {
+            console.warn('[Auth] Persistent Token Expired or Invalid - Clearing Session');
             logout();
+        } else {
+            console.log('[Auth] Offline mode or Network slow - Keeping local session');
         }
       });
   }, []);

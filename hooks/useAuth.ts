@@ -1,5 +1,19 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import { get, set, del } from 'idb-keyval';
+
+// Custom storage for IndexedDB (More stable for PWAs)
+const idbStorage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    return (await get(name)) || null;
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await set(name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await del(name);
+  },
+};
 
 interface User {
   _id: string;
@@ -39,12 +53,12 @@ export const useAuthStore = create<AuthState>()(
       setToken: (token) => set({ token }),
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
-        localStorage.clear(); // Ensure all persistence is cleared on logout
+        // No need to clear all localStorage here, del handled by zustand persist
       },
     }),
     {
       name: 'hellopay-auth-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => idbStorage),
     }
   )
 );
