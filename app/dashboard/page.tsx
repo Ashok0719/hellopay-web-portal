@@ -63,6 +63,7 @@ export default function Dashboard() {
   const [config, setConfig] = useState<any>(null);
   const [referralStats, setReferralStats] = useState<any>({ totalReferrals: 0, referralList: [], referralEarnings: 0 });
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showSupportChat, setShowSupportChat] = useState(false);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
@@ -169,23 +170,12 @@ export default function Dashboard() {
       return;
     }
 
+    setIsClaiming(true);
     try {
-      // 1. Neural Select/Lock (1 Minute)
-      const selectResp = await api.post('/stocks/select', { stockId: idOrAmount });
-      if (!selectResp.data.success) {
-        setNotice({
-           isOpen: true,
-           title: "Node Conflict",
-           message: selectResp.data.message || 'This stock unit is currently being claimed by another user node.'
-        });
-        return;
-      }
-
-      // 2. Proceed to Buy
+      // Direct Purchase Linkage: /stocks/buy handles available/locked states in one signal
       const { data } = await api.post(`/stocks/buy`, { stockId: idOrAmount });
       if (data.success) {
         const { transaction, stock } = data;
-        // Neural Link Generator: pa=UPI, pn=Recipient Name, am=Amount, cu=INR
         const recipientName = encodeURIComponent(stock.ownerId?.name || 'HelloPay Seller');
         const upiIntent = `upi://pay?pa=${stock.ownerId?.upiId || 'admin@upi'}&pn=${recipientName}&am=${transaction.amount}&cu=INR`;
         const sellerId = stock.ownerId?.userIdNumber || '******';
@@ -197,6 +187,8 @@ export default function Dashboard() {
          title: "Registry Fault",
          message: err.response?.data?.message || 'The neural identity registry is busy. Failed to initiate claim.'
       });
+    } finally {
+      setIsClaiming(false);
     }
   };
 
@@ -222,6 +214,27 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans max-w-lg mx-auto shadow-2xl overflow-hidden relative border-x border-slate-200">
+      {/* Neural Loading Overlay (Purchasing Speed Fix) */}
+      <AnimatePresence>
+        {isClaiming && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
+          >
+            <div className="relative mb-8">
+              <div className="w-24 h-24 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Zap className="text-indigo-400 fill-indigo-400 animate-pulse" size={32} />
+              </div>
+            </div>
+            <h3 className="text-xl font-black text-white italic uppercase tracking-widest mb-2">Linking Node...</h3>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] anim-pulse">Binding Neural Asset Registry</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Dynamic Tab Content */}
       <AnimatePresence mode="wait">
         {activeTab === 'home' && (
