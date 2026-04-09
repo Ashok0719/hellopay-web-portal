@@ -1106,7 +1106,7 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     if (qrFile) formData.append('qrCode', qrFile);
 
     try {
-      const { data } = await api.put('/auth/profile', formData, {
+      const { data } = await api.post('/save-upi', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setUser({ ...user, ...data });
@@ -1225,7 +1225,7 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     setVerificationState('success');
     setIsSaving(true);
     try {
-      const { data } = await api.post('/stocks/save-upi', { upiId, pin });
+      const { data } = await api.post('/save-upi', { upiId, pin });
       if (data.success) {
         setNotice({
           isOpen: true,
