@@ -6,6 +6,7 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL 
     ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
     : 'http://localhost:5000/api',
+  withCredentials: true,
 });
 
 // Add interceptor for auth token and bypass tunnel reminder

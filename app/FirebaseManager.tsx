@@ -14,18 +14,22 @@ export default function FirebaseManager() {
       initPushNotifications();
     }
     
-    // Auth Restoration: Persistent Login (Step 2 & 3)
-    if (token) {
-      api.get('/auth/me')
-        .then(({ data }) => {
-          setUser(data);
-          console.log('[Auth] Persistent Session Restored');
-        })
-        .catch(() => {
-          console.warn('[Auth] Persistent Token Expired or Invalid');
-          logout();
-        });
-    }
+    // Auth Restoration: Persistent Login (Cookie-first fallback)
+    api.get('/auth/me')
+      .then(({ data }) => {
+        if (data.token) {
+          // Sync token to store if we recovered via cookie
+          useAuthStore.getState().setToken(data.token);
+        }
+        setUser(data);
+        console.log('[Auth] Persistent Session Restored via Neural Cookie');
+      })
+      .catch((err) => {
+        if (token) {
+            console.warn('[Auth] Persistent Token Expired or Invalid');
+            logout();
+        }
+      });
   }, []);
 
   const initPushNotifications = async () => {
