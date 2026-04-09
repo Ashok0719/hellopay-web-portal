@@ -231,7 +231,9 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Google Auth Failed');
+      console.error('Google Auth Error:', err);
+      const msg = err.response?.data?.message || err.message || 'Google Auth Failed';
+      setError(msg);
     } finally {
       setGoogleLoading(false);
     }

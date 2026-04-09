@@ -60,6 +60,7 @@ export default function Dashboard() {
   const [history, setHistory] = useState<any[]>([]);
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [config, setConfig] = useState<any>(null);
   const [referralStats, setReferralStats] = useState<any>({ totalReferrals: 0, referralList: [], referralEarnings: 0 });
@@ -74,7 +75,15 @@ export default function Dashboard() {
   // Initial data synchronization
   useEffect(() => {
     const fetchData = async () => {
-      if (!token) return;
+      // Wait for hydration before checking token
+      if (!useAuthStore.persist.hasHydrated()) return;
+      setIsHydrated(true);
+
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
       try {
         const { data: profile } = await api.get('/auth/profile');
         setUser(profile);
@@ -91,14 +100,29 @@ export default function Dashboard() {
         if (configResp.status === 'fulfilled') setConfig(configResp.value.data);
         if (refResp.status === 'fulfilled')    setReferralStats(refResp.value.data);
 
-      } catch (err) {
-        logout();
-        router.push('/login');
+      } catch (err: any) {
+        console.error('Neural Sync Error:', err);
+        // Only logout if explicitly unauthorized (401)
+        if (err.response?.status === 401) {
+          logout();
+          router.push('/login');
+        }
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchData();
+    
+    // Check hydration every 100ms if not ready
+    const interval = setInterval(() => {
+       if (useAuthStore.persist.hasHydrated()) {
+          fetchData();
+          clearInterval(interval);
+       }
+    }, 100);
+
+    return () => clearInterval(interval);
   }, [setUser, logout, router, token]);
   
   // Real-time Neural Synchronization (Socket.io)
