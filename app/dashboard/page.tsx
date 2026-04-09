@@ -1216,18 +1216,27 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   ];
   
   const validateUpi = (id: string) => {
+    // Basic format check
     if (!upiRegex.test(id)) return false;
-    const [user, handle] = id.split('@');
     
-    // Numeric-only usernames (Paytm style)
-    if (/^\d+$/.test(user)) {
-      if (user.length < 8 || user.length > 15) return false;
+    const [userPart, handle] = id.split('@');
+    
+    // Feature: Phone number support (10 digits)
+    const isPhone = /^\d{10}$/.test(userPart);
+    
+    // Numeric-only usernames (Paytm/Generic style)
+    if (/^\d+$/.test(userPart)) {
+      if (isPhone) {
+        // 10 digits @ handle is always valid
+      } else if (userPart.length < 8 || userPart.length > 15) {
+        return false;
+      }
     } else {
       // Mixed usernames
-      if (user.length < 3) return false;
+      if (userPart.length < 3) return false;
     }
 
-    if (user.includes('..') || user.includes('__') || user.includes('--')) return false;
+    if (userPart.includes('..') || userPart.includes('__') || userPart.includes('--')) return false;
     if (!validHandles.includes(handle)) return false;
     return true;
   };
@@ -1353,9 +1362,16 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
             <div className="relative">
               <input 
                  value={upiId}
-                 onChange={(e) => setUpiId(e.target.value.toLowerCase().trim())}
+                 onChange={(e) => {
+                    let val = e.target.value.toLowerCase().trim();
+                    // FEATURE: PHONE NUMBER AUTO-CONVERT
+                    if (/^\d{10}$/.test(val)) {
+                      val = `${val}@upi`;
+                    }
+                    setUpiId(val);
+                  }}
                  className={`w-full px-8 py-5 rounded-3xl text-sm font-bold transition-all border ${isUpiValid ? 'bg-emerald-50/20 border-emerald-100 focus:outline-emerald-500' : 'bg-slate-50 border-slate-100 focus:outline-yellow-500'}`} 
-                 placeholder="name123@upi"
+                 placeholder="UPI ID or Phone Number"
               />
             </div>
             {!isUpiValid && upiId && (
