@@ -130,14 +130,56 @@ export default function LoginPage() {
       const idToken = await result.user.getIdToken();
       
       const { data } = await api.post('/auth/firebase-login', { idToken });
-      setToken(data.token);
-      setUser(data);
-      router.push('/dashboard');
+      
+      if (data.needsSetup) {
+        setTempUser(data);
+        setSetupMode(true);
+      } else {
+        setToken(data.token);
+        setUser(data);
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       console.error('Google Auth Failed:', err);
       setError(err.response?.data?.message || 'Google Authentication Refused');
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  const handleSetupPinChange = (index: number, value: string) => {
+    if (value.length > 1) value = value[0];
+    if (!/^\d*$/.test(value)) return;
+    const newPin = [...setupData.pin];
+    newPin[index] = value;
+    setSetupData({ ...setupData, pin: newPin });
+    if (value && index < 3) {
+      pinRefs.current[index + 10]?.focus(); // Offset for setup pins
+    }
+  };
+
+  const handleCompleteSetup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const pinString = setupData.pin.join('');
+    if (pinString.length < 4) return setError('PIN must be 4 digits');
+    if (!setupData.name) return setError('Name is required');
+
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/complete-profile', {
+        userId: tempUser._id,
+        name: setupData.name,
+        pin: pinString
+      }, {
+        headers: { Authorization: `Bearer ${tempUser.token}` }
+      });
+      setToken(tempUser.token);
+      setUser(data);
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Profile Update Failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -209,98 +251,169 @@ export default function LoginPage() {
               <p className="text-slate-500 text-[10px] uppercase tracking-[0.4em] mt-3 font-semibold">Neural Wallet Matrix</p>
             </div>
 
-            <div className="space-y-6">
-              <form onSubmit={handleLogin} className="space-y-6">
-                {/* Email/Phone Input */}
+            {!setupMode ? (
+              <div className="space-y-6">
+                <form onSubmit={handleLogin} className="space-y-6">
+                  {/* Email/Phone Input */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Identity Node</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors">
+                        <Smartphone size={18} />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Mobile or Email"
+                        className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white placeholder:text-slate-700 outline-none focus:border-indigo-500/50 transition-all"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* PIN Input */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Neural PIN</label>
+                    <div className="flex justify-between gap-3">
+                      {pin.map((digit, idx) => (
+                        <input
+                          key={idx}
+                          ref={(el) => { pinRefs.current[idx] = el; }}
+                          type="password"
+                          maxLength={1}
+                          className="w-full h-16 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-2xl font-bold text-white focus:border-indigo-500/50 outline-none transition-all"
+                          value={digit}
+                          onChange={(e) => handlePinChange(idx, e.target.value)}
+                          onKeyDown={(e) => handleKeyDown(idx, e)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-3"
+                    >
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                      {error}
+                    </motion.div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                  >
+                    {loading ? 'INITIALIZING...' : 'INITIALIZE LINK'}
+                    <ArrowRight size={20} />
+                  </button>
+                </form>
+
+                <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/5"></div>
+                  </div>
+                  <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.3em]">
+                    <span className="bg-slate-900/40 px-4 text-slate-600">Neural Social Link</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={googleLoading}
+                    className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 hover:bg-slate-50"
+                  >
+                    {googleLoading ? (
+                      <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                        Continue with Google
+                      </>
+                    )}
+                  </button>
+                  
+                  <div className="text-center pt-2">
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-loose">
+                      New Identity? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create Node</Link>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <motion.form 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                onSubmit={handleCompleteSetup} 
+                className="space-y-6"
+              >
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-white mb-2">Complete Profile</h2>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest">Setup your identity & PIN</p>
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Identity Node</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors">
-                      <Smartphone size={18} />
+                      <UserCircle size={18} />
                     </div>
                     <input
                       type="text"
-                      placeholder="Mobile or Email"
+                      placeholder="Enter Your Name"
+                      required
                       className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white placeholder:text-slate-700 outline-none focus:border-indigo-500/50 transition-all"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
+                      value={setupData.name}
+                      onChange={(e) => setSetupData({ ...setupData, name: e.target.value })}
                     />
                   </div>
                 </div>
 
-                {/* PIN Input */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Neural PIN</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">New Neural PIN</label>
                   <div className="flex justify-between gap-3">
-                    {pin.map((digit, idx) => (
+                    {setupData.pin.map((digit, idx) => (
                       <input
                         key={idx}
-                        ref={(el) => { pinRefs.current[idx] = el; }}
+                        ref={(el) => { pinRefs.current[idx + 10] = el; }}
                         type="password"
                         maxLength={1}
                         className="w-full h-16 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-2xl font-bold text-white focus:border-indigo-500/50 outline-none transition-all"
                         value={digit}
-                        onChange={(e) => handlePinChange(idx, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(idx, e)}
+                        onChange={(e) => handleSetupPinChange(idx, e.target.value)}
                       />
                     ))}
                   </div>
                 </div>
 
                 {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-3"
-                  >
-                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                  <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-3">
                     {error}
-                  </motion.div>
+                  </div>
                 )}
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-gradient-to-r from-emerald-600 to-indigo-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                 >
-                  {loading ? 'INITIALIZING...' : 'INITIALIZE LINK'}
-                  <ArrowRight size={20} />
+                  {loading ? 'SYNCING...' : 'FINALIZE NODE'}
+                  <Sparkles size={20} />
                 </button>
-              </form>
 
-              <div className="relative py-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/5"></div>
-                </div>
-                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.3em]">
-                  <span className="bg-slate-900/40 px-4 text-slate-600">Neural Social Link</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
                 <button
                   type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={googleLoading}
-                  className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 hover:bg-slate-50"
+                  onClick={() => setSetupMode(false)}
+                  className="w-full text-[10px] text-slate-500 uppercase font-black tracking-widest hover:text-white transition-colors"
                 >
-                  {googleLoading ? (
-                    <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                      Continue with Google
-                    </>
-                  )}
+                  Back to Hub
                 </button>
-                
-                <div className="text-center pt-2">
-                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-loose">
-                    New Identity? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create Node</Link>
-                  </p>
-                </div>
-              </div>
-            </div>
+              </motion.form>
+            )}
           </div>
         </div>
       </motion.div>
