@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Smartphone, ArrowRight, Zap, Mail, ShieldCheck, UserCircle, HandCoins, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Smartphone, ArrowRight, Zap, Mail, ShieldCheck, UserCircle, HandCoins, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';

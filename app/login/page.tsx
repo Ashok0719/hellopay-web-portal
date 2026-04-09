@@ -269,7 +269,40 @@ export default function LoginPage() {
                     <ArrowRight size={20} />
                   </button>
                 </form>
-... (rest of JSX skipped for brevety, focus on setup form) ...
+                <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/5"></div>
+                  </div>
+                  <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.3em]">
+                    <span className="bg-slate-900/40 px-4 text-slate-600">Neural Social Link</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={googleLoading}
+                    className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 hover:bg-slate-50"
+                  >
+                    {googleLoading ? (
+                      <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                        Continue with Google
+                      </>
+                    )}
+                  </button>
+                  
+                  <div className="text-center pt-2">
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-loose">
+                      New Identity? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create Node</Link>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
               <motion.form 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
