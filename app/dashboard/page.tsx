@@ -59,7 +59,6 @@ export default function Dashboard() {
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showDepositModal, setShowDepositModal] = useState(false);
-  const [showWalletHub, setShowWalletHub] = useState(false);
   const [config, setConfig] = useState<any>(null);
   const [referralStats, setReferralStats] = useState<any>({ totalReferrals: 0, referralList: [], referralEarnings: 0 });
   const [isSyncing, setIsSyncing] = useState(false);
@@ -241,8 +240,17 @@ export default function Dashboard() {
           />
         )}
         {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} />}
-        {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} setShowWalletHub={setShowWalletHub} router={router} />}
+        {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} />}
+        {activeTab === 'wallet' && (
+          <WalletView 
+            key="wallet" 
+            user={user} 
+            setUser={setUser} 
+            setNotice={setNotice}
+            onDeposit={() => setShowDepositModal(true)} 
+          />
+        )}
       </AnimatePresence>
 
       {/* Premium Right Side Support Terminal */}
@@ -279,23 +287,14 @@ export default function Dashboard() {
         {/* Middle Wallet Button (Yellow Hub) */}
         <div className="relative -top-3">
           <button 
-            onClick={() => setShowWalletHub(true)}
-            className="w-16 h-16 bg-[#facc15] rounded-full flex items-center justify-center shadow-xl shadow-yellow-100 border-4 border-slate-50 active:scale-95 hover:scale-105 transition-all"
+            onClick={() => setActiveTab('wallet')}
+            className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl shadow-yellow-100 border-4 border-slate-50 active:scale-95 hover:scale-105 transition-all ${activeTab === 'wallet' ? 'bg-[#eab308]' : 'bg-[#facc15]'}`}
           >
             <div className="p-2 bg-slate-900/10 rounded-xl">
                <Wallet className="text-slate-800" size={28} />
             </div>
           </button>
         </div>
-
-        <WalletHubModal 
-           isOpen={showWalletHub} 
-           onClose={() => setShowWalletHub(false)} 
-           user={user} 
-           setUser={setUser} 
-           setNotice={setNotice}
-           onDeposit={() => { setShowWalletHub(false); setShowDepositModal(true); }} 
-        />
 
         <DepositModal 
           isOpen={showDepositModal} 
@@ -636,7 +635,7 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
         <MyGridItem 
           icon={<Wallet size={28}/>} 
           label="Wallet" 
-          onClick={() => { setActiveTab('home'); setShowWalletHub(true); }} 
+          onClick={() => { setActiveTab('wallet'); }} 
         />
         <MyGridItem 
           icon={<Activity size={28}/>} 
@@ -1084,14 +1083,12 @@ function DepositModal({ isOpen, onClose, onSelect, config }: any) {
   );
 }
 
-function WalletHubModal({ isOpen, onClose, user, setUser, onDeposit, setNotice }: any) {
+function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   const [upiId, setUpiId] = useState(user?.upiId || '');
   const [pin, setPin] = useState('');
   const [qrFile, setQrFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSaveUpi = async () => {
     if (!upiId || !pin) return setNotice({ 
@@ -1101,8 +1098,6 @@ function WalletHubModal({ isOpen, onClose, user, setUser, onDeposit, setNotice }
     });
     
     setIsSaving(true);
-    
-    // Neural Form Data for Multipart Upload
     const formData = new FormData();
     formData.append('upiId', upiId);
     formData.append('pin', pin);
@@ -1156,7 +1151,7 @@ function WalletHubModal({ isOpen, onClose, user, setUser, onDeposit, setNotice }
              title: "Neural Guard Alert",
              message: "The uploaded image does not contain a valid QR code signal. Please upload a clear QR scanner photo to prevent rotation failure."
           });
-          e.target.value = ''; // Reset input
+          e.target.value = ''; 
           setQrFile(null);
         }
         setIsScanning(false);
@@ -1170,94 +1165,95 @@ function WalletHubModal({ isOpen, onClose, user, setUser, onDeposit, setNotice }
   const numUnits = myTradable / 100;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 backdrop-blur-sm p-4">
-      <motion.div 
-        initial={{ y: "100%" }} 
-        animate={{ y: 0 }} 
-        exit={{ y: "100%" }}
-        className="w-full max-w-lg bg-white rounded-t-[40px] p-6 pb-12 shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]"
-      >
-        <div className="flex justify-between items-center mb-6">
-           <h2 className="text-xl font-bold text-center w-full text-slate-800">Wallet <span className="text-yellow-500">Hub</span></h2>
-           <button onClick={() => onClose(false)} className="px-4 py-2 -mr-2 text-slate-400 font-bold text-[10px] uppercase bg-slate-50 rounded-xl">Close</button>
-        </div>
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="p-4"
+    >
+      <h2 className="text-2xl font-bold text-center text-emerald-600 mb-6">Wallet Hub</h2>
 
-        <div className="bg-slate-900 rounded-[32px] p-6 text-white mb-6 relative overflow-hidden shadow-xl">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
-           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Neural Asset Value</p>
-           <h3 className="text-5xl font-black italic tracking-tighter mb-4">₹{(user?.walletBalance || 0).toLocaleString()}</h3>
-           
-           <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase text-slate-400 mb-1">
-                 <span>Virtual Split Strategy</span>
-                 <span className="text-yellow-500 underline decoration-yellow-500/30 font-bold">1 Unit = ₹100</span>
-              </div>
-              <p className="text-[11px] font-bold text-slate-300">
-                You have <span className="text-yellow-400">{numUnits}</span> units listed in marketplace. Balance is untouched until sold.
-              </p>
-           </div>
-        </div>
+      <div className="bg-slate-900 rounded-[32px] p-8 text-white mb-6 relative overflow-hidden shadow-2xl">
+         <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
+         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Neural Asset Value</p>
+         <h3 className="text-6xl font-black italic tracking-tighter mb-6 underline decoration-yellow-500/30 underline-offset-8">₹{(user?.walletBalance || 0).toLocaleString()}</h3>
+         
+         <div className="p-6 bg-white/5 border border-white/10 rounded-3xl">
+            <div className="flex justify-between items-center text-[11px] font-black uppercase text-slate-400 mb-2">
+               <span>Virtual Split Strategy</span>
+               <span className="text-yellow-500 font-bold">1 Unit = ₹100</span>
+            </div>
+            <p className="text-xs font-bold text-slate-300 leading-relaxed">
+              You have <span className="text-yellow-400">{numUnits}</span> units listed in marketplace. Balance is untouched until sold.
+            </p>
+         </div>
+      </div>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar pr-1 pb-6 space-y-4">
-           {/* UPI Setup */}
-           <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-100">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Receiving UPI ID</label>
+      <div className="p-8 bg-white rounded-[40px] border border-slate-100 shadow-sm space-y-8 mb-4">
+         <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Receiving UPI ID</label>
+            <div className="relative">
               <input 
                  value={upiId}
                  onChange={(e) => setUpiId(e.target.value)}
-                 className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl mb-4 text-sm font-bold placeholder:opacity-30 focus:outline-yellow-500" 
+                 className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold placeholder:opacity-30 focus:outline-yellow-500 focus:bg-white transition-all" 
                  placeholder="yourname@upi"
               />
-              
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Security PIN</label>
+            </div>
+         </div>
+         
+         <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Security PIN</label>
+            <input 
+               type="password"
+               maxLength={4}
+               value={pin}
+               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+               className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold placeholder:opacity-30 focus:outline-yellow-500 focus:bg-white transition-all" 
+               placeholder="****"
+            />
+         </div>
+
+         <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Custom QR Scanner (Optional)</label>
+            <div className="relative group cursor-pointer border-2 border-dashed border-slate-200 rounded-[32px] p-10 bg-slate-50 hover:border-yellow-400 transition-all text-center">
               <input 
-                 type="password"
-                 maxLength={4}
-                 value={pin}
-                 onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                 className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl mb-6 text-sm font-bold placeholder:opacity-30 focus:outline-yellow-500" 
-                 placeholder="****"
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 opacity-0 cursor-pointer" 
               />
-
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Custom QR Scanner (Optional)</label>
-              <div className="relative group cursor-pointer border-2 border-dashed border-slate-200 rounded-2xl p-6 bg-white hover:border-yellow-400 transition-all text-center mb-6">
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer" 
-                />
-                <div className="flex flex-col items-center gap-2">
-                   {isScanning ? (
-                     <div className="flex flex-col items-center gap-3">
-                        <RefreshCcw className="animate-spin text-yellow-500" size={32} />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Node Analysis...</span>
-                     </div>
-                   ) : (
-                     <>
-                        <QrCode className="text-slate-300 group-hover:text-yellow-500 transition-colors" size={32} />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                          {qrFile ? qrFile.name : (user?.qrCode ? 'Change QR Scanner' : 'Upload QR Photo')}
-                        </span>
-                     </>
-                   )}
-                </div>
+              <div className="flex flex-col items-center gap-3">
+                 {isScanning ? (
+                   <div className="flex flex-col items-center gap-3">
+                      <RefreshCcw className="animate-spin text-yellow-500" size={40} />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Node Analysis...</span>
+                   </div>
+                 ) : (
+                   <>
+                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-yellow-500 shadow-sm group-hover:shadow-md transition-all">
+                        <QrCode size={40} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2">
+                        {qrFile ? qrFile.name : (user?.qrCode ? 'Change QR Scanner' : 'Upload QR Photo')}
+                      </span>
+                   </>
+                 )}
               </div>
+            </div>
+         </div>
 
-              <button 
-                onClick={handleSaveUpi}
-                disabled={isSaving}
-                className="w-full py-4 bg-yellow-500 text-slate-900 font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-yellow-100 active:scale-95 transition-all text-xs"
-              >
-                 {isSaving ? 'Synchronizing...' : 'Save & Sync Wallet'}
-              </button>
-           </div>
+         <button 
+           onClick={handleSaveUpi}
+           disabled={isSaving}
+           className="w-full py-5 bg-yellow-400 text-slate-900 font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl shadow-yellow-100 active:scale-95 transition-all text-sm mt-4 hover:bg-yellow-500"
+         >
+            {isSaving ? 'Synchronizing...' : 'Save & Sync Wallet'}
+         </button>
+      </div>
 
-        </div>
-
-        <p className="text-[8px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-6 mb-4">Neural Rotation Protocol Active</p>
-      </motion.div>
-    </div>
+      <p className="text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-10">Neural Rotation Protocol Active</p>
+    </motion.div>
   );
 }
 
