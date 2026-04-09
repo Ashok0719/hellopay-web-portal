@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface User {
   _id: string;
@@ -28,18 +29,22 @@ interface AuthState {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  isAuthenticated: false,
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
-  setToken: (token) => {
-    if (token) localStorage.setItem('token', token);
-    else localStorage.removeItem('token');
-    set({ token });
-  },
-  logout: () => {
-    localStorage.removeItem('token');
-    set({ user: null, token: null, isAuthenticated: false });
-  },
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setToken: (token) => set({ token }),
+      logout: () => {
+        set({ user: null, token: null, isAuthenticated: false });
+        localStorage.clear(); // Ensure all persistence is cleared on logout
+      },
+    }),
+    {
+      name: 'hellopay-auth-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);

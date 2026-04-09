@@ -10,7 +10,18 @@ const api = axios.create({
 
 // Add interceptor for auth token and bypass tunnel reminder
 api.interceptors.request.use((config) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  let token = null;
+  if (typeof window !== 'undefined') {
+    const authData = localStorage.getItem('hellopay-auth-storage');
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        token = parsed.state?.token;
+      } catch (e) {
+        console.error('Auth Storage Corruption:', e);
+      }
+    }
+  }
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
