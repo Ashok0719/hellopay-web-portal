@@ -4,11 +4,27 @@ import { useEffect } from 'react';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import api from '@/lib/api';
+import { useAuthStore } from '@/hooks/useAuth';
 
 export default function FirebaseManager() {
+  const { token, setUser, logout } = useAuthStore();
+
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       initPushNotifications();
+    }
+    
+    // Auth Restoration: Persistent Login (Step 2 & 3)
+    if (token) {
+      api.get('/auth/me')
+        .then(({ data }) => {
+          setUser(data);
+          console.log('[Auth] Persistent Session Restored');
+        })
+        .catch(() => {
+          console.warn('[Auth] Persistent Token Expired or Invalid');
+          logout();
+        });
     }
   }, []);
 
