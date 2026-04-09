@@ -335,18 +335,16 @@ function PayContent() {
               
               <AnimatePresence>
                 {showAppSelector && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="grid grid-cols-3 gap-4"
-                  >
-                     <AppButton icon="https://img.icons8.com/color/48/paytm.png" label="Paytm" onClick={() => handlePayNow('paytm')} />
-                     <AppButton icon="https://img.icons8.com/color/48/phonepe.png" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
-                     <AppButton icon="https://img.icons8.com/color/48/google-pay.png" label="GPay" onClick={() => handlePayNow('gpay')} />
-                     <AppButton icon="https://img.icons8.com/color/48/freecharge.png" label="Freecharge" onClick={() => handlePayNow('freecharge')} />
-                     <AppButton icon="https://img.icons8.com/color/48/mobikwik.png" label="MobiKwik" onClick={() => handlePayNow('mobikwik')} />
-                  </motion.div>
+                   <div className="space-y-4">
+                      <div className="grid grid-cols-3 gap-4">
+                         <AppButton icon="https://img.icons8.com/color/48/paytm.png" label="Paytm" onClick={() => handlePayNow('paytm')} />
+                         <AppButton icon="https://img.icons8.com/color/48/phonepe.png" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
+                         <AppButton icon="https://img.icons8.com/color/48/google-pay.png" label="GPay" onClick={() => handlePayNow('gpay')} />
+                      </div>
+                      <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic">
+                        Select an app to auto-fill amount & UPI. <br/> After payment, return here to submit UTR.
+                      </p>
+                   </div>
                 )}
               </AnimatePresence>
            </div>
