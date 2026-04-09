@@ -1214,34 +1214,6 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
             />
          </div>
 
-         <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Custom QR Scanner (Optional)</label>
-            <div className="relative group cursor-pointer border-2 border-dashed border-slate-200 rounded-[32px] p-10 bg-slate-50 hover:border-yellow-400 transition-all text-center">
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={handleFileChange}
-                className="absolute inset-0 opacity-0 cursor-pointer" 
-              />
-              <div className="flex flex-col items-center gap-3">
-                 {isScanning ? (
-                   <div className="flex flex-col items-center gap-3">
-                      <RefreshCcw className="animate-spin text-yellow-500" size={40} />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Node Analysis...</span>
-                   </div>
-                 ) : (
-                   <>
-                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-yellow-500 shadow-sm group-hover:shadow-md transition-all">
-                        <QrCode size={40} />
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2">
-                        {qrFile ? qrFile.name : (user?.qrCode ? 'Change QR Scanner' : 'Upload QR Photo')}
-                      </span>
-                   </>
-                 )}
-              </div>
-            </div>
-         </div>
 
          <button 
            onClick={handleSaveUpi}
