@@ -53,12 +53,12 @@ export const useAuthStore = create<AuthState>()(
       setToken: (token) => set({ token }),
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
-        // No need to clear all localStorage here, del handled by zustand persist
+        localStorage.removeItem('hellopay-auth-storage');
       },
     }),
     {
       name: 'hellopay-auth-storage',
-      storage: createJSONStorage(() => idbStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );
