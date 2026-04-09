@@ -66,7 +66,6 @@ export default function Dashboard() {
   const [referralStats, setReferralStats] = useState<any>({ totalReferrals: 0, referralList: [], referralEarnings: 0 });
   const [isSyncing, setIsSyncing] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
-  const [showTeamModal, setShowTeamModal] = useState(false);
   const [showSupportChat, setShowSupportChat] = useState(false);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
   const [pinModal, setPinModal] = useState({ isOpen: false, targetId: '' });
@@ -277,7 +276,6 @@ export default function Dashboard() {
             user={user} 
             history={history} 
             listings={listings}
-            openTeam={() => setShowTeamModal(true)}
             config={config}
             setActiveTab={setActiveTab}
             handleClaim={handleClaim}
@@ -369,7 +367,6 @@ export default function Dashboard() {
       </nav>
 
       <SupportChatModal isOpen={showSupportChat} onClose={() => setShowSupportChat(false)} user={user} />
-      <TeamModal isOpen={showTeamModal} onClose={() => setShowTeamModal(false)} user={user} referralStats={referralStats} />
       <NeuralNotice 
         isOpen={notice.isOpen} 
         title={notice.title} 
@@ -388,7 +385,7 @@ export default function Dashboard() {
 
 
 // --- Home View ---
-function HomeView({ user, history, listings, openTeam, config, setActiveTab, handleClaim, router, forceSync, isSyncing, setNotice }: any) {
+function HomeView({ user, history, listings, config, setActiveTab, handleClaim, router, forceSync, isSyncing, setNotice }: any) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -510,7 +507,7 @@ function HomeView({ user, history, listings, openTeam, config, setActiveTab, han
         <QuickActionItem 
           icon={<img src="/icons-v2/team.png" className="w-14 h-14 object-contain shadow-sm" />} 
           label="Team" 
-          onClick={openTeam}
+          onClick={() => router.push('/team')}
         />
         <QuickActionItem 
           icon={<img src="/icons-v2/order.png" className="w-14 h-14 object-contain shadow-sm" />} 

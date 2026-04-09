@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Smartphone, ArrowRight, Zap, Mail, ShieldCheck, UserCircle, HandCoins, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
+import { Suspense } from 'react';
 
 function NeuralBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -91,19 +92,35 @@ function NeuralBackground() {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black uppercase tracking-widest text-[10px]">Syncing Neural Mesh...</div>}>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get('ref') || '';
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
     pin: ['', '', '', ''],
-    referralCode: ''
+    referralCode: refCode
   });
+
+  useEffect(() => {
+    if (refCode) {
+      setFormData(prev => ({ ...prev, referralCode: refCode }));
+    }
+  }, [refCode]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successData, setSuccessData] = useState<any>(null);
-  
-  const router = useRouter();
   const { setToken, setUser } = useAuthStore();
   const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
