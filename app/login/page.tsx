@@ -212,8 +212,6 @@ export default function LoginPage() {
     setGoogleLoading(true);
     setError('');
     try {
-      const { signInWithPopup, googleProvider } = await import('@/lib/firebase');
-      const { auth } = await import('@/lib/firebase');
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
       const { data } = await api.post('/auth/firebase-login', { idToken });
