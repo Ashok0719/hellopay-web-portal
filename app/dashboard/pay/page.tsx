@@ -110,44 +110,80 @@ function PayContent() {
   };
 
   const verifyPayment = async () => {
-    if (!file && !utr) {
-      setError('Neural Proof Required: Attachment or UTR string missing');
+    if (!utr) {
+      setError('UTR string required for verification');
       return;
     }
+    
+    // Feature 2: Validation (12-22 digits)
+    if (utr.length < 12 || utr.length > 22) {
+      setError('Invalid UTR: Must be 12-22 digits');
+      return;
+    }
+
     if (!transactionId) return;
     
     setLoading(true);
-    setStatus('uploading');
+    setStatus('verifying');
     setError('');
 
-    const formData = new FormData();
-    if (file) formData.append('screenshot', file);
-    if (utr) formData.append('utr', utr);
-    formData.append('transactionId', transactionId);
-
     try {
-      setStatus('verifying');
-      const { data } = await api.post(`/stocks/transactions/${transactionId}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // PHASE 1: Verify UTR (Feature 2 & 4)
+      const utrResp = await api.post('/stocks/verify-utr', { utr, transactionId });
+      
+      if (utrResp.data.success) {
+        if (utrResp.data.status === 'success') {
+          if (file) {
+            const formData = new FormData();
+            formData.append('screenshot', file);
+            formData.append('transactionId', transactionId);
+            formData.append('utr', utr);
+            api.post('/stocks/verify-screenshot', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            }).catch(console.error);
+          }
+          setStatus('success');
+          return;
+        }
+      }
 
-      if (data.success && data.status !== 'PENDING_REVIEW') {
-        setStatus('success');
-      } else if (data.status === 'PENDING_REVIEW') {
+      // PHASE 2: Screenshot OCR (Feature 3)
+      if (file) {
+        setStatus('uploading');
+        const formData = new FormData();
+        formData.append('screenshot', file);
+        formData.append('transactionId', transactionId);
+        formData.append('utr', utr);
+
+        const ocrResp = await api.post('/stocks/verify-screenshot', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (ocrResp.data.status === 'success') {
+          setStatus('success');
+        } else if (ocrResp.data.status === 'suspicious') {
+          setStatus('idle');
+          setNotice({
+            isOpen: true,
+            title: "Suspicious Activity ⚠️",
+            message: "Our AI detected a mismatch in your evidence. Your payment is marked for manual review.",
+            type: 'alert',
+            onConfirm: () => router.push('/dashboard/payment-history')
+          });
+        }
+      } else {
         setStatus('idle');
         setNotice({
-           isOpen: true,
-           title: "Signal Discrepancy",
-           message: "Your identity signal has been forwarded to the Administrative Review Node for manual verification.",
-           type: 'alert',
-           onConfirm: () => router.push('/dashboard/payment-history')
+          isOpen: true,
+          title: "Verification Pending",
+          message: "Your UTR has been submitted. Please upload a screenshot for faster auto-verification.",
+          type: 'alert',
+          onConfirm: () => {}
         });
-      } else {
-        setStatus('failed');
-        setError(data.message || 'Identity Verification Matrix Failed');
       }
+
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Neural Link Error: Protocol Mismatch');
+      setError(err.response?.data?.message || 'Verification Error');
       setStatus('failed');
     } finally {
       setLoading(false);
@@ -309,7 +345,7 @@ function PayContent() {
                       type="text" 
                       value={utr}
                       onChange={(e) => setUtr(e.target.value)}
-                      placeholder="12-DIGIT UTR NUMBER"
+                      placeholder="12-22 DIGIT UTR NUMBER"
                       className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
                     />
                  </div>
