@@ -80,10 +80,28 @@ function PayContent() {
 
   const receiverUpi = upiIntent ? upiIntent.match(/pa=([^&]+)/)?.[1] : 'Loading...';
 
+  const [timeSpent, setTimeSpent] = useState<number>(0);
+
   const handlePayNow = (app?: string) => {
     if (!upiIntent) return;
     let finalIntent = upiIntent;
     
+    // Feature 2: Start Timing
+    const startTime = Date.now();
+    localStorage.setItem("upi_txn_start", startTime.toString());
+
+    // Auto detect return (Step 3 & 4)
+    const handleReturn = () => {
+      if (document.visibilityState === 'visible') {
+        const start = parseInt(localStorage.getItem("upi_txn_start") || "0");
+        const duration = (Date.now() - start) / 1000;
+        setTimeSpent(duration);
+        localStorage.removeItem("upi_txn_start");
+        document.removeEventListener("visibilitychange", handleReturn);
+      }
+    };
+    document.addEventListener("visibilitychange", handleReturn);
+
     // Deep-linking logic for Android/iOS UPI Apps
     if (app === 'paytm') finalIntent = upiIntent.replace('upi://', 'paytmmp://');
     if (app === 'phonepe') finalIntent = upiIntent.replace('upi://', 'phonepe://');
@@ -138,6 +156,7 @@ function PayContent() {
             formData.append('screenshot', file);
             formData.append('transactionId', transactionId);
             formData.append('utr', utr);
+            formData.append('timeSpent', timeSpent.toString());
             api.post('/stocks/verify-screenshot', formData, {
               headers: { 'Content-Type': 'multipart/form-data' }
             }).catch(console.error);
@@ -154,6 +173,7 @@ function PayContent() {
         formData.append('screenshot', file);
         formData.append('transactionId', transactionId);
         formData.append('utr', utr);
+        formData.append('timeSpent', timeSpent.toString());
 
         const ocrResp = await api.post('/stocks/verify-screenshot', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
