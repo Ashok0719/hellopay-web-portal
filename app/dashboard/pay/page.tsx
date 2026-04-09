@@ -95,18 +95,6 @@ function PayContent() {
     const startTime = Date.now();
     localStorage.setItem("upi_txn_start", startTime.toString());
 
-    // Auto detect return
-    const handleReturn = () => {
-      if (document.visibilityState === 'visible') {
-        const start = parseInt(localStorage.getItem("upi_txn_start") || "0");
-        const duration = (Date.now() - start) / 1000;
-        setTimeSpent(duration);
-        localStorage.removeItem("upi_txn_start");
-        document.removeEventListener("visibilitychange", handleReturn);
-      }
-    };
-    document.addEventListener("visibilitychange", handleReturn);
-
     // Deep-linking protocol mapping
     if (app === 'paytm') finalIntent = finalIntent.replace(/upi:\/\//i, 'paytmmp://');
     else if (app === 'phonepe') finalIntent = finalIntent.replace(/upi:\/\//i, 'phonepe://');
@@ -115,21 +103,26 @@ function PayContent() {
     console.log('[Neural Redirect]', finalIntent);
     
     try {
-      // Use location.assign for better PWA compatibility
-      window.location.assign(finalIntent);
+      // 1. Standard Location Redirect
+      window.location.href = finalIntent;
       
-      // Secondary fallback: if nothing happens after 2 seconds, show manual instructions
+      // 2. Hidden Anchor Trigger (Works better in some mobile browsers)
+      const a = document.createElement('a');
+      a.href = finalIntent;
+      a.click();
+      
+      // 3. Fallback instructions if app doesn't open
       setTimeout(() => {
         setNotice({
           isOpen: true,
-          title: "Redirection Signal Weak",
-          message: "If your UPI app didn't open automatically, please copy the UPI ID below and pay manually in your preferred app.",
+          title: "App Link Signal Weak",
+          message: "Could not establish neural link to the app automatically. Please copy the UPI ID and pay manually to secure your position.",
           type: 'alert',
           onConfirm: () => {}
         });
-      }, 2500);
+      }, 3500);
     } catch (e) {
-      window.location.href = finalIntent;
+      console.error('Redirect Error:', e);
     }
 
     setShowAppSelector(false);
@@ -359,9 +352,9 @@ function PayContent() {
                 {showAppSelector && (
                    <div className="space-y-4">
                       <div className="grid grid-cols-3 gap-4">
-                         <AppButton icon="https://img.icons8.com/color/48/paytm.png" label="Paytm" onClick={() => handlePayNow('paytm')} />
-                         <AppButton icon="https://img.icons8.com/color/48/phonepe.png" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
-                         <AppButton icon="https://img.icons8.com/color/48/google-pay.png" label="GPay" onClick={() => handlePayNow('gpay')} />
+                         <AppButton icon="https://www.vectorlogo.zone/logos/paytm/paytm-icon.svg" label="Paytm" onClick={() => handlePayNow('paytm')} />
+                         <AppButton icon="https://www.vectorlogo.zone/logos/phonepe/phonepe-icon.svg" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
+                         <AppButton icon="https://www.vectorlogo.zone/logos/google_pay/google_pay-icon.svg" label="GPay" onClick={() => handlePayNow('gpay')} />
                       </div>
                       <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic">
                         Select an app to auto-fill amount & UPI. <br/> After payment, return here to submit UTR.
