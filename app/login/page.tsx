@@ -58,6 +58,17 @@ function NeuralBackground() {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Gradient background overlay for the canvas itself
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, 0,
+        canvas.width / 2, canvas.height / 2, canvas.width
+      );
+      gradient.addColorStop(0, 'rgba(15, 23, 42, 0)');
+      gradient.addColorStop(1, 'rgba(2, 6, 23, 0.8)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
@@ -65,8 +76,8 @@ function NeuralBackground() {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 150) {
-            ctx.strokeStyle = `rgba(99, 102, 241, ${0.1 * (1 - dist/150)})`;
+          if (dist < 180) {
+            ctx.strokeStyle = `rgba(129, 140, 248, ${0.15 * (1 - dist/180)})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -304,20 +315,20 @@ export default function LoginPage() {
               <div className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase ml-1">Identity Node</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase ml-1">Email Address</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors"><UserCircle size={18} /></div>
-                      <input type="email" placeholder="Email Address" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
+                      <input type="email" placeholder="email@example.com" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase ml-1">Access Token</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase ml-1">Password</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors"><Lock size={18} /></div>
-                      <input type="password" placeholder="Passkey" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold" value={password} onChange={(e) => setPassword(e.target.value)} />
+                      <input type="password" placeholder="••••••••" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold" value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
                     <div className="text-right pr-2">
-                      <button type="button" onClick={() => setResetMode(true)} className="text-[10px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300">Forgot Passkey?</button>
+                      <button type="button" onClick={() => setResetMode(true)} className="text-[10px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300">Forgot Password?</button>
                     </div>
                   </div>
                   <div className="space-y-3 bg-white/5 p-5 rounded-3xl border border-white/5">
@@ -330,14 +341,14 @@ export default function LoginPage() {
                   </div>
                   {error && <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center font-bold tracking-tight">{error}</div>}
                   <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
-                    {loading ? 'LINKING...' : 'INITIALIZE LINK'} <ArrowRight size={20} />
+                    {loading ? 'SIGNING IN...' : 'SIGN IN'} <ArrowRight size={20} />
                   </button>
                 </form>
                 <div className="relative py-2"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div><div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617] px-4 text-slate-700">or</span></div></div>
                 <button type="button" onClick={handleGoogleLogin} disabled={googleLoading} className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 hover:bg-slate-50">
                   {googleLoading ? <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" /> : <><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" /> Continue with Google</>}
                 </button>
-                <p className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-widest">New Identity? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create Node</Link></p>
+                <p className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-widest">New to HelloPay? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create New Account</Link></p>
               </div>
             ) : (
               <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} onSubmit={handleCompleteSetup} className="space-y-6">

@@ -60,8 +60,16 @@ function NeuralBackground() {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Draw Connections
-      ctx.lineWidth = 0.5;
+      // Gradient background overlay
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, 0,
+        canvas.width / 2, canvas.height / 2, canvas.width
+      );
+      gradient.addColorStop(0, 'rgba(15, 23, 42, 0)');
+      gradient.addColorStop(1, 'rgba(2, 6, 23, 0.8)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
@@ -70,7 +78,8 @@ function NeuralBackground() {
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 180) {
-            ctx.strokeStyle = `rgba(79, 70, 229, ${0.15 * (1 - dist/180)})`;
+            ctx.strokeStyle = `rgba(129, 140, 248, ${0.15 * (1 - dist/180)})`;
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
@@ -326,7 +335,7 @@ function RegisterContent() {
                       <input
                           required
                           type="password"
-                          placeholder="CREATE PASSWORD"
+                          placeholder="CHOOSE PASSWORD"
                           className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -339,7 +348,7 @@ function RegisterContent() {
                       <input
                           required
                           type="password"
-                          placeholder="CONFIRM PASSWORD"
+                          placeholder="RE-ENTER PASSWORD"
                           className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
                           value={formData.confirmPassword}
                           onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -395,7 +404,7 @@ function RegisterContent() {
                     disabled={loading}
                     className="w-full py-6 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-black rounded-3xl shadow-xl active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-4 text-xs uppercase tracking-[0.2em]"
                 >
-                    {loading ? 'SYNCHRONIZING MESH...' : 'ACTIVATE NEURAL LINK'}
+                    {loading ? 'CREATING ACCOUNT...' : 'SIGN UP NOW'}
                     <ArrowRight size={20} />
                 </button>
 
@@ -419,7 +428,7 @@ function RegisterContent() {
                 </button>
                 
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 text-center">
-                  Already bound? <Link href="/login" className="text-indigo-400 hover:text-indigo-300 underline decoration-indigo-400/30 underline-offset-4 transition-colors">Initialize Login Signal</Link>
+                  Already have an account? <Link href="/login" className="text-indigo-400 hover:text-indigo-300 underline decoration-indigo-400/30 underline-offset-4 transition-colors">Sign In</Link>
                 </p>
               </div>
             </form>
