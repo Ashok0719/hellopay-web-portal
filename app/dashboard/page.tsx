@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SupportChatModal from './SupportChatModal';
 import NeuralNotice from './NeuralNotice';
+import SafetyPinModal from './SafetyPinModal';
 import jsQR from 'jsqr';
 import {
   Wallet,
@@ -67,6 +68,7 @@ export default function Dashboard() {
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showSupportChat, setShowSupportChat] = useState(false);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
+  const [pinModal, setPinModal] = useState({ isOpen: false, targetId: '' });
   const router = useRouter();
 
   // Initial data synchronization
@@ -162,18 +164,26 @@ export default function Dashboard() {
     setTimeout(() => setIsSyncing(false), 800);
   };
 
-  const handleClaim = async (idOrAmount: string | number) => {
-    // If system defaults bypass
+  const handleClaim = (idOrAmount: string | number) => {
+    // If system defaults bypass (like depositing)
     if (typeof idOrAmount === 'number' || (!idOrAmount.toString().match(/^[0-9a-fA-F]{24}$/) && !isNaN(Number(idOrAmount)))) {
       const amt = Number(idOrAmount);
       router.push(`/dashboard/pay?amount=${amt}&method=phonepe`);
       return;
     }
 
+    // Open PIN modal for stock purchase
+    setPinModal({ isOpen: true, targetId: idOrAmount.toString() });
+  };
+
+  const processClaim = async (pin: string) => {
+    const stockId = pinModal.targetId;
+    setPinModal({ ...pinModal, isOpen: false });
     setIsClaiming(true);
+    
     try {
       // Direct Purchase Linkage: /stocks/buy handles available/locked states in one signal
-      const { data } = await api.post(`/stocks/buy`, { stockId: idOrAmount });
+      const { data } = await api.post(`/stocks/buy`, { stockId, pin });
       if (data.success) {
         const { transaction, stock } = data;
         const recipientName = encodeURIComponent(stock.ownerId?.name || 'HelloPay Seller');
@@ -341,6 +351,12 @@ export default function Dashboard() {
         title={notice.title} 
         message={notice.message} 
         onClose={() => setNotice({ ...notice, isOpen: false })} 
+      />
+      <SafetyPinModal
+        isOpen={pinModal.isOpen}
+        onClose={() => setPinModal({ ...pinModal, isOpen: false })}
+        onConfirm={processClaim}
+        isLoading={isClaiming}
       />
     </div>
   );

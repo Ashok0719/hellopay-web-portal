@@ -91,19 +91,38 @@ function NeuralBackground() {
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [pin, setPin] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const { setToken, setUser } = useAuthStore();
   const [setupMode, setSetupMode] = useState(false);
-  const [setupData, setSetupData] = useState({ name: '', password: '', confirmPassword: '' });
+  const [setupData, setSetupData] = useState({ name: '', password: '', confirmPassword: '', pin: ['', '', '', ''] });
   const [tempUser, setTempUser] = useState<any>(null);
+  const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const setupPinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     // Neural Matrix Warmup
     api.get('/health').catch(() => {});
   }, []);
+
+  const handlePinChange = (index: number, value: string, isSetup = false) => {
+    if (!/^\d*$/.test(value)) return;
+    const digit = value.slice(-1);
+    if (isSetup) {
+      const newPin = [...setupData.pin];
+      newPin[index] = digit;
+      setSetupData({ ...setupData, pin: newPin });
+      if (digit && index < 3) setupPinRefs.current[index + 1]?.focus();
+    } else {
+      const newPin = [...pin];
+      newPin[index] = digit;
+      setPin(newPin);
+      if (digit && index < 3) pinRefs.current[index + 1]?.focus();
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
@@ -132,15 +151,18 @@ export default function LoginPage() {
 
   const handleCompleteSetup = async (e: React.FormEvent) => {
     e.preventDefault();
+    const pinString = setupData.pin.join('');
     if (setupData.password !== setupData.confirmPassword) return setError('Passwords do not match');
     if (!setupData.name) return setError('Name is required');
+    if (pinString.length !== 4) return setError('PIN must be 4 digits');
 
     setLoading(true);
     try {
       const { data } = await api.post('/auth/complete-profile', {
         userId: tempUser._id,
         name: setupData.name,
-        password: setupData.password
+        password: setupData.password,
+        pin: pinString
       }, {
         headers: { Authorization: `Bearer ${tempUser.token}` }
       });
@@ -156,22 +178,23 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const pinString = pin.join('');
     if (!identifier) return setError('Email Address is required');
     if (!password) return setError('Password is required');
+    if (pinString.length !== 4) return setError('PIN is required');
     
     setLoading(true);
     setError('');
     try {
       const { data } = await api.post('/auth/login', { 
         identifier, 
-        password 
+        password,
+        pin: pinString
       });
       setToken(data.token);
       setUser(data);
       router.push('/dashboard');
     } catch (err: any) {
-      // Fallback to Firebase Auth if backend fails? 
-      // User requested to remove mobile, focusing on email/password.
       setError(err.response?.data?.message || 'Neural Identification Refused');
     } finally {
       setLoading(false);
@@ -246,6 +269,30 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
+                    </div>
+                  </div>
+
+                  {/* 4-Digit Security PIN */}
+                  <div className="space-y-3 bg-white/5 p-5 rounded-3xl border border-white/5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 block">Safety PIN (4 Digits)</label>
+                    <div className="flex gap-3 justify-center">
+                      {[0, 1, 2, 3].map((idx) => (
+                        <input
+                          key={idx}
+                          ref={(el) => { pinRefs.current[idx] = el; }}
+                          type="password"
+                          maxLength={1}
+                          inputMode="numeric"
+                          className="w-12 h-14 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-white font-bold text-xl focus:border-indigo-500 outline-none transition-all"
+                          value={pin[idx]}
+                          onChange={(e) => handlePinChange(idx, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace' && !pin[idx] && idx > 0) {
+                              pinRefs.current[idx - 1]?.focus();
+                            }
+                          }}
+                        />
+                      ))}
                     </div>
                   </div>
 
@@ -357,6 +404,30 @@ export default function LoginPage() {
                       value={setupData.confirmPassword}
                       onChange={(e) => setSetupData({ ...setupData, confirmPassword: e.target.value })}
                     />
+                  </div>
+                </div>
+
+                {/* 4-Digit Security PIN */}
+                <div className="space-y-3 bg-white/5 p-5 rounded-3xl border border-white/5 mt-4">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 block">Safety PIN (4 Digits)</label>
+                  <div className="flex gap-3 justify-center">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <input
+                        key={idx}
+                        ref={(el) => { setupPinRefs.current[idx] = el; }}
+                        type="password"
+                        maxLength={1}
+                        inputMode="numeric"
+                        className="w-12 h-14 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-white font-bold text-xl focus:border-indigo-500 outline-none transition-all"
+                        value={setupData.pin[idx]}
+                        onChange={(e) => handlePinChange(idx, e.target.value, true)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' && !setupData.pin[idx] && idx > 0) {
+                            setupPinRefs.current[idx - 1]?.focus();
+                          }
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
 

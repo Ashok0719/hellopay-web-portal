@@ -96,6 +96,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    pin: ['', '', '', ''],
     referralCode: ''
   });
   const [loading, setLoading] = useState(false);
@@ -104,12 +105,24 @@ export default function RegisterPage() {
   
   const router = useRouter();
   const { setToken, setUser } = useAuthStore();
-  
+  const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handlePinChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const digit = value.slice(-1);
+    const newPin = [...formData.pin];
+    newPin[index] = digit;
+    setFormData({ ...formData, pin: newPin });
+    if (digit && index < 3) pinRefs.current[index + 1]?.focus();
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    const pinString = formData.pin.join('');
     
     if (formData.password.length < 6) return setError('Password must be at least 6 characters');
     if (formData.password !== formData.confirmPassword) return setError('Passwords do not match');
+    if (pinString.length !== 4) return setError('Safety PIN must be 4 digits');
     
     setLoading(true);
     setError('');
@@ -118,6 +131,7 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        pin: pinString,
         referralCode: formData.referralCode
       });
       setSuccessData(data);
@@ -296,6 +310,30 @@ export default function RegisterPage() {
                           onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       />
                   </div>
+              </div>
+
+              {/* 4-Digit Security PIN */}
+              <div className="space-y-4 bg-white/5 p-6 rounded-[32px] border border-white/5 relative overflow-hidden">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block italic ml-2">Define Safety PIN (4 Digits)</label>
+                <div className="flex gap-4 justify-center">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => { pinRefs.current[idx] = el; }}
+                      type="password"
+                      maxLength={1}
+                      inputMode="numeric"
+                      className="w-14 h-16 bg-black/40 border border-white/10 rounded-2xl text-center text-white font-bold text-2xl focus:border-indigo-500 outline-none transition-all"
+                      value={formData.pin[idx]}
+                      onChange={(e) => handlePinChange(idx, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Backspace' && !formData.pin[idx] && idx > 0) {
+                          pinRefs.current[idx - 1]?.focus();
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/* Referral Section */}

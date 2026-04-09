@@ -7,23 +7,27 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
+import SafetyPinModal from '../../dashboard/SafetyPinModal';
 
 export default function SendMoneyPage() {
   const [phone, setPhone] = useState('');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [showPinModal, setShowPinModal] = useState(false);
   const router = useRouter();
   const { user } = useAuthStore();
 
-  const handleSend = async () => {
+  const handleSend = async (pin: string) => {
     if (!phone || !amount) return;
+    setShowPinModal(false);
     setLoading(true);
 
     try {
       await api.post('/transactions/transfer', {
         receiverPhone: phone,
         amount: Number(amount),
+        pin
       });
       setStep(3); // Success step
     } catch (err: any) {
@@ -95,7 +99,7 @@ export default function SendMoneyPage() {
                 </div>
 
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={() => setShowPinModal(true)}
                   disabled={!phone || !amount}
                   className="w-full btn-primary py-6 rounded-[24px] text-xl font-black flex items-center justify-center gap-3 disabled:opacity-50"
                 >
@@ -179,6 +183,21 @@ export default function SendMoneyPage() {
           )}
         </AnimatePresence>
       </div>
+      <SafetyPinModal 
+        isOpen={showPinModal} 
+        onClose={() => setShowPinModal(false)} 
+        onConfirm={(pin) => {
+          if (step === 1) {
+            setShowPinModal(false);
+            setStep(2);
+          } else {
+            handleSend(pin);
+          }
+        }}
+        title="Authorize Transfer"
+        message={`Authorize transfer of ₹${amount} to ${phone} using your 4-digit Security PIN.`}
+        isLoading={loading}
+      />
     </div>
   );
 }
