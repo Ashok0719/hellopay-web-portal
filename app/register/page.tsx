@@ -94,11 +94,10 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
+    password: '',
+    confirmPassword: '',
     referralCode: ''
   });
-  const [pinBase, setPinBase] = useState(['', '', '', '']);
-  const [pinConfirm, setPinConfirm] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successData, setSuccessData] = useState<any>(null);
@@ -106,47 +105,21 @@ export default function RegisterPage() {
   const router = useRouter();
   const { setToken, setUser } = useAuthStore();
   
-  const baseRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const confirmRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handlePinChange = (index: number, value: string, isConfirm: boolean) => {
-    if (!/^\d*$/.test(value)) return;
-
-    if (isConfirm) {
-      const newPin = [...pinConfirm];
-      newPin[index] = value;
-      setPinConfirm(newPin);
-      if (value && index < 3) confirmRefs.current[index + 1]?.focus();
-    } else {
-      const newPin = [...pinBase];
-      newPin[index] = value;
-      setPinBase(newPin);
-      if (value && index < 3) baseRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handlePinKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>, isConfirm: boolean) => {
-    if (e.key === 'Backspace' && !e.currentTarget.value && index > 0) {
-      if (isConfirm) {
-        confirmRefs.current[index - 1]?.focus();
-      } else {
-        baseRefs.current[index - 1]?.focus();
-      }
-    }
-  };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const pin = pinBase.join('');
-    const confirmPin = pinConfirm.join('');
     
-    if (pin.length !== 4) return setError('PIN must be exactly 4 digits');
-    if (pin !== confirmPin) return setError('Security PINs do not match');
+    if (formData.password.length < 6) return setError('Password must be at least 6 characters');
+    if (formData.password !== formData.confirmPassword) return setError('Passwords do not match');
     
     setLoading(true);
     setError('');
     try {
-      const { data } = await api.post('/auth/register', { ...formData, pin, confirmPin });
+      const { data } = await api.post('/auth/register', { 
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        referralCode: formData.referralCode
+      });
       setSuccessData(data);
       setTimeout(() => {
         setToken(data.token);
@@ -280,72 +253,49 @@ export default function RegisterPage() {
                   />
               </div>
 
-              {/* 2 Column: Phone & Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* 2 Column: Email & Referral */}
+              <div className="group relative">
+                  <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-blue-400 transition-colors">
+                      <Mail size={20} />
+                  </div>
+                  <input
+                      required
+                      type="email"
+                      placeholder="EMAIL ADDRESS"
+                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+              </div>
+
+              {/* Password Section */}
+              <div className="space-y-4">
                   <div className="group relative">
-                      <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-emerald-400 transition-colors">
-                          <Smartphone size={18} />
+                      <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-amber-400 transition-colors">
+                          <Lock size={18} />
                       </div>
                       <input
                           required
-                          type="text"
-                          placeholder="MOBILE"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-emerald-500 shadow-inner text-base sm:text-xs tracking-widest"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          type="password"
+                          placeholder="CREATE PASSWORD"
+                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       />
                   </div>
                   <div className="group relative">
-                      <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-blue-400 transition-colors">
-                          <Mail size={18} />
+                      <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-amber-400 transition-colors">
+                          <Lock size={18} />
                       </div>
                       <input
-                          type="email"
-                          placeholder="EMAIL"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          required
+                          type="password"
+                          placeholder="CONFIRM PASSWORD"
+                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
+                          value={formData.confirmPassword}
+                          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       />
                   </div>
-              </div>
-
-              {/* OTP Style PIN Matrix */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white/5 p-6 rounded-[32px] border border-white/5 relative overflow-hidden">
-                <div>
-                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block italic ml-2">Create Security PIN</label>
-                   <div className="flex gap-2">
-                     {[0,1,2,3].map((idx) => (
-                       <input
-                         key={`base-${idx}`}
-                         ref={(el) => { baseRefs.current[idx] = el; }}
-                         type="password"
-                         maxLength={1}
-                         className="w-full aspect-square bg-black/40 border border-white/10 rounded-2xl text-center text-white font-black text-lg focus:border-amber-500 outline-none"
-                         value={pinBase[idx]}
-                         onChange={(e) => handlePinChange(idx, e.target.value, false)}
-                         onKeyDown={(e) => handlePinKeyDown(idx, e, false)}
-                       />
-                     ))}
-                   </div>
-                </div>
-
-                <div>
-                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block italic ml-2">Confirm PIN</label>
-                   <div className="flex gap-2">
-                     {[0,1,2,3].map((idx) => (
-                       <input
-                         key={`confirm-${idx}`}
-                         ref={(el) => { confirmRefs.current[idx] = el; }}
-                         type="password"
-                         maxLength={1}
-                         className="w-full aspect-square bg-black/40 border border-white/10 rounded-2xl text-center text-white font-black text-lg focus:border-amber-500 outline-none"
-                         value={pinConfirm[idx]}
-                         onChange={(e) => handlePinChange(idx, e.target.value, true)}
-                         onKeyDown={(e) => handlePinKeyDown(idx, e, true)}
-                       />
-                     ))}
-                   </div>
-                </div>
               </div>
 
               {/* Referral Section */}
