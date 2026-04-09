@@ -1165,15 +1165,26 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   const [verificationState, setVerificationState] = useState<'idle' | 'opening' | 'waiting' | 'success' | 'failed' | 'suspicious'>('idle');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // STEP 1: STRICT REGEX & VALIDATION
-  const upiRegex = /^(?!.*\.\.)(?!.*__)(?!.*\.-)(?!.*-\.)[a-z0-9]+([._-]?[a-z0-9]+)*@[a-z]{2,}$/;
-  const validHandles = ['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'ybl', 'ibl', 'axl', 'apl', 'paytm', 'upi'];
+  // STEP 1: REAL-WORLD REGEX & VALIDATION
+  const upiRegex = /^[a-z0-9._-]{3,}@[a-z]{2,}$/;
+  const validHandles = [
+    'okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'ybl', 'ibl', 'axl', 'apl', 'paytm', 'upi',
+    'ptaxis', 'ptsbi', 'pthdfc'
+  ];
   
   const validateUpi = (id: string) => {
     if (!upiRegex.test(id)) return false;
     const [user, handle] = id.split('@');
-    if (user.length < 5) return false;
-    if (!/\d/.test(user)) return false; // Must contain at least 1 number
+    
+    // Numeric-only usernames (Paytm style)
+    if (/^\d+$/.test(user)) {
+      if (user.length < 8 || user.length > 15) return false;
+    } else {
+      // Mixed usernames
+      if (user.length < 3) return false;
+    }
+
+    if (user.includes('..') || user.includes('__') || user.includes('--')) return false;
     if (!validHandles.includes(handle)) return false;
     return true;
   };
@@ -1305,7 +1316,7 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
             </div>
             {!isUpiValid && upiId && (
               <p className="text-[8px] font-black text-red-400 mt-3 ml-2 uppercase tracking-widest leading-relaxed">
-                Min 5 chars, 1 number, handle: axis/sbi/hdfc/icici/upi/paytm/ybl/ibl/axl/apl
+                Numeric (8-15) or Mixed (min 3 chars). Valid handles include Paytm and primary banking nodes.
               </p>
             )}
          </div>
