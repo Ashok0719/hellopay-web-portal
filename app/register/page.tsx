@@ -118,6 +118,19 @@ function RegisterContent() {
       setFormData(prev => ({ ...prev, referralCode: refCode }));
     }
   }, [refCode]);
+  const [config, setConfig] = useState<any>(null);
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const { data } = await api.get('/admin/config');
+        setConfig(data);
+      } catch (err) {
+        console.error('Config fetch failed');
+      }
+    };
+    fetchConfig();
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successData, setSuccessData] = useState<any>(null);
@@ -372,7 +385,7 @@ function RegisterContent() {
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/4 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)]">
                      <Sparkles size={12} className="text-white fill-white animate-pulse" />
-                     <span className="text-[9px] font-black text-white uppercase tracking-widest">+₹100 BONUS</span>
+                     <span className="text-[9px] font-black text-white uppercase tracking-widest">+₹{formData.referralCode ? (config?.referralBonus || 100) : '0'} BONUS</span>
                   </div>
               </div>
 

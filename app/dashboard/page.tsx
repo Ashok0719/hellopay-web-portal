@@ -58,6 +58,7 @@ export default function Dashboard() {
   const { user, setUser, logout, token } = useAuthStore();
   const [activeTab, setActiveTab] = useState('home');
   const [history, setHistory] = useState<any[]>([]);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -286,7 +287,7 @@ export default function Dashboard() {
           />
         )}
         {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} setUser={setUser} setNotice={setNotice} />}
-        {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} />}
+        {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} />}
         {activeTab === 'wallet' && (
           <WalletView 
@@ -380,6 +381,13 @@ export default function Dashboard() {
         onConfirm={processClaim}
         isLoading={isClaiming}
       />
+      <WithdrawModal 
+        isOpen={showWithdrawModal} 
+        onClose={() => setShowWithdrawModal(false)} 
+        user={user}
+        config={config}
+        onWithdraw={(newBalance: number) => setUser({ ...user, walletBalance: newBalance })}
+      />
     </div>
   );
 }
@@ -459,10 +467,10 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                              <RefreshCcw size={16} className="text-indigo-400" />
                            </button>
                         </div>
-                        {user?.totalDeposited < 100 && user?.referralBonusAmount > 0 && (
+                        {user?.totalDeposited < (config?.minDeposit || 100) && user?.referralBonusAmount > 0 && (
                           <div className="mt-2 flex items-center gap-2">
                              <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
-                             <span className="text-[9px] font-black text-yellow-500 uppercase tracking-widest">₹{user.referralBonusAmount} Locked (Min Deposit ₹100 Required)</span>
+                             <span className="text-[9px] font-black text-yellow-500 uppercase tracking-widest">₹{user.referralBonusAmount} Locked (Min Deposit ₹{config?.minDeposit || 100} Required)</span>
                           </div>
                         )}
                      </div>
@@ -678,7 +686,7 @@ function StatisticsView({ user, config, setUser, setNotice }: any) {
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
           <MiniStatBox label="In Process Amount" value="₹ 0.00" />
           <MiniStatBox label="In Process Orders" value="0" />
-          <MiniStatBox label="Commission Rate" value={`${user?.referralPercent || config?.globalCashbackPercent || 4}.00 %`} />
+          <MiniStatBox label="Commission Rate" value={`${user?.referralPercent || config?.referralCommissionPercent || 4}.00 %`} />
           <MiniStatBox label="Estimated Income" value="₹ 0.00" />
         </div>
       </div>
@@ -708,7 +716,7 @@ function StatisticsView({ user, config, setUser, setNotice }: any) {
   );
 }
 
-function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab, setShowWalletHub, router }: any) {
+function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab, setShowWalletHub, router, onWithdraw }: any) {
   const [upiId, setUpiId] = useState(user?.upiId || user?.verifiedUpiId || '');
   const [pin, setPin] = useState(user?.pin || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -738,8 +746,20 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
 
       <div className="flex flex-col gap-4 mb-10">
         <div className="grid grid-cols-2 gap-4">
-          <AssetCard icon={<CreditCard size={20}/>} label="Deposit" value={`₹ ${user?.totalDeposited || '0'}`} color="text-teal-500" />
-          <AssetCard icon={<Wallet size={20}/>} label="Withdraw" value={`₹ ${user?.totalWithdrawn || '0'}`} color="text-emerald-500" />
+          <AssetCard 
+            icon={<CreditCard size={20}/>} 
+            label="Deposit" 
+            value={`₹ ${user?.totalDeposited || '0'}`} 
+            color="text-teal-500" 
+          />
+          <button onClick={onWithdraw} className="w-full text-left">
+            <AssetCard 
+              icon={<Wallet size={20}/>} 
+              label="Withdraw" 
+              value={`₹ ${user?.totalWithdrawn || '0'}`} 
+              color="text-emerald-500" 
+            />
+          </button>
         </div>
         <AssetCard icon={<RefreshCcw size={20}/>} label="Reward Balance" value={`₹ ${user?.rewardBalance || '0'}`} color="text-amber-500" />
       </div>
@@ -1190,6 +1210,98 @@ function DepositModal({ isOpen, onClose, onSelect, config }: any) {
           <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-widest leading-relaxed pt-4 opacity-50">
             Security Node Active<br/>Transaction Binding to Neural Signature
           </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function WithdrawModal({ isOpen, onClose, user, onWithdraw, config }: any) {
+  const [amount, setAmount] = useState('');
+  const [pin, setPin] = useState(['', '', '', '']);
+  const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handlePinChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const digit = value.slice(-1);
+    const newPin = [...pin];
+    newPin[index] = digit;
+    setPin(newPin);
+    if (digit && index < 3) pinRefs.current[index + 1]?.focus();
+  };
+
+  const handleSubmit = async () => {
+    if (!amount || parseFloat(amount) <= 0) return alert('Enter a valid amount');
+    if (pin.join('').length < 4) return alert('Enter your 4-digit PIN');
+    
+    setIsSubmitting(true);
+    try {
+      const { data } = await api.post('/wallet/withdraw', { 
+        amount: parseFloat(amount), 
+        pin: pin.join('') 
+      });
+      alert(data.message);
+      onWithdraw(data.walletBalance);
+      onClose();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Withdrawal failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[500] flex items-end justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} className="w-full max-w-lg bg-white rounded-t-[40px] p-8 pb-12 shadow-2xl">
+        <div className="flex justify-between items-center mb-8">
+           <h2 className="text-xl font-black uppercase text-slate-800 italic">Withdraw <span className="text-emerald-500 text-sm tracking-widest block font-normal not-italic">Neural Liquidation</span></h2>
+           <button onClick={onClose} className="text-slate-400 font-bold text-xs uppercase">Close</button>
+        </div>
+
+        <div className="space-y-8">
+           <div>
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block">Amount to Liquidate</label>
+              <div className="relative">
+                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-300 italic">₹</span>
+                 <input 
+                    type="number" 
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full pl-12 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-2xl font-black italic focus:outline-emerald-500"
+                 />
+              </div>
+              <p className="text-[10px] font-bold text-slate-400 mt-3 ml-1">Available: ₹{user?.walletBalance?.toLocaleString()}</p>
+           </div>
+
+           <div>
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block">Security PIN</label>
+              <div className="flex justify-between gap-3">
+                {pin.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => { pinRefs.current[idx] = el; }}
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={1}
+                    className="w-full h-16 bg-slate-50 border border-slate-100 rounded-3xl text-center text-xl font-bold focus:outline-emerald-500"
+                    value={digit}
+                    onChange={(e) => handlePinChange(idx, e.target.value)}
+                  />
+                ))}
+              </div>
+           </div>
+
+           <button 
+              disabled={isSubmitting || !config?.withdrawalEnabled}
+              onClick={handleSubmit}
+              className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-widest rounded-3xl shadow-xl active:scale-95 transition-all text-xs disabled:opacity-30"
+           >
+              {isSubmitting ? 'Verifying Neural Authorization...' : config?.withdrawalEnabled ? 'Confirm Withdrawal' : 'Withdrawals Currently Disabled'}
+           </button>
         </div>
       </motion.div>
     </div>

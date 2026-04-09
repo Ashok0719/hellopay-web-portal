@@ -100,13 +100,15 @@ export default function TeamPage() {
               </button>
             </div>
             <div className="flex items-center gap-4">
-               <div className="bg-indigo-500 rounded-2xl py-2 px-4 border border-white/10">
-                  <span className="text-[10px] font-black uppercase tracking-widest">Code: {stats?.referralCode}</span>
-               </div>
-               <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest">Share & Earn Commissions</p>
-            </div>
-          </div>
-        </motion.div>
+                <div className="bg-indigo-500 rounded-2xl py-2 px-4 border border-white/10">
+                   <span className="text-[10px] font-black uppercase tracking-widest">Code: {stats?.referralCode}</span>
+                </div>
+                <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest">
+                   Earn {stats?.commRate || 4}% Comm + ₹{stats?.referralBonus || 100} Bonus
+                </p>
+             </div>
+           </div>
+         </motion.div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4 mb-8">
