@@ -533,28 +533,39 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
               (l: any) => l.ownerId?._id !== user?._id && l.status === 'AVAILABLE'
             );
 
-            const displayList = otherAvailableSplits.map((l: any) => ({
-              _id: l._id,
-              price: l.amount,
-              name: `Available from ${l.ownerId?.name || 'User'}`,
-              qty: 1
-            }));
+            const displayList = otherAvailableSplits.map((l: any) => {
+              const profitPct = config?.profitPercentage || 4;
+              const profitAmt = (l.amount * profitPct) / 100;
+              return {
+                _id: l._id,
+                price: l.amount,
+                profit: profitAmt,
+                total: l.amount + profitAmt,
+                name: `From ${l.ownerId?.name?.split(' ')[0] || 'User'}`,
+                qty: 1
+              };
+            });
 
             return displayList.length > 0 ? displayList.map((plan: any, i: number) => (
               <div 
                 key={i} 
                 onClick={() => handleClaim(plan._id)}
-                className="min-w-[160px] bg-white rounded-3xl p-5 border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all"
+                className="min-w-[150px] bg-white rounded-3xl p-4 border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all"
               >
-                <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/5 rounded-bl-3xl" />
-                <div className="text-2xl font-black text-indigo-600 italic mb-2 leading-none">₹{plan.price}</div>
-                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-4">{plan.name}</div>
+                <div className="absolute top-0 right-0 w-12 h-12 bg-emerald-500/5 rounded-bl-3xl" />
+                <div className="text-xl font-black text-slate-800 italic mb-1 leading-none">₹{plan.price}</div>
+                <div className="flex items-center gap-1 mb-3">
+                   <div className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Get ₹{plan.total}</div>
+                   <div className="text-[8px] font-bold text-slate-400">({config?.profitPercentage || 4}%)</div>
+                </div>
+                
+                <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-4 truncate">{plan.name}</div>
                 
                 <div className="flex justify-between items-center">
-                   <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-                      <Zap size={14} className="text-white fill-white" />
+                   <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200">
+                      <Zap size={12} className="text-white fill-white" />
                    </div>
-                   <span className="text-[10px] font-black text-slate-300 uppercase">Qty: {plan.qty}</span>
+                   <span className="text-[9px] font-black text-slate-300 uppercase">CLAIM</span>
                 </div>
               </div>
             )) : (
