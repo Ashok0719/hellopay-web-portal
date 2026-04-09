@@ -253,7 +253,7 @@ export default function Dashboard() {
             setNotice={setNotice}
           />
         )}
-        {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} />}
+        {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} setUser={setUser} setNotice={setNotice} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} />}
         {activeTab === 'wallet' && (
@@ -559,7 +559,32 @@ function HomeView({ user, history, listings, openTeam, config, setActiveTab, han
 }
 
 // --- Statistics View ---
-function StatisticsView({ user, config }: any) {
+function StatisticsView({ user, config, setUser, setNotice }: any) {
+  const [isToggling, setIsToggling] = useState(false);
+
+  const handleToggleSelling = async () => {
+    setIsToggling(true);
+    try {
+      const { data } = await api.post('/auth/toggle-selling');
+      if (data.success) {
+        setUser({ ...user, isOpenSelling: data.isOpenSelling });
+        setNotice({ 
+          isOpen: true, 
+          title: data.isOpenSelling ? "Neural Marketplace Open" : "Marketplace Closed", 
+          message: data.message 
+        });
+      }
+    } catch (err: any) {
+      setNotice({ 
+        isOpen: true, 
+        title: "Toggle Signal Failure", 
+        message: err.response?.data?.message || "Could not synchronize marketplace status." 
+      });
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -567,12 +592,13 @@ function StatisticsView({ user, config }: any) {
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <h2 className="text-2xl font-bold text-center text-[#10b981] mb-6">Statistics</h2>
+      <h2 className="text-2xl font-bold text-center text-[#10b981] mb-6 uppercase italic tracking-tighter">Statistics</h2>
 
-      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-6">
+      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl" />
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-          <h3 className="font-bold flex items-center gap-2">Statistics <span className="text-slate-400 text-sm font-normal">(25/03/2026)</span></h3>
+          <h3 className="font-bold flex items-center gap-2 uppercase text-xs tracking-widest text-slate-700">Analytics <span className="text-slate-400 text-[10px] font-normal tracking-normal">(Real-Time Sync)</span></h3>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -586,11 +612,11 @@ function StatisticsView({ user, config }: any) {
       <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-8">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-          <h3 className="font-bold">Payment</h3>
+          <h3 className="font-bold uppercase text-xs tracking-widest text-slate-700">Financial Terminal</h3>
         </div>
 
         <div className="bg-emerald-50 rounded-xl p-3 flex justify-between items-center mb-6">
-          <span className="text-emerald-800 text-sm font-medium">Real Time Exchange Rates(INR/USDT)</span>
+          <span className="text-emerald-800 text-[10px] font-black uppercase tracking-widest italic">Live Exchange Rate (USDT)</span>
           <span className="text-emerald-800 font-bold">103</span>
         </div>
 
@@ -602,9 +628,27 @@ function StatisticsView({ user, config }: any) {
         </div>
       </div>
 
-      <button className="w-full py-4 bg-emerald-600 text-white font-bold rounded-full shadow-lg shadow-emerald-200 active:scale-95 transition-transform mb-12">
-        Closed Selling
+      <button 
+        onClick={handleToggleSelling}
+        disabled={isToggling}
+        className={`w-full py-6 text-white font-black uppercase italic tracking-[0.2em] rounded-full shadow-2xl active:scale-95 transition-all text-xs flex items-center justify-center gap-3 relative overflow-hidden ${user?.isOpenSelling ? 'bg-emerald-600 shadow-emerald-200' : 'bg-slate-900 shadow-slate-200'}`}
+      >
+        {isToggling ? (
+           <span className="animate-pulse">Synchronizing Neural Link...</span>
+        ) : (
+          <>
+            <Zap size={18} className={user?.isOpenSelling ? "fill-yellow-400 text-yellow-400" : "text-slate-500"} />
+            {user?.isOpenSelling ? "Open Selling (Active)" : "Closed Selling (Off)"}
+          </>
+        )}
+        {user?.isOpenSelling && <div className="absolute top-0 right-0 w-full h-full bg-white/5 animate-pulse pointer-events-none" />}
       </button>
+      
+      <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-[0.4em] py-8 italic opacity-50">
+        {user?.isOpenSelling 
+          ? "Secondary Marketplace: Your assets are now visible to the network." 
+          : "Incognito Protocol: Your assets are hidden from other nodes."}
+      </p>
     </motion.div>
   );
 }
