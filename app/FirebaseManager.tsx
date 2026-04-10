@@ -13,6 +13,9 @@ export default function FirebaseManager() {
     if (Capacitor.isNativePlatform()) {
       initPushNotifications();
     }
+
+    // 🔥 Neural Warming: Wake up Render backend immediately
+    api.get('/health').catch(() => {});
     
     // Auth Restoration: Persistent Login (Cookie-first fallback)
     api.get('/auth/me')

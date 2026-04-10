@@ -2,12 +2,17 @@ import axios from 'axios';
 
 const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform();
 
+// 🔥 Neural Warming: Wake up Render backend as soon as page loads
+if (typeof window !== 'undefined') {
+  fetch('https://hellopay-neural-api.onrender.com/api/health').catch(() => {});
+}
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL 
     ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
     : 'http://localhost:5000/api',
   withCredentials: true,
-  timeout: 15000, // 15s forced timeout to prevent infinite hangs
+  timeout: 60000, // 🔥 60s timeout to handle Render cold starts
 });
 
 // Response interceptor for better error reporting everywhere
