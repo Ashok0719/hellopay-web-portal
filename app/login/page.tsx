@@ -274,6 +274,25 @@ export default function LoginPage() {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    try {
+      // 🚀 Instant Guest Handshake
+      const { data } = await api.post('/auth/guest-login');
+      localStorage.setItem('hellopay-auth-storage', JSON.stringify({
+        state: { user: data, token: data.token, isAuthenticated: true },
+        version: 0
+      }));
+      setToken(data.token);
+      setUser(data);
+      window.location.href = '/dashboard';
+    } catch (err) {
+      setError('Guest Entry Refused');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCompleteSetup = async (e: React.FormEvent) => {
     e.preventDefault();
     const pinString = setupData.pin.join('');
@@ -374,7 +393,13 @@ export default function LoginPage() {
                 <button type="button" onClick={handleGoogleLogin} disabled={googleLoading} className="w-full py-4 bg-white text-slate-900 font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 hover:bg-slate-50">
                   {googleLoading ? <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" /> : <><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" /> Continue with Google</>}
                 </button>
-                <p className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-widest">New to HelloPay? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create New Account</Link></p>
+
+                {/* 🚀 Instant Guest Entry */}
+                <button type="button" onClick={handleGuestLogin} className="w-full py-3 border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-black rounded-2xl active:scale-95 transition-all text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-500/20">
+                  Neural Guest Entry (Unlock Platform)
+                </button>
+
+                <p className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-widest pt-2">New to HelloPay? <Link href="/register" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 decoration-indigo-400/30">Create New Account</Link></p>
               </div>
             ) : (
               <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} onSubmit={handleCompleteSetup} className="space-y-6">

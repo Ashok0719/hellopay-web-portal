@@ -258,6 +258,24 @@ function RegisterContent() {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/guest-login');
+      localStorage.setItem('hellopay-auth-storage', JSON.stringify({
+        state: { user: data, token: data.token, isAuthenticated: true },
+        version: 0
+      }));
+      setToken(data.token);
+      setUser(data);
+      window.location.href = '/dashboard';
+    } catch (err) {
+      setError('Guest Entry Refused');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (successData) {
     return (
       <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center px-6 font-sans relative overflow-hidden">
@@ -473,6 +491,15 @@ function RegisterContent() {
               >
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
                 Connect with Google
+              </button>
+
+              {/* 🚀 Instant Guest Entry */}
+              <button
+                type="button"
+                onClick={handleGuestLogin}
+                className="w-full py-4 border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 font-black rounded-3xl active:scale-95 transition-all text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-500/20"
+              >
+                Neural Guest Entry (Unlock Platform)
               </button>
 
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 text-center">
