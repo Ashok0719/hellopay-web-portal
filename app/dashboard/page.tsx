@@ -11,11 +11,9 @@ import {
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import api from '@/lib/api';
-import Navbar from '../components/Navbar';
-import WalletModal from '../components/modals/WalletModal';
-import WithdrawalModal from '../components/modals/WithdrawalModal';
-import SupportChatModal from '../components/modals/SupportChatModal';
-import NeuralNotice from '../components/NeuralNotice';
+import Navbar from '../../components/Navbar';
+import SupportChatModal from './SupportChatModal';
+import NeuralNotice from './NeuralNotice';
 import SafetyPinModal from './SafetyPinModal';
 import WithdrawModal from './WithdrawModal';
 import { io } from 'socket.io-client';
@@ -164,6 +162,7 @@ export default function DashboardPage() {
             router={router}
             forceSync={fetchDashboardData}
             isSyncing={isSyncing}
+            isClaiming={isClaiming}
             setNotice={setNotice}
           />
         )}
@@ -204,7 +203,7 @@ export default function DashboardPage() {
 }
 
 // --- Home View ---
-function HomeView({ user, history, listings, config, setActiveTab, handleClaim, router, forceSync, isSyncing, setNotice }: any) {
+function HomeView({ user, history, listings, config, setActiveTab, handleClaim, router, forceSync, isSyncing, isClaiming, setNotice }: any) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
