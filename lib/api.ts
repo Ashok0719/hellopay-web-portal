@@ -19,12 +19,16 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('[NEURAL API FAULT]', {
-      url: error.config?.url,
-      code: error.code,
-      message: error.message,
-      status: error.response?.status
-    });
+    const isInitialCheck = error.config?.url?.includes('/auth/me');
+    
+    if (!isInitialCheck) {
+      console.error('[NEURAL API FAULT]', {
+        url: error.config?.url,
+        code: error.code,
+        message: error.message,
+        status: error.response?.status
+      });
+    }
     return Promise.reject(error);
   }
 );
