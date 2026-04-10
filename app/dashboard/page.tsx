@@ -205,18 +205,16 @@ export default function Dashboard() {
       return;
     }
 
-    // Open PIN modal for stock purchase
-    setPinModal({ isOpen: true, targetId: idOrAmount.toString() });
+    // Direct Claim without PIN as requested
+    processClaim(idOrAmount.toString());
   };
 
-  const processClaim = async (pin: string) => {
-    const stockId = pinModal.targetId;
-    setPinModal({ ...pinModal, isOpen: false });
+  const processClaim = async (stockId: string) => {
     setIsClaiming(true);
     
     try {
-      // Direct Purchase Linkage: /stocks/buy handles available/locked states in one signal
-      const { data } = await api.post(`/stocks/buy`, { stockId, pin });
+      // Direct Purchase Linkage: PIN verification removed for faster rotation
+      const { data } = await api.post(`/stocks/buy`, { stockId });
       if (data.success) {
         const { transaction, stock } = data;
         const recipientName = encodeURIComponent(stock.ownerId?.name || 'HelloPay Seller');
