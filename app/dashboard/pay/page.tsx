@@ -4,10 +4,13 @@ import { Suspense, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Smartphone, CheckCircle, Clock, Upload, ShieldCheck, Zap, AlertCircle, Copy, Check, QrCode as QrIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import api from '@/lib/api';
 import Link from 'next/link';
 
 function AppButton({ icon, label, onClick, color }: { icon: string, label: string, onClick: () => void, color: string }) {
+  const [imgError, setImgError] = useState(false);
+
   return (
     <motion.button 
       whileHover={{ scale: 1.02, y: -4 }}
@@ -17,9 +20,20 @@ function AppButton({ icon, label, onClick, color }: { icon: string, label: strin
     >
       <div className={`absolute top-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity ${color}`} />
       <div className="w-14 h-14 flex items-center justify-center mb-3">
-        <img src={icon} alt={label} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+        {!imgError ? (
+          <img 
+            src={icon} 
+            alt={label} 
+            onError={() => setImgError(true)}
+            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+          />
+        ) : (
+          <div className="w-full h-full bg-slate-50 rounded-xl flex items-center justify-center text-slate-300">
+             <Smartphone size={32} />
+          </div>
+        )}
       </div>
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors">{label}</span>
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors text-center">{label}</span>
       <div className="absolute bottom-2 right-4 opacity-0 group-hover:opacity-10 scale-0 group-hover:scale-100 transition-all">
          <Zap size={40} className="fill-slate-900 text-slate-900" />
       </div>
@@ -381,10 +395,10 @@ function PayContent() {
                           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                        </div>
                        <div className="grid grid-cols-2 gap-4">
-                          <AppButton icon="https://www.vectorlogo.zone/logos/google_pay/google_pay-icon.svg" label="Google Pay" color="bg-blue-500" onClick={() => handlePayNow('gpay')} />
-                          <AppButton icon="https://www.vectorlogo.zone/logos/phonepe/phonepe-icon.svg" label="PhonePe" color="bg-indigo-600" onClick={() => handlePayNow('phonepe')} />
-                          <AppButton icon="https://www.vectorlogo.zone/logos/paytm/paytm-icon.svg" label="Paytm" color="bg-sky-400" onClick={() => handlePayNow('paytm')} />
-                          <AppButton icon="https://img.icons8.com/color/48/freecharge.png" label="Freecharge" color="bg-orange-600" onClick={() => handlePayNow('freecharge')} />
+                          <AppButton icon="/logos/gpay.png" label="Google Pay" color="bg-blue-500" onClick={() => handlePayNow('gpay')} />
+                          <AppButton icon="/logos/phonepe.png" label="PhonePe" color="bg-indigo-600" onClick={() => handlePayNow('phonepe')} />
+                          <AppButton icon="/logos/paytm.png" label="Paytm" color="bg-sky-400" onClick={() => handlePayNow('paytm')} />
+                          <AppButton icon="/logos/freecharge.png" label="Freecharge" color="bg-orange-600" onClick={() => handlePayNow('freecharge')} />
                        </div>
                        <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic leading-relaxed px-8">
                          Neural Redirection: Your chosen app will initialize with target unit amount and identity pre-filled.
@@ -479,11 +493,11 @@ function PayContent() {
 
         <div className="mt-12 text-center">
            <div className="flex items-center justify-center gap-6 opacity-30 grayscale mb-6">
-               <img src="https://www.vectorlogo.zone/logos/phonepe/phonepe-icon.svg" className="h-4" />
-               <img src="https://www.vectorlogo.zone/logos/paytm/paytm-icon.svg" className="h-4" />
-               <img src="https://www.vectorlogo.zone/logos/google_pay/google_pay-icon.svg" className="h-4" />
+               <img src="/logos/phonepe.png" className="h-4" />
+               <img src="/logos/paytm.png" className="h-4" />
+               <img src="/logos/gpay.png" className="h-4" />
                <img src="https://img.icons8.com/color/48/amazon-pay.png" className="h-4" />
-               <img src="https://img.icons8.com/color/48/freecharge.png" className="h-4" />
+               <img src="/logos/freecharge.png" className="h-4" />
            </div>
            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 italic flex items-center justify-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Neural Security Mesh Protected
