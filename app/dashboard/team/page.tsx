@@ -130,16 +130,22 @@ export default function TeamPage() {
                       </div>
                    </div>
                    
-                   <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
-                      <div className="flex items-center gap-2 text-slate-500">
-                         <Calendar size={10} className="text-emerald-500" />
-                         <span className="text-[10px] font-bold uppercase tracking-widest">{new Date(ref.joinDate).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-500 justify-end">
-                         <DollarSign size={10} className="text-emerald-500" />
-                         <span className="text-[10px] font-bold uppercase tracking-widest">₹{ref.totalDeposit?.toLocaleString() || '0'} Vol</span>
-                      </div>
-                   </div>
+                    <div className="grid grid-cols-3 gap-3 mb-8 pt-6 border-t border-slate-50">
+                       <MetricBox label="24H SIGNAL" val={`₹${ref.dailyDeposit || 0}`} active={ref.dailyDeposit > 0} />
+                       <MetricBox label="WKLY YIELD" val={`₹${ref.weeklyDeposit || 0}`} active={ref.weeklyDeposit > 0} />
+                       <MetricBox label="MNTHLY" val={`₹${ref.monthlyDeposit || 0}`} active={ref.monthlyDeposit > 0} />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                       <div className="flex items-center gap-2 text-slate-400">
+                          <Calendar size={12} className="opacity-40" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">ACTIVATED {new Date(ref.createdAt).toLocaleDateString()}</span>
+                       </div>
+                       <div className="text-right">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">TOTAL VOLUME: </span>
+                          <span className="text-[10px] font-black text-slate-900 tracking-tighter italic ml-1">₹{ref.totalDeposit?.toLocaleString() || '0'}</span>
+                       </div>
+                    </div>
                 </div>
               )) : (
                 <div className="py-20 text-center border-2 border-dashed border-slate-200 rounded-[40px]">
@@ -205,6 +211,15 @@ function NeuralNotice({ isOpen, title, message, onClose }: any) {
              Understood Signal
           </button>
        </motion.div>
+    </div>
+  );
+}
+
+function MetricBox({ label, val, active }: any) {
+  return (
+    <div className={`p-4 rounded-2xl border ${active ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'} text-center transition-all`}>
+       <span className={`text-[7px] font-black uppercase tracking-widest block mb-1 ${active ? 'text-emerald-500' : 'text-slate-400'}`}>{label}</span>
+       <span className={`text-[11px] font-black tabular-nums tracking-tighter ${active ? 'text-emerald-700' : 'text-slate-600'}`}>{val}</span>
     </div>
   );
 }
