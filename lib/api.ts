@@ -15,12 +15,20 @@ const api = axios.create({
   timeout: 60000, // 🔥 60s timeout to handle Render cold starts
 });
 
-// Response interceptor for better error reporting everywhere
+// Response interceptor for better error reporting and auth handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const isInitialCheck = error.config?.url?.includes('/auth/me');
     
+    // 🔥 Neural Safety: Clear session on 401 Unauthorized
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      console.warn('[NEURAL] Identity Expired or Unauthorized. Flushing Session...');
+      localStorage.removeItem('hellopay-auth-storage');
+      localStorage.removeItem('token');
+      // Do not redirect here to avoid infinite loops on /login, let the page handle it
+    }
+
     if (!isInitialCheck) {
       console.error('[NEURAL API FAULT]', {
         url: error.config?.url,
@@ -37,16 +45,21 @@ api.interceptors.response.use(
 api.interceptors.request.use((config) => {
   let token = null;
   if (typeof window !== 'undefined') {
-    const authData = localStorage.getItem('hellopay-auth-storage');
-    if (authData) {
-      try {
-        const parsed = JSON.parse(authData);
-        token = parsed.state?.token;
-      } catch (e) {
-        console.error('Auth Storage Corruption:', e);
+    // Priority 1: Simple Token Key
+    token = localStorage.getItem('token');
+    
+    // Priority 2: Neural Storage (Zustand)
+    if (!token) {
+      const authData = localStorage.getItem('hellopay-auth-storage');
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          token = parsed.state?.token;
+        } catch (e) {}
       }
     }
   }
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

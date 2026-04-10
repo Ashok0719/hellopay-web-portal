@@ -164,7 +164,7 @@ export default function LoginPage() {
         pin: pinString
       });
       
-      // Update store & localStorage manually to ensure immediate sync
+      localStorage.setItem('token', data.token);
       localStorage.setItem('hellopay-auth-storage', JSON.stringify({
         state: { user: data, token: data.token, isAuthenticated: true },
         version: 0
