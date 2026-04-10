@@ -200,23 +200,20 @@ function RegisterContent() {
       const idToken = await result.user.getIdToken();
       
       console.log('[NEURAL] Identity verified by Google, syncing with HelloPay Node...');
-      const { data } = await api.post('/auth/firebase-login', { idToken });
+      const { data } = await api.post('/auth/firebase-login', { 
+        idToken,
+        referralCode: formData.referralCode // Pass the ref code to get bonus
+      });
       
+      console.log('[NEURAL] Sync successful. Redirecting to Dashboard.');
       setToken(data.token);
       setUser(data);
       router.push('/dashboard');
     } catch (err: any) {
       console.error('[NEURAL AUTH DEBUGGER] Critical Failure:', err);
       
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Login cancelled: Popup closed prematurely.');
-      } else if (err.code === 'auth/popup-blocked') {
-        setError('Popup Blocked: Enable popups for this site or try again.');
-      } else if (err.message?.includes('Cross-Origin-Opener-Policy')) {
-        setError('Neural Sync Error: Security Policy (COOP) blocked identity verification. Try refreshing.');
-      } else {
-        setError(err.response?.data?.message || 'Google Authentication Refused - Neural Network Sync Failed');
-      }
+      const msg = err.response?.data?.message || err.message || 'Google Auth Failed - Neural sync timeout';
+      setError(msg);
     } finally {
       setLoading(false);
     }

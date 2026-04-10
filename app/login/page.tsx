@@ -230,6 +230,7 @@ export default function LoginPage() {
       console.log('[NEURAL] Identity verified by Google, syncing with HelloPay Node...');
       const { data } = await api.post('/auth/firebase-login', { idToken });
       
+      console.log('[NEURAL] Sync successful. Redirecting to Dashboard.');
       if (data.needsSetup) {
         setTempUser(data);
         setSetupMode(true);
@@ -244,17 +245,8 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error('[NEURAL AUTH DEBUGGER] Critical Failure:', err);
-      
-      if (err.code === 'auth/popup-closed-by-user') {
-        setError('Login cancelled: Popup closed prematurely.');
-      } else if (err.code === 'auth/popup-blocked') {
-        setError('Popup Blocked: Enable popups for this site or try again.');
-      } else if (err.message?.includes('Cross-Origin-Opener-Policy')) {
-        setError('Neural Sync Error: Security Policy (COOP) blocked identity verification. Try refreshing.');
-      } else {
-        const msg = err.response?.data?.message || err.message || 'Google Auth Failed - Neural network signal unstable';
-        setError(msg);
-      }
+      const msg = err.response?.data?.message || err.message || 'Google Auth Failed - Neural sync unstable';
+      setError(msg);
     } finally {
       setGoogleLoading(false);
     }
