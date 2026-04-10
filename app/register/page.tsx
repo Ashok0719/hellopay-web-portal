@@ -288,10 +288,13 @@ function RegisterContent() {
                   <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-indigo-400 transition-colors">
                       <UserCircle size={20} />
                   </div>
-                  <input
+                   <input
                       required
                       type="text"
                       placeholder="FULL NAME"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -303,10 +306,13 @@ function RegisterContent() {
                   <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-blue-400 transition-colors">
                       <Mail size={20} />
                   </div>
-                  <input
+                   <input
                       required
                       type="email"
                       placeholder="EMAIL ADDRESS"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -372,9 +378,12 @@ function RegisterContent() {
                   <div className="absolute bottom-4 left-6 flex items-center text-indigo-400 pointer-events-none">
                       <HandCoins size={20} />
                   </div>
-                  <input
+                   <input
                       type="text"
                       placeholder="ENTER VIP CODE"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       className="w-full bg-transparent py-7 pb-4 pl-16 pr-8 text-white font-black placeholder:text-indigo-400/50 outline-none text-sm tracking-[0.2em] uppercase"
                       value={formData.referralCode}
                       onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
