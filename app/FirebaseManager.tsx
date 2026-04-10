@@ -30,10 +30,8 @@ export default function FirebaseManager() {
       .catch((err) => {
         const status = err.response?.status;
         if (status === 401 || status === 403) {
-            console.warn('[Auth] Persistent Token Expired or Invalid - Clearing Session');
+            // Silently clear session if invalid, no warning needed for initial load
             logout();
-        } else {
-            console.log('[Auth] Offline mode or Network slow - Keeping local session');
         }
       });
   }, []);
