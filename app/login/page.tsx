@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowRight, Mail, Lock, ShieldCheck, Eye, EyeOff, Sparkles, Fingerprint } from 'lucide-react';
+import { Zap, ArrowRight, Mail, Lock, ShieldCheck, Eye, EyeOff, Sparkles, Fingerprint, RefreshCcw, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/hooks/useAuth';
@@ -15,18 +15,33 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
+  
+  // Forgot Password States
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryData, setRecoveryData] = useState({ email: '', pin: ['', '', '', ''], newPassword: '' });
+  const [recoveryError, setRecoveryError] = useState('');
+  const [recoverySuccess, setRecoverySuccess] = useState('');
+
   const pinRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const recoveryPinRefs = useRef<Array<HTMLInputElement | null>>([]);
   const { setToken, setUser } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => { setMounted(true); }, []);
 
-  const handlePinChange = (idx: number, val: string) => {
+  const handlePinChange = (idx: number, val: string, isRecovery: boolean = false) => {
     if (!/^\d*$/.test(val)) return;
-    const newPin = [...formData.pin];
-    newPin[idx] = val.slice(-1);
-    setFormData({ ...formData, pin: newPin });
-    if (val && idx < 3) pinRefs.current[idx + 1]?.focus();
+    if (isRecovery) {
+      const newPin = [...recoveryData.pin];
+      newPin[idx] = val.slice(-1);
+      setRecoveryData({ ...recoveryData, pin: newPin });
+      if (val && idx < 3) recoveryPinRefs.current[idx + 1]?.focus();
+    } else {
+      const newPin = [...formData.pin];
+      newPin[idx] = val.slice(-1);
+      setFormData({ ...formData, pin: newPin });
+      if (val && idx < 3) pinRefs.current[idx + 1]?.focus();
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -53,6 +68,33 @@ export default function LoginPage() {
       window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.response?.data?.message || 'Neural Link Error: Access Denied');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRecovery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const pinString = recoveryData.pin.join('');
+    if (pinString.length < 4) return setRecoveryError('Safety PIN Required');
+    
+    setLoading(true);
+    setRecoveryError('');
+    
+    try {
+      await api.post('/auth/reset-password-pin', {
+        email: recoveryData.email,
+        pin: pinString,
+        newPassword: recoveryData.newPassword
+      });
+      setRecoverySuccess('Neural Passkey Rotated Successfully! You can now log in.');
+      setTimeout(() => {
+         setShowRecovery(false);
+         setRecoverySuccess('');
+         setRecoveryData({ email: '', pin: ['', '', '', ''], newPassword: '' });
+      }, 3000);
+    } catch (err: any) {
+      setRecoveryError(err.response?.data?.message || 'Recovery Protocol Failed');
     } finally {
       setLoading(false);
     }
@@ -111,15 +153,12 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
-            {/* Email Field */}
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Registry Email</label>
               <div className="relative group">
                 <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                 <input 
-                  type="email" 
-                  required
-                  placeholder="name@neural.com"
+                  type="email" required placeholder="name@neural.com"
                   className="w-full bg-slate-950/50 border border-white/5 rounded-2xl py-5 pl-14 pr-6 text-white text-sm outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold placeholder:text-slate-700"
                   value={formData.identifier}
                   onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
@@ -127,15 +166,21 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Secure Passkey</label>
+              <div className="flex justify-between items-center px-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Secure Passkey</label>
+                <button 
+                  type="button" 
+                  onClick={() => setShowRecovery(true)}
+                  className="text-[9px] font-black text-indigo-400 hover:text-indigo-300 tracking-widest uppercase"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="relative group">
                 <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                 <input 
-                  type={showPassword ? "text" : "password"} 
-                  required
-                  placeholder="••••••••"
+                  type={showPassword ? "text" : "password"} required placeholder="••••••••"
                   className="w-full bg-slate-950/50 border border-white/5 rounded-2xl py-5 pl-14 pr-14 text-white text-sm outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold placeholder:text-slate-700"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -150,7 +195,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* PIN Field */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between px-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Safety PIN</label>
@@ -162,47 +206,31 @@ export default function LoginPage() {
               <div className="flex gap-4 justify-between">
                 {formData.pin.map((digit, idx) => (
                   <input
-                    key={idx}
-                    ref={(el) => { pinRefs.current[idx] = el; }}
-                    type="password"
-                    maxLength={1}
-                    inputMode="numeric"
-                    required
+                    key={idx} ref={(el) => { pinRefs.current[idx] = el; }}
+                    type="password" maxLength={1} inputMode="numeric" required
                     className="w-full h-16 bg-slate-950/50 border border-white/5 rounded-2xl text-center text-white font-black text-2xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner"
-                    value={digit}
-                    onChange={(e) => handlePinChange(idx, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Backspace' && !formData.pin[idx] && idx > 0) {
-                        pinRefs.current[idx - 1]?.focus();
-                      }
-                    }}
+                    value={digit} onChange={(e) => handlePinChange(idx, e.target.value)}
                   />
                 ))}
               </div>
             </div>
 
             {error && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-black uppercase tracking-wider text-center rounded-2xl"
-              >
+              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-black uppercase tracking-wider text-center rounded-2xl">
                 {error}
-              </motion.div>
+              </div>
             )}
 
             <button 
-              type="submit" 
-              disabled={loading}
+              type="submit" disabled={loading}
               className="w-full py-6 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-black rounded-[2rem] shadow-[0_15px_30px_rgba(79,70,229,0.3)] active:scale-95 transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-50"
             >
-              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               <span className="relative uppercase tracking-widest text-xs">{loading ? 'Verifying Identity...' : 'Authorize Session'}</span>
               <ArrowRight size={18} className="relative group-hover:translate-x-1 transition-transform" />
             </button>
           </form>
 
-          {/* Social Bypass (Hidden or subtle) */}
+          {/* Social Bypass */}
           <div className="mt-8 space-y-6">
             <div className="relative flex items-center justify-center">
               <div className="w-full border-t border-white/5"></div>
@@ -210,8 +238,7 @@ export default function LoginPage() {
             </div>
             
             <button 
-              type="button" 
-              onClick={handleGuestEntry}
+              type="button" onClick={handleGuestEntry}
               className="w-full py-4 bg-white/5 border border-white/10 text-slate-400 font-bold rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2 group"
             >
               <Fingerprint size={14} className="group-hover:text-indigo-400 transition-colors" />
@@ -223,14 +250,100 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
-
-        {/* Support Link */}
-        <div className="mt-8 text-center">
-            <p className="text-[9px] text-slate-700 font-black uppercase tracking-[0.5em] flex items-center justify-center gap-2">
-               <Sparkles size={10} /> Powered by HelloPay Neural Cloud v2.1
-            </p>
-        </div>
       </motion.div>
+
+      {/* --- Forgot Password Modal --- */}
+      <AnimatePresence>
+        {showRecovery && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center px-6 bg-[#020617]/90 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ y: 50, scale: 0.95 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: 50, scale: 0.95 }}
+              className="w-full max-w-md bg-slate-900 border border-white/10 rounded-[3rem] p-10 shadow-2xl relative"
+            >
+               <button 
+                  onClick={() => setShowRecovery(false)} 
+                  className="absolute right-8 top-8 text-slate-500 hover:text-white"
+               >
+                 <X size={24} />
+               </button>
+
+               <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <RefreshCcw className="text-indigo-400 animate-spin-slow" size={32} />
+                  </div>
+                  <h2 className="text-2xl font-black text-white italic tracking-tight uppercase">Neural Recovery</h2>
+                  <p className="text-slate-500 text-[9px] uppercase tracking-widest mt-2 font-bold">PIN-Verified Password Rotation</p>
+               </div>
+
+               <form onSubmit={handleRecovery} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Registered Email</label>
+                    <input 
+                      type="email" required placeholder="name@matrix.com"
+                      className="w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-white outline-none focus:border-indigo-500 font-bold"
+                      value={recoveryData.email} onChange={(e) => setRecoveryData({...recoveryData, email: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Verify Safety PIN</label>
+                    <div className="flex gap-4">
+                      {recoveryData.pin.map((digit, idx) => (
+                        <input
+                          key={idx} ref={(el) => { recoveryPinRefs.current[idx] = el; }}
+                          type="password" maxLength={1} required
+                          className="w-full h-14 bg-black/40 border border-white/5 rounded-2xl text-center text-white font-black text-2xl outline-none focus:border-indigo-500"
+                          value={digit} onChange={(e) => handlePinChange(idx, e.target.value, true)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">New Master Passkey</label>
+                    <input 
+                      type="password" required placeholder="Enter New Password"
+                      className="w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-white outline-none focus:border-indigo-500 font-bold"
+                      value={recoveryData.newPassword} onChange={(e) => setRecoveryData({...recoveryData, newPassword: e.target.value})}
+                    />
+                  </div>
+
+                  {recoveryError && (
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase text-center rounded-2xl">
+                       {recoveryError}
+                    </div>
+                  )}
+
+                  {recoverySuccess && (
+                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase text-center rounded-2xl">
+                       {recoverySuccess}
+                    </div>
+                  )}
+
+                  <button 
+                    type="submit" disabled={loading}
+                    className="w-full py-6 bg-indigo-600 text-white font-black rounded-[2rem] shadow-xl hover:bg-indigo-500 active:scale-95 transition-all text-xs uppercase tracking-widest"
+                  >
+                    {loading ? 'SYNCHRONIZING...' : 'Rotate Passkey'}
+                  </button>
+               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="fixed bottom-10 text-center opacity-30">
+          <p className="text-[9px] text-slate-700 font-black uppercase tracking-[0.5em] flex items-center gap-2">
+             <Sparkles size={10} /> Powered by HelloPay Neural Cloud v2.1
+          </p>
+      </div>
     </div>
   );
 }
