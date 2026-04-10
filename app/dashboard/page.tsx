@@ -79,18 +79,20 @@ export default function Dashboard() {
       if (!useAuthStore.persist.hasHydrated()) return;
       setIsHydrated(true);
 
-      // 🔥 Neural Guest Autoload: Bypass auth loop if token is missing
+      // 🔥 Neural Guest Autoload: Perform deep backend handshake
       if (!token) {
-        console.warn('[NEURAL] Missing identity node. Attempting Guest Autoload...');
-        localStorage.setItem('hellopay-auth-storage', JSON.stringify({
-          state: { 
-            user: { _id: 'guest_node', name: 'Neural Guest', walletBalance: 1000, userIdNumber: '000007' }, 
-            token: 'guest_master_token', 
-            isAuthenticated: true 
-          },
-          version: 0
-        }));
-        // Note: We don't return, we let the page proceed with the guest session
+        console.warn('[NEURAL] Missing identity node. Initiating Deep Sync...');
+        try {
+          const { data } = await api.post('/auth/guest-login');
+          localStorage.setItem('hellopay-auth-storage', JSON.stringify({
+            state: { user: data, token: data.token, isAuthenticated: true },
+            version: 0
+          }));
+          window.location.reload(); // Hard refresh to bind the new identity
+          return;
+        } catch (err) {
+          console.error('[NEURAL] Guest Handshake Failed');
+        }
       }
 
       try {
