@@ -167,11 +167,6 @@ function RegisterContent() {
       setSuccessData(data);
       setTimeout(() => {
         // Manual sync to localStorage for immediate api interceptor detection
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('hellopay-auth-storage', JSON.stringify({
-          state: { user: data, token: data.token, isAuthenticated: true },
-          version: 0
-        }));
         setToken(data.token);
         setUser(data);
         router.push('/dashboard');
