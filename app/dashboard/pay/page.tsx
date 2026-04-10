@@ -582,8 +582,35 @@ function PaymentIntentModal({ isOpen, onClose, amount, upiId, intentUrl, sellerN
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownload = () => {
+    const canvas = document.querySelector('.aide-qr-hidden svg');
+    if (!canvas) return;
+    
+    const svgData = new XMLSerializer().serializeToString(canvas);
+    const canvasElement = document.createElement('canvas');
+    const ctx = canvasElement.getContext('2d');
+    const img = new (window as any).Image();
+    
+    img.onload = () => {
+      canvasElement.width = img.width;
+      canvasElement.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const pngFile = canvasElement.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `HelloPay_QR_${orderId}.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
+    
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
   return (
     <div className="fixed bottom-32 right-6 z-[2000] sm:bottom-10 sm:right-10">
+       <div className="aide-qr-hidden hidden">
+          <QRCodeSVG value={intentUrl} size={300} level="H" />
+       </div>
+
        <motion.div 
          drag
          dragConstraints={{ left: -300, right: 0, top: -500, bottom: 0 }}
@@ -621,12 +648,20 @@ function PaymentIntentModal({ isOpen, onClose, amount, upiId, intentUrl, sellerN
           </div>
 
           <div className="flex flex-col gap-2 px-1">
-             <button 
-               onClick={() => window.location.href = intentUrl}
-               className="pointer-events-auto w-full py-2 bg-emerald-600/10 border border-emerald-500/20 rounded-xl text-emerald-500 text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all"
-             >
-                Retry Redirection
-             </button>
+             <div className="grid grid-cols-2 gap-2">
+                <button 
+                  onClick={() => window.location.href = intentUrl}
+                  className="pointer-events-auto py-2.5 bg-emerald-600/10 border border-emerald-500/20 rounded-xl text-emerald-500 text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                >
+                   <Zap size={10} /> Retry
+                </button>
+                <button 
+                  onClick={handleDownload}
+                  className="pointer-events-auto py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-400 text-[8px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2"
+                >
+                   <Upload className="rotate-180" size={10} /> QR Code
+                </button>
+             </div>
              <p className="text-[7px] font-bold text-slate-500 uppercase text-center opacity-40 italic pointer-events-none">
                 Aide Active: Open {appName} to settle
              </p>
