@@ -64,6 +64,7 @@ function PayContent() {
   const [currentIntentUrl, setCurrentIntentUrl] = useState('');
   const [selectedAppName, setSelectedAppName] = useState('');
 
+
   useEffect(() => {
     const fetchTx = async () => {
       if (!transactionId) return;
@@ -74,7 +75,11 @@ function PayContent() {
            setSellerQr(data.transaction.sellerId?.qrCode || null);
            setSellerName(data.transaction.sellerId?.name || null);
            setSellerIdDisplay(data.transaction.sellerId?.userIdNumber || null);
-           setTxStatus(data.transaction.status);
+           if (data.transaction.status === 'SUCCESS') {
+          router.push('/dashboard');
+          return;
+        }
+        setTxStatus(data.transaction.status);
            if (data.transaction.utr) setUtr(data.transaction.utr);
         }
       } catch (err) {
@@ -203,9 +208,9 @@ function PayContent() {
 
       if (data.success && data.status === 'SUCCESS') {
         setStatus('success');
-      } else if (data.status === 'PENDING_REVIEW') {
-        setStatus('idle'); // Status handled by the PENDING_REVIEW screen in main loop
-        setTxStatus('PENDING_REVIEW');
+      } else if (data.status === 'PENDING_VERIFICATION') {
+        setStatus('idle'); 
+        setTxStatus('PENDING_VERIFICATION');
       } else {
         setStatus('failed');
         setError(data.message || 'Verification Mismatch: Neural OCR Signal Fault.');
@@ -218,7 +223,7 @@ function PayContent() {
   };
 
     const handleCancelBuy = async () => {
-    if (['PENDING_REVIEW', 'SUCCESS', 'FAILED'].includes(txStatus || '')) {
+    if (['PENDING_VERIFICATION', 'SUCCESS', 'FAILED'].includes(txStatus || '')) {
        setNotice({
           isOpen: true,
           title: "Restriction Active",
@@ -507,6 +512,27 @@ function PayContent() {
            </p>
         </div>
 
+        {txStatus === 'PENDING_VERIFICATION' && (
+           <div className="fixed inset-0 z-[1000] bg-white flex flex-col items-center justify-center p-8 text-center">
+              <div className="relative mb-10 scale-125">
+                 <div className="w-24 h-24 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+                 <div className="absolute inset-0 flex items-center justify-center">
+                    <ShieldCheck className="text-emerald-500" size={32} />
+                 </div>
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 italic uppercase tracking-tighter mb-4">Verifying Signal</h2>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] leading-relaxed max-w-xs mb-10">
+                 The Neural OCR engine is analyzing your proof. This typically takes 30-60 seconds. You can safely close this or stay to wait.
+              </p>
+              <button 
+                onClick={() => router.push('/dashboard')}
+                className="px-10 py-4 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+              >
+                Return to Node
+              </button>
+           </div>
+        )}
+
         <NeuralNotice 
            isOpen={notice.isOpen}
            title={notice.title}
@@ -628,9 +654,29 @@ function PaymentIntentModal({ isOpen, onClose, amount, upiId, intentUrl, sellerN
                   </div>
                </div>
                
-               <div className="w-full bg-white rounded-[28px] p-5 shadow-sm border border-slate-50 text-center mb-6">
+               <div className="w-full bg-white rounded-[28px] p-5 shadow-sm border border-slate-50 text-center mb-0">
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-2">Settlement Amount</span>
                   <div className="text-4xl font-black italic tracking-tighter text-slate-900">₹{(Number(amount) || 0).toLocaleString()}</div>
+               </div>
+
+               <div className="w-full bg-slate-900/5 rounded-3xl p-5 border border-slate-900/5 my-6 text-left">
+                  <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-3 leading-tight">
+                    <span className="text-slate-900 underline">IF APP DIDN'T OPEN AUTOMATICALLY:</span>
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-600">
+                      <div className="w-4 h-4 rounded-full bg-slate-900 text-white flex items-center justify-center text-[7px]">1</div>
+                      <span>Open any UPI App manually</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-600">
+                      <div className="w-4 h-4 rounded-full bg-slate-900 text-white flex items-center justify-center text-[7px]">2</div>
+                      <span>Copy UPI ID or Scan QR Code</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-600">
+                      <div className="w-4 h-4 rounded-full bg-slate-900 text-white flex items-center justify-center text-[7px]">3</div>
+                      <span>Pay exact amount: ₹{(Number(amount) || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
                </div>
 
                <div className="w-full space-y-3">

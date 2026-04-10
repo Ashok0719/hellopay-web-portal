@@ -88,8 +88,8 @@ export default function PaymentHistoryPage() {
                 key={idx} 
                 onClick={() => {
                   const isPurchase = item.category === 'Purchase';
-                  const isPending = item.status === 'PENDING';
-                  if (isPurchase && isPending && item.type === 'ROTATION') {
+                  const isPending = item.status === 'PENDING' || item.status === 'PENDING_PAYMENT';
+                  if (isPurchase && (isPending || item.status === 'INIT') && item.type === 'ROTATION') {
                     const seller = item.sellerId || item.otherParty;
                     const upiId = seller?.upiId || 'admin@upi';
                     const sellerName = encodeURIComponent(seller?.name || 'HelloPay Seller');
@@ -136,13 +136,13 @@ export default function PaymentHistoryPage() {
                       <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border shadow-sm ${
                         item.status === 'COMPLETED' || item.status === 'success' || item.status === 'SUCCESS' || item.status === 'completed'
                           ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                          : item.status === 'INIT' || item.status === 'PENDING' || item.status === 'pending' || item.status === 'TIMEOUT' || item.status === 'PENDING_REVIEW'
+                          : item.status === 'INIT' || item.status === 'PENDING' || item.status === 'pending' || item.status === 'TIMEOUT' || item.status === 'PENDING_VERIFICATION' || item.status === 'PENDING_PAYMENT'
                           ? 'bg-amber-50 text-amber-600 border-amber-100'
                           : 'bg-rose-50 text-rose-600 border-rose-100'
                       }`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${
                              item.status === 'COMPLETED' || item.status === 'success' || item.status === 'SUCCESS' || item.status === 'completed' ? 'bg-emerald-500' : 
-                             item.status === 'INIT' || item.status === 'PENDING' || item.status === 'pending' || item.status === 'TIMEOUT' ? 'bg-amber-500' : 'bg-rose-500'
+                             item.status === 'INIT' || item.status === 'PENDING' || item.status === 'pending' || item.status === 'TIMEOUT' || item.status === 'PENDING_VERIFICATION' || item.status === 'PENDING_PAYMENT' ? 'bg-amber-500' : 'bg-rose-500'
                           }`} />
                           {item.status}
                       </div>
