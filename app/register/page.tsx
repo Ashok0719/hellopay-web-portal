@@ -295,7 +295,7 @@ function RegisterContent() {
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
+                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-base sm:text-xs tracking-widest"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -313,7 +313,7 @@ function RegisterContent() {
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
+                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -329,7 +329,7 @@ function RegisterContent() {
                           required
                           type="password"
                           placeholder="CREATE PASSWORD"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
+                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest"
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       />
@@ -342,7 +342,7 @@ function RegisterContent() {
                           required
                           type="password"
                           placeholder="CONFIRM PASSWORD"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest uppercase"
+                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest"
                           value={formData.confirmPassword}
                           onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       />
@@ -384,7 +384,7 @@ function RegisterContent() {
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      className="w-full bg-transparent py-7 pb-4 pl-16 pr-8 text-white font-black placeholder:text-indigo-400/50 outline-none text-sm tracking-[0.2em] uppercase"
+                      className="w-full bg-transparent py-7 pb-4 pl-16 pr-8 text-white font-black placeholder:text-indigo-400/50 outline-none text-sm tracking-[0.2em]"
                       value={formData.referralCode}
                       onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
                   />
