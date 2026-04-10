@@ -22,11 +22,17 @@ api.interceptors.response.use(
     const isInitialCheck = error.config?.url?.includes('/auth/me');
     
     // 🔥 Neural Safety: Clear session on 401 Unauthorized
+    // ⚠ BUG FIX: Only flush if we actually SENT a token that was rejected.
+    // If we didn't send a token, it might just be a hydration delay — don't kill the session!
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      console.warn('[NEURAL] Identity Expired or Unauthorized. Flushing Session...');
-      localStorage.removeItem('hellopay-auth-storage');
-      localStorage.removeItem('token');
-      // Do not redirect here to avoid infinite loops on /login, let the page handle it
+      const sentToken = error.config?.headers?.Authorization;
+      if (sentToken) {
+        console.warn('[NEURAL] Identity Expired or Unauthorized. Flushing Session...');
+        localStorage.removeItem('hellopay-auth-storage');
+        localStorage.removeItem('token');
+      } else {
+        console.log('[NEURAL] 401 Blocked (No token sent) - Retrying sync instead of logout.');
+      }
     }
 
     if (!isInitialCheck) {

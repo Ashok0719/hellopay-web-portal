@@ -49,16 +49,30 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
-      setToken: (token) => set({ token }),
+      setUser: (user) => {
+        set({ user, isAuthenticated: !!user });
+      },
+      setToken: (token) => {
+        if (token) localStorage.setItem('token', token);
+        else localStorage.removeItem('token');
+        set({ token });
+      },
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
+        localStorage.removeItem('token');
         localStorage.removeItem('hellopay-auth-storage');
+        idbStorage.removeItem('hellopay-auth-storage');
       },
     }),
     {
       name: 'hellopay-auth-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => idbStorage),
+      onRehydrateStorage: () => (state) => {
+        // Sync token to localStorage on hydration for the interceptor
+        if (state?.token) {
+          localStorage.setItem('token', state.token);
+        }
+      }
     }
   )
 );
