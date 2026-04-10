@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Smartphone, CheckCircle, Clock, Upload, ShieldCheck, Zap, AlertCircle, Copy, Check, QrCode as QrIcon } from 'lucide-react';
+import { ArrowLeft, Smartphone, CheckCircle, Clock, Upload, ShieldCheck, Zap, AlertCircle, Copy, Check, QrCode as QrIcon, ChevronLeft } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import api from '@/lib/api';
