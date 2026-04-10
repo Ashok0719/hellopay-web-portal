@@ -79,20 +79,11 @@ export default function Dashboard() {
       if (!useAuthStore.persist.hasHydrated()) return;
       setIsHydrated(true);
 
-      // 🔥 Neural Guest Autoload: Perform deep backend handshake
+      // Strict Neural Access Control
       if (!token) {
-        console.warn('[NEURAL] Missing identity node. Initiating Deep Sync...');
-        try {
-          const { data } = await api.post('/auth/guest-login');
-          localStorage.setItem('hellopay-auth-storage', JSON.stringify({
-            state: { user: data, token: data.token, isAuthenticated: true },
-            version: 0
-          }));
-          window.location.reload(); // Hard refresh to bind the new identity
-          return;
-        } catch (err) {
-          console.error('[NEURAL] Guest Handshake Failed');
-        }
+        console.warn('[NEURAL] Unauthenticated Access. Redirecting to Identity Hub...');
+        router.push('/login');
+        return;
       }
 
       try {
@@ -137,7 +128,7 @@ export default function Dashboard() {
   useEffect(() => {
     const socketUrl = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (window as any).Capacitor?.isNativePlatform())
       ? (process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000')
-      : 'https://api.hellopayapp.com';
+      : 'https://hellopay-neural-api.onrender.com';
     
     const socket = io(socketUrl);
 
