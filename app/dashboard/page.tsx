@@ -1628,20 +1628,19 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
 
          <div className="flex flex-col gap-4">
             <button 
-               onClick={handleVerifyIntent}
-               disabled={!isUpiValid || verificationState === 'opening'}
-               className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl active:scale-95 transition-all text-xs flex items-center justify-center gap-3 disabled:opacity-20 translate-y-2"
-            >
-               <Zap size={18} className="fill-yellow-400 text-yellow-400" /> Verify with UPI App
-            </button>
-
-            <button 
                onClick={handleSaveUpi}
-               disabled={isSaving || !user?.isUpiVerified && verificationState !== 'success'}
-               className="w-full py-5 bg-yellow-400 text-slate-900 font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl shadow-yellow-100 active:scale-95 transition-all text-[11px] mt-4 hover:bg-yellow-500 disabled:grayscale"
+               disabled={isSaving || !isUpiValid || pin.join('').length < 4}
+               className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl active:scale-95 transition-all text-sm flex items-center justify-center gap-3 disabled:opacity-20"
             >
-               {isSaving ? 'Synchronizing...' : 'Save & Sync Registry'}
+               {isSaving ? 'Synchronizing...' : (
+                 <>
+                   <Zap size={18} className="fill-yellow-400 text-yellow-400" /> Save & Sync Registry
+                 </>
+               )}
             </button>
+            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-widest mt-2 px-4">
+               Direct Neural Verification: Protocol will instantly bind your identity to the P2P Rotation Grid.
+            </p>
          </div>
       </div>
 
