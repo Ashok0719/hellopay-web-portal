@@ -1051,6 +1051,7 @@ function TransactionItem({ tx }: any) {
           tx.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 
           tx.status === 'PENDING' ? 'bg-amber-50 text-amber-600' : 
           tx.status === 'CANCELED' ? 'bg-red-50 text-red-500' : 
+          tx.status === 'TIMEOUT' ? 'bg-slate-200 text-slate-500' :
           'bg-slate-100 text-slate-400'
         }`}>
           {tx.status}
