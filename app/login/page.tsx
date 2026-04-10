@@ -100,6 +100,9 @@ function NeuralBackground() {
 }
 
 export default function LoginPage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState(['', '', '', '']);
@@ -278,7 +281,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center px-6 overflow-hidden bg-[#020617] font-outfit">
-      <NeuralBackground />
+      {mounted && <NeuralBackground />}
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
 

@@ -101,14 +101,22 @@ function NeuralBackground() {
 }
 
 export default function RegisterPage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black uppercase tracking-widest text-[10px]">Syncing Neural Mesh...</div>}>
+    <Suspense fallback={<div className="min-h-screen relative flex items-center justify-center px-6 overflow-hidden bg-[#020617] font-outfit">
+      {mounted && <NeuralBackground />}
+      <div className="text-white font-black uppercase tracking-widest text-[10px]">Syncing Neural Mesh...</div>
+    </div>}>
       <RegisterContent />
     </Suspense>
   );
 }
 
 function RegisterContent() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get('ref') || '';
@@ -253,7 +261,7 @@ function RegisterContent() {
 
   return (
     <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-10 sm:py-20 px-6 font-sans relative overflow-x-hidden overflow-y-auto">
-      <NeuralBackground />
+      {mounted && <NeuralBackground />}
       
       {/* 3D Animated Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
