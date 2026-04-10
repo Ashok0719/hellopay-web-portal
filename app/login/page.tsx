@@ -240,9 +240,13 @@ export default function LoginPage() {
           const { data } = await api.post('/auth/firebase-login', { idToken });
           
           if (data.isSetupComplete) {
+            localStorage.setItem('hellopay-auth-storage', JSON.stringify({
+              state: { user: data, token: data.token, isAuthenticated: true },
+              version: 0
+            }));
             setToken(data.token);
             setUser(data);
-            router.push('/dashboard');
+            window.location.href = '/dashboard';
           } else {
             setTempUser(data);
             setSetupMode(true);

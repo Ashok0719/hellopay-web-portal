@@ -220,28 +220,31 @@ function RegisterContent() {
           });
 
           if (data.isSetupComplete) {
-            // Instant access logic
+            console.log('[NEURAL] Identity Sync Confirmed. Locking Session...');
+            localStorage.setItem('hellopay-auth-storage', JSON.stringify({
+              state: { user: data, token: data.token, isAuthenticated: true },
+              version: 0
+            }));
             setToken(data.token);
             setUser(data);
-            router.push('/dashboard');
+            window.location.href = '/dashboard';
           } else {
-            // Legacy/Manual setup fallback
             setFormData(prev => ({
               ...prev,
               email: data.email,
               name: data.name || ''
             }));
+            setLoading(false);
           }
         }
       } catch (err: any) {
         console.error('[NEURAL REDIRECT SYSTEM FAULT]', err);
         setError(err.message);
-      } finally {
         setLoading(false);
       }
     };
     handleRedirect();
-  }, [auth, router]);
+  }, [auth]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
