@@ -54,6 +54,8 @@ function PayContent() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [sellerQr, setSellerQr] = useState<string | null>(null);
+  const [sellerName, setSellerName] = useState<string | null>(null);
+  const [sellerIdDisplay, setSellerIdDisplay] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [txStatus, setTxStatus] = useState<string | null>(null);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '', type: 'alert' as 'alert' | 'confirm', onConfirm: () => {} });
@@ -66,6 +68,8 @@ function PayContent() {
         if (data.success) {
            setCreatedAt(data.transaction.createdAt);
            setSellerQr(data.transaction.sellerId?.qrCode || null);
+           setSellerName(data.transaction.sellerId?.name || null);
+           setSellerIdDisplay(data.transaction.sellerId?.userIdNumber || null);
            setTxStatus(data.transaction.status);
            if (data.transaction.utr) setUtr(data.transaction.utr);
         }
@@ -348,7 +352,8 @@ function PayContent() {
               
               <div className="inline-flex flex-col items-center gap-2 p-6 bg-white/5 border border-white/10 rounded-[32px] w-full">
                  <h4 className="text-[10px] font-black uppercase text-emerald-400 tracking-widest italic opacity-80">You are paying to node:</h4>
-                 <div className="text-xl font-black italic text-white tracking-widest leading-none mb-1 shadow-glow">{sellerIdNum || 'SYSTEM_HUB'}</div>
+                 <div className="text-xl font-black italic text-white tracking-widest leading-none mb-1 shadow-glow">{sellerName || 'SYSTEM_HUB'}</div>
+                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">ID: {sellerIdDisplay || '******'}</p>
                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Digital Asset ID Binding Verified</p>
               </div>
            </div>
