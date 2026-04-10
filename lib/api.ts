@@ -7,7 +7,22 @@ const api = axios.create({
     ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
     : 'http://localhost:5000/api',
   withCredentials: true,
+  timeout: 15000, // 15s forced timeout to prevent infinite hangs
 });
+
+// Response interceptor for better error reporting everywhere
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('[NEURAL API FAULT]', {
+      url: error.config?.url,
+      code: error.code,
+      message: error.message,
+      status: error.response?.status
+    });
+    return Promise.reject(error);
+  }
+);
 
 // Add interceptor for auth token and bypass tunnel reminder
 api.interceptors.request.use((config) => {
