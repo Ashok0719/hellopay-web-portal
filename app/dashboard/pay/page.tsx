@@ -583,32 +583,36 @@ function PaymentIntentModal({ isOpen, onClose, amount, upiId, intentUrl, sellerN
   };
 
   return (
-    <div className="fixed bottom-32 right-6 z-[2000] pointer-events-none sm:bottom-10 sm:right-10">
+    <div className="fixed bottom-32 right-6 z-[2000] sm:bottom-10 sm:right-10">
        <motion.div 
+         drag
+         dragConstraints={{ left: -300, right: 0, top: -500, bottom: 0 }}
+         dragElastic={0.1}
+         whileDrag={{ scale: 1.05, opacity: 0.9 }}
          initial={{ scale: 0.5, opacity: 0, x: 50 }}
          animate={{ scale: 1, opacity: 1, x: 0 }}
-         className="pointer-events-auto bg-slate-900 shadow-2xl rounded-[32px] p-4 flex flex-col gap-3 min-w-[200px] border border-white/10 relative group overflow-hidden"
+         className="pointer-events-auto bg-slate-900 shadow-2xl rounded-[32px] p-4 flex flex-col gap-3 min-w-[200px] border border-white/10 relative group overflow-hidden cursor-move active:cursor-grabbing"
        >
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           
-          <div className="flex items-center justify-between gap-4 px-2">
+          <div className="flex items-center justify-between gap-4 px-2 pointer-events-none">
              <div className="flex flex-col">
-                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic opacity-60">Paying Node</span>
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic opacity-60">Paying Node (Draggable)</span>
                 <span className="text-sm font-black text-white italic tracking-tighter">₹{amount}</span>
              </div>
-             <button onClick={onClose} className="p-1.5 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
+             <button onClick={onClose} className="pointer-events-auto p-1.5 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
                 <ChevronLeft className="rotate-[270deg]" size={14} />
              </button>
           </div>
 
-          <div className="bg-white/5 rounded-2xl p-3 flex items-center justify-between gap-3 border border-white/5">
+          <div className="bg-white/5 rounded-2xl p-3 flex items-center justify-between gap-3 border border-white/5 pointer-events-none">
              <div className="flex flex-col truncate">
                 <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest leading-none mb-1">UPI Identity</span>
                 <span className="text-[10px] font-mono text-slate-300 truncate w-24 tracking-tighter">{decodeURIComponent(upiId)}</span>
              </div>
              <button 
                onClick={handleCopy}
-               className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+               className={`pointer-events-auto shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                  copied ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white/10 text-slate-300 active:scale-90 hover:bg-white/20'
                }`}
              >
@@ -619,11 +623,11 @@ function PaymentIntentModal({ isOpen, onClose, amount, upiId, intentUrl, sellerN
           <div className="flex flex-col gap-2 px-1">
              <button 
                onClick={() => window.location.href = intentUrl}
-               className="w-full py-2 bg-emerald-600/10 border border-emerald-500/20 rounded-xl text-emerald-500 text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all"
+               className="pointer-events-auto w-full py-2 bg-emerald-600/10 border border-emerald-500/20 rounded-xl text-emerald-500 text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all"
              >
                 Retry Redirection
              </button>
-             <p className="text-[7px] font-bold text-slate-500 uppercase text-center opacity-40 italic">
+             <p className="text-[7px] font-bold text-slate-500 uppercase text-center opacity-40 italic pointer-events-none">
                 Aide Active: Open {appName} to settle
              </p>
           </div>
