@@ -1022,12 +1022,13 @@ function TransactionItem({ tx }: any) {
   const isPending = tx.status === 'PENDING';
   
   const handleResume = () => {
-    if (isPurchase && isPending && tx.type === 'ROTATION') {
+    if (isPurchase && (isPending || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION')) {
       const seller = tx.sellerId || tx.otherParty;
       const upiId = seller?.upiId || 'admin@upi';
       const sellerName = encodeURIComponent(seller?.name || 'HelloPay Seller');
       const upiIntent = `upi://pay?pa=${upiId}&pn=${sellerName}&am=${tx.amount}&cu=INR`;
       const sellerIdNum = seller?.userIdNumber || '******';
+      
       router.push(`/dashboard/pay?orderId=${tx.transactionId}&amount=${tx.amount}&upiIntent=${encodeURIComponent(upiIntent)}&txnId=${tx._id}&sellerId=${sellerIdNum}`);
     }
   };
@@ -1035,31 +1036,31 @@ function TransactionItem({ tx }: any) {
   return (
     <div 
       onClick={handleResume}
-      className={`flex justify-between items-center group active:scale-[0.98] transition-all p-2 rounded-2xl hover:bg-slate-50 ${isPurchase && isPending ? 'cursor-pointer border-l-2 border-amber-400 pl-3' : ''}`}
+      className={`flex justify-between items-center group active:scale-[0.98] transition-all p-3 rounded-[28px] hover:bg-slate-50 border border-transparent hover:border-slate-100 ${isPurchase && (isPending || tx.status === 'PENDING_PAYMENT') ? 'cursor-pointer' : ''}`}
     >
-      <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-2xl ${tx.direction === 'IN' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'} flex items-center justify-center shadow-sm`}>
-           {tx.direction === 'IN' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+      <div className="flex items-center gap-5">
+        <div className={`w-14 h-14 rounded-2xl ${tx.direction === 'IN' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 text-slate-500'} flex items-center justify-center transition-transform group-hover:scale-105`}>
+           {tx.direction === 'IN' ? <ArrowDownLeft size={24} /> : <ArrowUpRight size={24} />}
         </div>
         <div>
-          <div className="font-black text-sm text-slate-800 uppercase tracking-tight">{tx.description || tx.type.replace('_', ' ') + ' INR'}</div>
-          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-            {tx.createdAt ? new Date(tx.createdAt).toLocaleString() : 'Recent • Neural Sync'}
+          <h4 className="font-black text-sm text-slate-800 uppercase tracking-tight italic">{tx.description || tx.type.replace('_', ' ') + ' INR'}</h4>
+          <div className="flex items-center gap-2 mt-1.5 font-bold text-[9px] text-slate-400 uppercase tracking-widest leading-none">
+            <Clock size={10} className="opacity-50" />
+            {tx.createdAt ? new Date(tx.createdAt).toLocaleString() : 'Recent Signal'}
           </div>
         </div>
       </div>
-      <div className="text-right flex flex-col items-end gap-1">
-        <div className={`font-black tracking-tighter text-lg italic tabular-nums ${tx.direction === 'IN' ? 'text-emerald-600' : 'text-slate-900'}`}>
-          {tx.direction === 'IN' ? '+' : '-'} ₹ {tx.amount.toLocaleString()}
+      <div className="text-right flex flex-col items-end gap-2 pr-2">
+        <div className={`font-black tracking-tighter text-xl italic tabular-nums leading-none ${tx.direction === 'IN' ? 'text-emerald-600' : 'text-slate-900'}`}>
+          {tx.direction === 'IN' ? '+' : '-'} ₹{tx.amount.toLocaleString()}
         </div>
-        <div className={`text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-widest ${
-          tx.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 
-          tx.status === 'PENDING' ? 'bg-amber-50 text-amber-600' : 
-          tx.status === 'CANCELED' ? 'bg-red-50 text-red-500' : 
-          tx.status === 'TIMEOUT' ? 'bg-slate-200 text-slate-500' :
-          'bg-slate-100 text-slate-400'
+        <div className={`text-[8px] px-3 py-1.5 rounded-xl font-black uppercase tracking-[0.2em] shadow-sm ${
+          tx.status === 'COMPLETED' || tx.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+          tx.status === 'PENDING' || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 
+          tx.status === 'CANCELED' || tx.status === 'FAILED' ? 'bg-red-50 text-red-500 border border-red-100' : 
+          'bg-slate-100 text-slate-400 border border-slate-200'
         }`}>
-          {tx.status}
+          {tx.status?.replace('_', ' ')}
         </div>
       </div>
     </div>
