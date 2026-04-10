@@ -404,7 +404,7 @@ export default function Dashboard() {
         onClose={() => setShowWithdrawModal(false)} 
         user={user}
         config={config}
-        onWithdraw={(newBalance: number) => setUser({ ...user, walletBalance: newBalance })}
+        onWithdraw={(newBalance: number) => setUser({ ...user, walletBalance: newBalance } as any)}
       />
     </div>
   );
