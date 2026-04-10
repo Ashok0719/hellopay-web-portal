@@ -8,7 +8,12 @@ import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import { auth, googleProvider } from '@/lib/firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  GoogleAuthProvider 
+} from 'firebase/auth';
 
 function NeuralBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -222,35 +227,45 @@ export default function LoginPage() {
     }
   };
 
+  // 🔥 Neural Redirect Handler: Recover identity from Google return
+  useEffect(() => {
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          setGoogleLoading(true);
+          const idToken = await result.user.getIdToken();
+          console.log('[NEURAL] Identity recovered from Redirect sync...');
+          
+          const { data } = await api.post('/auth/firebase-login', { idToken });
+          
+          if (data.needsSetup) {
+            setTempUser(data);
+            setSetupMode(true);
+          } else {
+            setToken(data.token);
+            setUser(data);
+            router.push('/dashboard');
+          }
+        }
+      } catch (err: any) {
+        console.error('[NEURAL REDIRECT FAULT]', err);
+        setError(err.message);
+      } finally {
+        setGoogleLoading(false);
+      }
+    };
+    handleRedirect();
+  }, [auth, router]);
+
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError('');
     try {
-      console.log('[NEURAL] Initiating Google Auth Popup...');
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      
-      console.log('[NEURAL] Identity verified by Google, syncing with HelloPay Node...');
-      const { data } = await api.post('/auth/firebase-login', { idToken });
-      
-      console.log('[NEURAL] Sync successful. Redirecting to Dashboard.');
-      if (data.needsSetup) {
-        setTempUser(data);
-        setSetupMode(true);
-      } else {
-        localStorage.setItem('hellopay-auth-storage', JSON.stringify({
-          state: { user: data, token: data.token, isAuthenticated: true },
-          version: 0
-        }));
-        setToken(data.token);
-        setUser(data);
-        router.push('/dashboard');
-      }
+      console.log('[NEURAL] Initiating Secure Redirect Sync...');
+      await signInWithRedirect(auth, googleProvider);
     } catch (err: any) {
-      console.error('[NEURAL AUTH DEBUGGER] Critical Failure:', err);
-      const msg = err.response?.data?.message || err.message || 'Google Auth Failed - Neural sync unstable';
-      setError(msg);
-    } finally {
+      setError(err.message);
       setGoogleLoading(false);
     }
   };
