@@ -35,6 +35,7 @@ function PayContent() {
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [sellerQr, setSellerQr] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [txStatus, setTxStatus] = useState<string | null>(null);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '', type: 'alert' as 'alert' | 'confirm', onConfirm: () => {} });
 
   useEffect(() => {
@@ -45,6 +46,8 @@ function PayContent() {
         if (data.success) {
            setCreatedAt(data.transaction.createdAt);
            setSellerQr(data.transaction.sellerId?.qrCode || null);
+           setTxStatus(data.transaction.status);
+           if (data.transaction.utr) setUtr(data.transaction.utr);
         }
       } catch (err) {
         console.error('Neural Fetch Failure:', err);
@@ -220,7 +223,18 @@ function PayContent() {
     }
   };
 
-   const handleCancelBuy = async () => {
+    const handleCancelBuy = async () => {
+    if (['PENDING_REVIEW', 'SUCCESS', 'FAILED'].includes(txStatus || '')) {
+       setNotice({
+          isOpen: true,
+          title: "Restriction Active",
+          message: "Cancellation is disabled because your signal is already being validated by a Neural Node.",
+          type: 'alert',
+          onConfirm: () => {}
+       });
+       return;
+    }
+
     setNotice({
        isOpen: true,
        title: "Neural Alert",
@@ -230,14 +244,20 @@ function PayContent() {
           try {
             await api.post(`/stocks/transactions/${transactionId}/cancel`);
             router.push('/dashboard');
-          } catch (err) {
-            setNotice({ isOpen: true, title: "Link Fault", message: "Could not establish cancel protocol.", type: 'alert', onConfirm: () => {} });
+          } catch (err: any) {
+            setNotice({ 
+              isOpen: true, 
+              title: "Link Fault", 
+              message: err.response?.data?.message || "Could not establish cancel protocol.", 
+              type: 'alert', 
+              onConfirm: () => {} 
+            });
           }
        }
     });
   };
 
-  if (status === 'success') {
+  if (status === 'success' || txStatus === 'SUCCESS') {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xs">
@@ -251,6 +271,30 @@ function PayContent() {
             className="mt-12 px-10 py-6 bg-slate-900 rounded-[32px] text-white font-black uppercase italic shadow-2xl active:scale-95 transition-all w-full tracking-widest text-xs"
           >
             Back to Dashboard
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (txStatus === 'PENDING_REVIEW') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-xs">
+          <div className="w-24 h-24 bg-amber-500 rounded-full flex items-center justify-center mb-10 mx-auto shadow-2xl shadow-amber-200 anim-float">
+            <Clock className="text-white" size={48} />
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 italic uppercase tracking-tighter">Signal In Review</h1>
+          <p className="text-slate-500 font-bold mt-4 leading-relaxed italic text-sm">Our Neural OCR detected discrepancies. An admin is verifying your payment manually. Please wait...</p>
+          <div className="mt-8 p-6 bg-white rounded-3xl border border-slate-200 shadow-sm">
+             <span className="text-[10px] font-black uppercase text-slate-400 block mb-2 tracking-widest">UTR SUBMITTED</span>
+             <span className="text-lg font-black text-slate-700 italic font-mono">{utr}</span>
+          </div>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="mt-12 px-10 py-5 border border-slate-200 bg-white rounded-[32px] text-slate-600 font-black uppercase italic shadow-sm active:scale-95 transition-all w-full tracking-widest text-xs"
+          >
+            Monitor From Dashboard
           </button>
         </motion.div>
       </div>
