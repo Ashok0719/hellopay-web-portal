@@ -1125,11 +1125,11 @@ function DepositModal({ isOpen, onClose, onSelect, config }: any) {
   if (!isOpen) return null;
 
   const methods = [
-    { id: 'freecharge', name: 'Freecharge', icon: 'https://img.icons8.com/color/48/freecharge.png', color: '#ff611d' },
     { id: 'phonepe', name: 'Phonepe', icon: 'https://img.icons8.com/color/48/phonepe.png', color: '#5f259f' },
-    { id: 'mobikwik', name: 'Mobikwik', icon: 'https://img.icons8.com/color/48/mobikwik.png', color: '#0055a4' },
+    { id: 'gpay', name: 'GPay', icon: 'https://img.icons8.com/color/48/google-pay.png', color: '#4285F4' },
     { id: 'paytm', name: 'Paytm', icon: 'https://img.icons8.com/color/48/paytm.png', color: '#00baf2' },
-    { id: 'paytm_business', name: 'Paytm Business', icon: 'https://img.icons8.com/color/48/paytm.png', color: '#00baf2' },
+    { id: 'mobikwik', name: 'Mobikwik', icon: 'https://img.icons8.com/color/48/mobikwik.png', color: '#0055a4' },
+    { id: 'freecharge', name: 'Freecharge', icon: 'https://img.icons8.com/color/48/freecharge.png', color: '#ff611d' },
   ];
 
   const plans = config?.stockPlans || [

@@ -98,20 +98,18 @@ function PayContent() {
     // Deep-linking protocol mapping
     if (app === 'paytm') finalIntent = finalIntent.replace(/upi:\/\//i, 'paytmmp://');
     else if (app === 'phonepe') finalIntent = finalIntent.replace(/upi:\/\//i, 'phonepe://');
-    else if (app === 'gpay') finalIntent = finalIntent.replace(/upi:\/\//i, 'tez://');
+    else if (app === 'gpay') {
+      // Neural Fix: GPay (Tez) protocol varies by device, upi:// is safest fallback but tez:// forces gPay
+      finalIntent = finalIntent.replace(/upi:\/\//i, 'tez://upi/'); 
+    }
     
     console.log('[Neural Redirect]', finalIntent);
     
     try {
-      // 1. Standard Location Redirect
+      // 1. Direct location change (Standard for most mobile browsers)
       window.location.href = finalIntent;
       
-      // 2. Hidden Anchor Trigger (Works better in some mobile browsers)
-      const a = document.createElement('a');
-      a.href = finalIntent;
-      a.click();
-      
-      // 3. Fallback instructions if app doesn't open
+      // 2. Fallback instructions if app doesn't open
       setTimeout(() => {
         setNotice({
           isOpen: true,
@@ -120,7 +118,7 @@ function PayContent() {
           type: 'alert',
           onConfirm: () => {}
         });
-      }, 3500);
+      }, 5000);
     } catch (e) {
       console.error('Redirect Error:', e);
     }
