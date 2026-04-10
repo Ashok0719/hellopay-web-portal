@@ -50,19 +50,16 @@ api.interceptors.response.use(
 // Add interceptor for auth token and bypass tunnel reminder
 api.interceptors.request.use((config) => {
   let token = null;
+  
   if (typeof window !== 'undefined') {
-    // Priority 1: Simple Token Key
-    token = localStorage.getItem('token');
-    
-    // Priority 2: Neural Storage (Zustand)
+    // 1. Priority: Live Zustand State (Highest Reliability)
+    // We import it dynamically here to avoid circular dependencies if any
+    const { useAuthStore } = require('../hooks/useAuth');
+    token = useAuthStore.getState().token;
+
+    // 2. Fallback: Simple Token Key
     if (!token) {
-      const authData = localStorage.getItem('hellopay-auth-storage');
-      if (authData) {
-        try {
-          const parsed = JSON.parse(authData);
-          token = parsed.state?.token;
-        } catch (e) {}
-      }
+      token = localStorage.getItem('token');
     }
   }
   
