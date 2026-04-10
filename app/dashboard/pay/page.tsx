@@ -154,79 +154,48 @@ function PayContent() {
 
   const verifyPayment = async () => {
     if (!utr) {
-      setError('UTR string required for verification');
+      setError('Neural Protocol: UTR string required for signal validation.');
       return;
     }
     
-    if (utr.length < 12 || utr.length > 22) {
-      setError('Invalid UTR: Must be 12-22 digits');
+    if (utr.length < 10 || utr.length > 22) {
+      setError('Invalid Signal: UTR must be between 10-22 digits.');
       return;
     }
 
     if (!transactionId) return;
     
     setLoading(true);
-    setStatus('verifying');
+    setStatus('verifying'); // This triggers the simulated polling UI
     setError('');
 
     try {
-      const utrResp = await api.post('/stocks/verify-utr', { utr, transactionId });
+      // Feature: Simulated Neural Polling (UX Requirement: 3-5 retries)
+      // We perform one real upload, but we'll simulate the "Neural Bottling"
       
-      if (utrResp.data.success && utrResp.data.status === 'success') {
-        if (file) {
-          const formData = new FormData();
-          formData.append('screenshot', file);
-          formData.append('transactionId', transactionId);
-          formData.append('utr', utr);
-          formData.append('timeSpent', timeSpent.toString());
-          api.post('/stocks/verify-screenshot', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          }).catch(console.error);
-        }
+      const formData = new FormData();
+      if (file) formData.append('screenshot', file);
+      formData.append('utr', utr.trim());
+      formData.append('timeSpent', timeSpent.toString());
+
+      const { data } = await api.post(`/stocks/transactions/${transactionId}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      // Simulation of Neural Sync (3 seconds)
+      await new Promise(r => setTimeout(r, 3000));
+
+      if (data.success && data.status === 'SUCCESS') {
         setStatus('success');
-        return;
-      }
-
-      if (file) {
-        setStatus('uploading');
-        const formData = new FormData();
-        formData.append('screenshot', file);
-        formData.append('transactionId', transactionId);
-        formData.append('utr', utr);
-        formData.append('timeSpent', timeSpent.toString());
-
-        const ocrResp = await api.post('/stocks/verify-screenshot', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-
-        if (ocrResp.data.status === 'success') {
-          setStatus('success');
-        } else if (ocrResp.data.status === 'suspicious') {
-          setStatus('idle');
-          setNotice({
-            isOpen: true,
-            title: "Suspicious Activity ⚠️",
-            message: "Our AI detected a mismatch in your evidence. Your payment is marked for manual review.",
-            type: 'alert',
-            onConfirm: () => router.push('/dashboard/payment-history')
-          });
-        } else {
-          setStatus('failed');
-          setError('Verification Failed: Data Mismatch');
-        }
+      } else if (data.status === 'PENDING_REVIEW') {
+        setStatus('idle'); // Status handled by the PENDING_REVIEW screen in main loop
+        setTxStatus('PENDING_REVIEW');
       } else {
-        setStatus('idle');
-        setNotice({
-          isOpen: true,
-          title: "Verification Pending",
-          message: "Your UTR has been submitted. Please upload a screenshot for faster auto-verification.",
-          type: 'alert',
-          onConfirm: () => {}
-        });
+        setStatus('failed');
+        setError(data.message || 'Verification Mismatch: Neural OCR Signal Fault.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Verification Error');
-      setStatus('failed');
+      setError(err.response?.data?.message || 'Neural Link Fault: Connection Terminated.');
     } finally {
       setLoading(false);
     }
@@ -479,18 +448,22 @@ function PayContent() {
                    </div>
                  )}
 
-                 <button 
-                    onClick={verifyPayment}
-                    disabled={loading || (!file && !utr)}
-                    className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
+                  <p className="px-6 py-4 bg-amber-50 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest text-center italic border border-amber-100">
+                    Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting UTR.
+                  </p>
+
+                  <button 
+                     onClick={verifyPayment}
+                     disabled={loading || !utr}
+                     className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
                   >
                     {status === 'verifying' ? (
                       <div className="flex items-center gap-3">
                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                         <span className="animate-pulse tracking-[0.4em]">BOT SCANNING...</span>
+                         <span className="animate-pulse tracking-[0.4em]">NEURAL SYNC...</span>
                       </div>
                     ) : (
-                      <>INITIALIZE AUTO-VERIFY <ArrowLeft className="rotate-180" size={20} /></>
+                      <>SUBMIT IDENTITY SIGNAL <ArrowLeft className="rotate-180" size={20} /></>
                     )}
                   </button>
 
