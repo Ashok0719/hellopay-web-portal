@@ -7,17 +7,23 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import Link from 'next/link';
 
-function AppButton({ icon, label, onClick }: { icon: string, label: string, onClick: () => void }) {
+function AppButton({ icon, label, onClick, color }: { icon: string, label: string, onClick: () => void, color: string }) {
   return (
-    <button 
+    <motion.button 
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className="flex flex-col items-center gap-3 p-5 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md hover:border-emerald-200 transition-all active:scale-95 group"
+      className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-[24px] shadow-sm hover:shadow-xl hover:border-slate-200 transition-all group relative overflow-hidden h-32"
     >
-      <div className="w-12 h-12 flex items-center justify-center p-2 rounded-2xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
-        <img src={icon} alt={label} className="w-full h-full object-contain" />
+      <div className={`absolute top-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity ${color}`} />
+      <div className="w-14 h-14 flex items-center justify-center mb-3">
+        <img src={icon} alt={label} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
       </div>
-      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-emerald-600 transition-colors">{label}</span>
-    </button>
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors">{label}</span>
+      <div className="absolute bottom-2 right-4 opacity-0 group-hover:opacity-10 scale-0 group-hover:scale-100 transition-all">
+         <Zap size={40} className="fill-slate-900 text-slate-900" />
+      </div>
+    </motion.button>
   );
 }
 
@@ -394,19 +400,28 @@ function PayContent() {
               </button>
               
               <AnimatePresence>
-                {showAppSelector && (
-                   <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                         <AppButton icon="https://www.vectorlogo.zone/logos/paytm/paytm-icon.svg" label="Paytm" onClick={() => handlePayNow('paytm')} />
-                         <AppButton icon="https://www.vectorlogo.zone/logos/phonepe/phonepe-icon.svg" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
-                         <AppButton icon="https://www.vectorlogo.zone/logos/google_pay/google_pay-icon.svg" label="GPay" onClick={() => handlePayNow('gpay')} />
-                         <AppButton icon="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Freecharge_logo.png/220px-Freecharge_logo.png" label="Freecharge" onClick={() => handlePayNow('freecharge')} />
-                      </div>
-                      <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic">
-                        Select an app to auto-fill amount & UPI. <br/> After payment, return here to submit UTR.
-                      </p>
-                   </div>
-                )}
+                 {showAppSelector && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-6 overflow-hidden"
+                    >
+                       <div className="flex items-center justify-between px-2">
+                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] italic">Select Payment App</h4>
+                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <AppButton icon="https://www.vectorlogo.zone/logos/google_pay/google_pay-icon.svg" label="Google Pay" color="bg-blue-500" onClick={() => handlePayNow('gpay')} />
+                          <AppButton icon="https://www.vectorlogo.zone/logos/phonepe/phonepe-icon.svg" label="PhonePe" color="bg-indigo-600" onClick={() => handlePayNow('phonepe')} />
+                          <AppButton icon="https://www.vectorlogo.zone/logos/paytm/paytm-icon.svg" label="Paytm" color="bg-sky-400" onClick={() => handlePayNow('paytm')} />
+                          <AppButton icon="https://img.icons8.com/color/48/freecharge.png" label="Freecharge" color="bg-orange-600" onClick={() => handlePayNow('freecharge')} />
+                       </div>
+                       <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic leading-relaxed px-8">
+                         Neural Redirection: Your chosen app will initialize with target unit amount and identity pre-filled.
+                       </p>
+                    </motion.div>
+                 )}
               </AnimatePresence>
            </div>
 
@@ -491,11 +506,11 @@ function PayContent() {
 
         <div className="mt-12 text-center">
            <div className="flex items-center justify-center gap-6 opacity-30 grayscale mb-6">
-              <img src="https://img.icons8.com/color/48/phonepe.png" className="h-6" />
-              <img src="https://img.icons8.com/color/48/paytm.png" className="h-6" />
-              <img src="https://img.icons8.com/color/48/google-pay.png" className="h-6" />
-              <img src="https://img.icons8.com/color/48/amazon-pay.png" className="h-6" />
-              <img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Freecharge_logo.png/220px-Freecharge_logo.png" className="h-6" />
+               <img src="https://www.vectorlogo.zone/logos/phonepe/phonepe-icon.svg" className="h-4" />
+               <img src="https://www.vectorlogo.zone/logos/paytm/paytm-icon.svg" className="h-4" />
+               <img src="https://www.vectorlogo.zone/logos/google_pay/google_pay-icon.svg" className="h-4" />
+               <img src="https://img.icons8.com/color/48/amazon-pay.png" className="h-4" />
+               <img src="https://img.icons8.com/color/48/freecharge.png" className="h-4" />
            </div>
            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 italic flex items-center justify-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Neural Security Mesh Protected
