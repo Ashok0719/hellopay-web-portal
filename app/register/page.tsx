@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/hooks/useAuth';
 import api from '@/lib/api';
-import NeuralBackground from '../components/NeuralBackground';
+import NeuralBackground from '../../components/NeuralBackground';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({

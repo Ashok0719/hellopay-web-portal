@@ -129,7 +129,7 @@ export default function SendMoneyPage() {
 
               <div className="space-y-4">
                 <button
-                  onClick={handleSend}
+                  onClick={() => setShowPinModal(true)}
                   disabled={loading}
                   className="w-full btn-primary py-6 rounded-3xl text-xl font-black group flex items-center justify-center gap-3"
                 >
