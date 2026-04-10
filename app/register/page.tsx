@@ -219,9 +219,20 @@ function RegisterContent() {
             referralCode: formData.referralCode
           });
 
-          setToken(data.token);
-          setUser(data);
-          router.push('/dashboard');
+          if (data.needsSetup) {
+            // New User: fill the form so they just have to add Name/PIN/Password
+            setFormData(prev => ({
+              ...prev,
+              email: data.email,
+              name: data.name || ''
+            }));
+            console.log('[NEURAL] New Identity identified. Please complete Activation.');
+          } else {
+            // Existing User: go straight to dashboard
+            setToken(data.token);
+            setUser(data);
+            router.push('/dashboard');
+          }
         }
       } catch (err: any) {
         console.error('[NEURAL REDIRECT FAULT]', err);
