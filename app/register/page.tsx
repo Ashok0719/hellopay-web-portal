@@ -44,6 +44,13 @@ export default function RegisterPage() {
       if (type === 'pin') pinRefs.current[idx + 1]?.focus();
       else if (type === 'confirm') confirmPinRefs.current[idx + 1]?.focus();
       else if (type === 'otp') otpRefs.current[idx + 1]?.focus();
+    } else if (val && idx === 3 && type === 'otp') {
+      // 🚀 Auto-ignition: Auto-submit OTP on 4th digit
+      setTimeout(() => {
+        const pinString = formData.pin.join('');
+        const otpString = [...newPin].join('');
+        executeRegister(pinString, otpString);
+      }, 100);
     }
   };
 
@@ -68,13 +75,8 @@ export default function RegisterPage() {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const pinString = formData.pin.join('');
-    const otpString = formData.otp.join('');
-    
-    if (otpString.length < 4) return setError('Complete your Verification Signal');
-    
+  const executeRegister = async (pinString: string, otpString: string) => {
+    if (loading) return;
     setLoading(true);
     setError('');
     
@@ -88,18 +90,29 @@ export default function RegisterPage() {
         otp: otpString
       });
       
-      localStorage.setItem('hellopay-auth-storage', JSON.stringify({
+      // 🔥 Neural Hard-Save & Redirect
+      const authState = {
         state: { user: data, token: data.token, isAuthenticated: true },
         version: 0
-      }));
+      };
+      
+      localStorage.setItem('hellopay-auth-storage', JSON.stringify(authState));
       setToken(data.token);
       setUser(data);
-      window.location.href = '/dashboard';
+      
+      console.log('[NEURAL] Identity Link Established. Redirecting...');
+      window.location.replace('/dashboard'); 
     } catch (err: any) {
       setError(err.response?.data?.message || 'Neural Link Error: Access Denied');
-    } finally {
       setLoading(false);
     }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const pinString = formData.pin.join('');
+    const otpString = formData.otp.join('');
+    executeRegister(pinString, otpString);
   };
 
   if (!mounted) return null;
