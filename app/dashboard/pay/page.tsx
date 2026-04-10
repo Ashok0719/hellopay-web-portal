@@ -105,6 +105,9 @@ function PayContent() {
       // Neural Fix: GPay (Tez) protocol varies by device, upi:// is safest fallback but tez:// forces gPay
       finalIntent = finalIntent.replace(/upi:\/\//i, 'tez://upi/'); 
     }
+    else if (app === 'freecharge') {
+      finalIntent = finalIntent.replace(/upi:\/\//i, 'freecharge://');
+    }
     
     console.log('[Neural Redirect]', finalIntent);
     
@@ -393,10 +396,11 @@ function PayContent() {
               <AnimatePresence>
                 {showAppSelector && (
                    <div className="space-y-4">
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                          <AppButton icon="https://www.vectorlogo.zone/logos/paytm/paytm-icon.svg" label="Paytm" onClick={() => handlePayNow('paytm')} />
                          <AppButton icon="https://www.vectorlogo.zone/logos/phonepe/phonepe-icon.svg" label="PhonePe" onClick={() => handlePayNow('phonepe')} />
                          <AppButton icon="https://www.vectorlogo.zone/logos/google_pay/google_pay-icon.svg" label="GPay" onClick={() => handlePayNow('gpay')} />
+                         <AppButton icon="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Freecharge_logo.png/220px-Freecharge_logo.png" label="Freecharge" onClick={() => handlePayNow('freecharge')} />
                       </div>
                       <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic">
                         Select an app to auto-fill amount & UPI. <br/> After payment, return here to submit UTR.
@@ -491,6 +495,7 @@ function PayContent() {
               <img src="https://img.icons8.com/color/48/paytm.png" className="h-6" />
               <img src="https://img.icons8.com/color/48/google-pay.png" className="h-6" />
               <img src="https://img.icons8.com/color/48/amazon-pay.png" className="h-6" />
+              <img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Freecharge_logo.png/220px-Freecharge_logo.png" className="h-6" />
            </div>
            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 italic flex items-center justify-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Neural Security Mesh Protected
