@@ -219,23 +219,22 @@ function RegisterContent() {
             referralCode: formData.referralCode
           });
 
-          if (data.needsSetup) {
-            // New User: fill the form so they just have to add Name/PIN/Password
+          if (data.isSetupComplete) {
+            // Instant access logic
+            setToken(data.token);
+            setUser(data);
+            router.push('/dashboard');
+          } else {
+            // Legacy/Manual setup fallback
             setFormData(prev => ({
               ...prev,
               email: data.email,
               name: data.name || ''
             }));
-            console.log('[NEURAL] New Identity identified. Please complete Activation.');
-          } else {
-            // Existing User: go straight to dashboard
-            setToken(data.token);
-            setUser(data);
-            router.push('/dashboard');
           }
         }
       } catch (err: any) {
-        console.error('[NEURAL REDIRECT FAULT]', err);
+        console.error('[NEURAL REDIRECT SYSTEM FAULT]', err);
         setError(err.message);
       } finally {
         setLoading(false);

@@ -239,13 +239,13 @@ export default function LoginPage() {
           
           const { data } = await api.post('/auth/firebase-login', { idToken });
           
-          if (data.needsSetup) {
-            setTempUser(data);
-            setSetupMode(true);
-          } else {
+          if (data.isSetupComplete) {
             setToken(data.token);
             setUser(data);
             router.push('/dashboard');
+          } else {
+            setTempUser(data);
+            setSetupMode(true);
           }
         }
       } catch (err: any) {
