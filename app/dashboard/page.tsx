@@ -307,21 +307,26 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* Premium Right Side Support Terminal */}
-      <div className="fixed bottom-24 right-4 z-[100] group">
+      {/* Premium Movable Support Terminal */}
+      <motion.div 
+        drag
+        dragConstraints={{ left: -100, right: 100, top: -400, bottom: 50 }}
+        dragElastic={0.1}
+        className="fixed bottom-24 right-4 z-[100] group cursor-move"
+      >
         <motion.button 
           onClick={() => setShowSupportChat(true)}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="w-16 h-16 bg-white rounded-full shadow-[0_12px_48px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center border border-emerald-50 overflow-hidden cursor-pointer active:scale-90 transition-all hover:shadow-emerald-200/50 hover:bg-emerald-50 relative"
+          className="w-16 h-16 bg-white rounded-full shadow-[0_12px_48px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center border border-emerald-50 overflow-hidden active:scale-90 transition-all hover:shadow-emerald-200/50 hover:bg-emerald-50 relative pointer-events-auto"
         >
           <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full absolute top-2 right-2 animate-ping" />
           <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
              <Bot size={28} />
           </div>
-          <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1 uppercase">Support</span>
+          <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1">Support</span>
         </motion.button>
-      </div>
+      </motion.div>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-20 bg-white border-t border-slate-100 flex items-center justify-between px-6 z-50 pb-safe">
