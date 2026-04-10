@@ -1324,10 +1324,33 @@ function WithdrawModal({ isOpen, onClose, user, onWithdraw, config }: any) {
 function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   const [upiId, setUpiId] = useState(user?.upiId || '');
   const [pin, setPin] = useState(['', '', '', '']);
-  const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [qrFile, setQrFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [verificationState, setVerificationState] = useState<'idle' | 'scanning' | 'syncing' | 'verifying' | 'success' | 'failed'>('idle');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const pinRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  const upiRegex = /^[a-z0-9._-]{3,}@[a-z]{2,}$/;
+  const validHandles = [
+    'okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'ybl', 'ibl', 'axl', 'apl', 'paytm', 'upi',
+    'ptaxis', 'ptsbi', 'pthdfc'
+  ];
+
+  const validateUpi = (id: string) => {
+    if (!upiRegex.test(id)) return false;
+    const [userPart, handle] = id.split('@');
+    if (/^\d+$/.test(userPart)) {
+      if (userPart.length < 8 || userPart.length > 15) return false;
+    } else {
+      if (userPart.length < 3) return false;
+    }
+    if (userPart.includes('..') || userPart.includes('__') || userPart.includes('--')) return false;
+    if (!validHandles.includes(handle)) return false;
+    return true;
+  };
+
+  const isUpiValid = validateUpi(upiId);
 
   const handlePinChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -1335,15 +1358,11 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     const newPin = [...pin];
     newPin[index] = digit;
     setPin(newPin);
-    if (digit && index < 3) {
-      pinRefs.current[index + 1]?.focus();
-    }
+    if (digit && index < 3) pinRefs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !pin[index] && index > 0) {
-      pinRefs.current[index - 1]?.focus();
-    }
+    if (e.key === 'Backspace' && !pin[index] && index > 0) pinRefs.current[index - 1]?.focus();
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
@@ -1353,74 +1372,28 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     const newPin = [...pin];
     data.split('').forEach((char, idx) => { newPin[idx] = char; });
     setPin(newPin);
-    const focusIdx = Math.min(data.length, 3);
-    pinRefs.current[focusIdx]?.focus();
-  };
-
-  const handleSaveUpi = async () => {
-    const pinString = pin.join('');
-    if (!upiId || pinString.length < 4) return setNotice({ 
-       isOpen: true, 
-       title: "Authorization Required", 
-       message: "A 4-digit Security PIN and a valid UPI ID are required to bind your node."
-    });
-    
-    setIsSaving(true);
-    const formData = new FormData();
-    formData.append('upiId', upiId);
-    formData.append('pin', pinString);
-    formData.append('currentPin', pinString);
-    if (qrFile) formData.append('qrCode', qrFile);
-
-    try {
-      const { data } = await api.post('/save-upi', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setUser({ ...user, ...data });
-      setNotice({
-         isOpen: true,
-         title: "Protocol Synced",
-         message: "Your neural wallet and visual payment signals have been successfully bound to the rotation engine."
-      });
-    } catch (err: any) {
-      setNotice({
-         isOpen: true,
-         title: "Sync Failure",
-         message: err.response?.data?.message || "The neural link could not be established. Please check your signal."
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    pinRefs.current[Math.min(data.length, 3)]?.focus();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setIsScanning(true);
     const reader = new FileReader();
     reader.onload = async (event) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.width = img.width; canvas.height = img.height;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         ctx.drawImage(img, 0, 0);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
-        
-        if (code) {
-          setQrFile(file);
-        } else {
-          setNotice({
-             isOpen: true,
-             title: "Neural Guard Alert",
-             message: "The uploaded image does not contain a valid QR code signal. Please upload a clear QR scanner photo to prevent rotation failure."
-          });
-          e.target.value = ''; 
-          setQrFile(null);
+        if (code) setQrFile(file);
+        else {
+           setNotice({ isOpen: true, title: "Neural Guard Alert", message: "Invalid QR code signal. Please upload a clear QR photo." });
+           setQrFile(null);
         }
         setIsScanning(false);
       };
@@ -1429,236 +1402,99 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
     reader.readAsDataURL(file);
   };
 
-  const [verificationState, setVerificationState] = useState<'idle' | 'opening' | 'waiting' | 'success' | 'failed' | 'suspicious'>('idle');
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  // STEP 1: REAL-WORLD REGEX & VALIDATION
-  const upiRegex = /^[a-z0-9._-]{3,}@[a-z]{2,}$/;
-  const validHandles = [
-    'okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'ybl', 'ibl', 'axl', 'apl', 'paytm', 'upi',
-    'ptaxis', 'ptsbi', 'pthdfc'
-  ];
-  
-  const validateUpi = (id: string) => {
-    // Basic format check
-    if (!upiRegex.test(id)) return false;
-    
-    const [userPart, handle] = id.split('@');
-    
-    // Feature: Phone number support (10 digits)
-    const isPhone = /^\d{10}$/.test(userPart);
-    
-    // Numeric-only usernames (Paytm/Generic style)
-    if (/^\d+$/.test(userPart)) {
-      if (isPhone) {
-        // 10 digits @ handle is always valid
-      } else if (userPart.length < 8 || userPart.length > 15) {
-        return false;
-      }
-    } else {
-      // Mixed usernames
-      if (userPart.length < 3) return false;
-    }
-
-    if (userPart.includes('..') || userPart.includes('__') || userPart.includes('--')) return false;
-    if (!validHandles.includes(handle)) return false;
-    return true;
-  };
-
-  const isUpiValid = validateUpi(upiId);
-
-  // STEP 3 & 4: APP VERIFICATION FLOW
-  const handleVerifyIntent = () => {
+  const handleSaveUpi = async () => {
     if (!isUpiValid) return;
+    const pinString = pin.join('');
+    if (pinString.length < 4) return;
     
-    setVerificationState('opening');
-    localStorage.setItem("upi_verify_start", Date.now().toString());
-    
-    const upiLink = `upi://pay?pa=${upiId}&pn=Verify&am=1&cu=INR`;
-    
-    // Auto detect return (Step 4)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        const startTime = parseInt(localStorage.getItem("upi_verify_start") || "0");
-        const duration = (Date.now() - startTime) / 1000;
-        
-        localStorage.removeItem("upi_verify_start");
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
-
-        // STEP 6: SMART LOGIC
-        if (duration < 3) {
-           setVerificationState('failed');
-        } else if (duration >= 5 && duration <= 35) {
-           setVerificationState('waiting');
-           setShowConfirmModal(true);
-        } else {
-           setVerificationState('idle');
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.location.href = upiLink;
-  };
-
-  const confirmVerification = async (confirmed: boolean) => {
-    setShowConfirmModal(false);
-    if (!confirmed) {
-      setVerificationState('failed');
-      return;
-    }
-
-    // STEP 7: BACKEND SAVE
-    setVerificationState('success');
     setIsSaving(true);
+    setVerificationState('syncing');
+
     try {
-      const pinString = pin.join('');
-      const { data } = await api.post('/save-upi', { upiId, pin: pinString });
+      const formData = new FormData();
+      formData.append('upiId', upiId);
+      formData.append('pin', pinString);
+      if (qrFile) formData.append('qrCode', qrFile);
+
+      const { data } = await api.post('/stocks/save-upi', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
       if (data.success) {
+        setVerificationState('success');
         setNotice({
           isOpen: true,
-          title: "Neural Sync Valid ✅",
-          message: "UPI Identity verified via Deep Link Matrix. Registry successfully updated.",
-          type: 'alert',
-          onConfirm: () => {}
+          title: "Registry Updated ✅",
+          message: "Your UPI Identity and QR Signal have been bound to your Safety PIN.",
+          onConfirm: () => api.get('/auth/profile').then(res => setUser(res.data))
         });
       }
     } catch (err: any) {
       setVerificationState('failed');
-      setNotice({
-        isOpen: true,
-        title: "Protocol Fault",
-        message: err.response?.data?.message || "Registry update failed",
-        type: 'alert',
-        onConfirm: () => {}
-      });
+      setNotice({ isOpen: true, title: "Protocol Rejected", message: err.response?.data?.message || "Invalid Session PIN." });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const myTradable = Math.floor((user?.walletBalance || 0) / 100) * 100;
-  const numUnits = myTradable / 100;
+  const numUnits = Math.floor((user?.walletBalance || 0) / 100);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="p-4"
-    >
+    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-4">
       <h2 className="text-2xl font-bold text-center text-emerald-600 mb-6 uppercase italic tracking-tighter">Wallet Hub</h2>
 
       <div className="bg-slate-900 rounded-[32px] p-8 text-white mb-6 relative overflow-hidden shadow-2xl">
          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Neural Asset Value</p>
          <h3 className="text-6xl font-black italic tracking-tighter mb-6 underline decoration-yellow-500/30 underline-offset-8">₹{(user?.walletBalance || 0).toLocaleString()}</h3>
-         
          <div className="p-6 bg-white/5 border border-white/10 rounded-3xl">
             <div className="flex justify-between items-center text-[11px] font-black uppercase text-slate-400 mb-2">
                <span>Virtual Split Strategy</span>
                <span className="text-yellow-500 font-bold">1 Unit = ₹100</span>
             </div>
             <p className="text-xs font-bold text-slate-300 leading-relaxed italic">
-              You have <span className="text-yellow-400">{numUnits}</span> units listed. Registry status: <span className="text-emerald-400">{user?.isUpiVerified ? 'VERIFIED' : 'PENDING'}</span>
+              You have {numUnits} units. Registry: <span className="text-emerald-400">{user?.isUpiVerified ? 'VERIFIED' : 'PENDING'}</span>
             </p>
          </div>
       </div>
 
       <div className="p-8 bg-white rounded-[40px] border border-slate-100 shadow-sm space-y-8 mb-4 relative overflow-hidden">
-         {/* STEP 9: UI STATES LIGHTS */}
-         {verificationState !== 'idle' && (
-           <div className="absolute top-4 right-8 flex items-center gap-2">
-              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{verificationState}...</span>
-              <div className={`w-2 h-2 rounded-full animate-pulse ${verificationState === 'success' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
-           </div>
-         )}
-
          <div>
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1 flex justify-between">
               Receiving UPI ID
-              {upiId && (
-                <span className={`text-[9px] ${isUpiValid ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {isUpiValid ? 'VALID FORMAT ✅' : 'INVALID UPI ❌'}
-                </span>
-              )}
+              {upiId && <span className={`text-[9px] ${isUpiValid ? 'text-emerald-500' : 'text-red-500'}`}>{isUpiValid ? 'VALID' : 'INVALID'}</span>}
             </label>
-            <div className="relative">
-              <input 
-                 value={upiId}
-                 onChange={(e) => {
-                    let val = e.target.value.toLowerCase().trim();
-                    // FEATURE: PHONE NUMBER AUTO-CONVERT
-                    if (/^\d{10}$/.test(val)) {
-                      val = `${val}@upi`;
-                    }
-                    setUpiId(val);
-                  }}
-                 className={`w-full px-8 py-5 rounded-3xl text-sm font-bold transition-all border ${isUpiValid ? 'bg-emerald-50/20 border-emerald-100 focus:outline-emerald-500' : 'bg-slate-50 border-slate-100 focus:outline-yellow-500'}`} 
-                 placeholder="UPI ID or Phone Number"
-              />
-            </div>
-            {!isUpiValid && upiId && (
-              <p className="text-[8px] font-black text-red-400 mt-3 ml-2 uppercase tracking-widest leading-relaxed">
-                Numeric (8-15) or Mixed (min 3 chars). Valid handles include Paytm and primary banking nodes.
-              </p>
-            )}
+            <input value={upiId} onChange={(e) => setUpiId(e.target.value.toLowerCase().trim())} className={`w-full px-8 py-5 rounded-3xl text-sm font-bold border ${isUpiValid ? 'bg-emerald-50/20 border-emerald-100' : 'bg-slate-50 border-slate-100'}`} placeholder="UPI ID" />
          </div>
-         
+
          <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Security PIN</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Identity QR Code</label>
+            <div className="flex items-center gap-6">
+               <div className="w-24 h-24 bg-slate-100 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden relative group">
+                  {user?.qrCode || qrFile ? (
+                     <img src={qrFile ? URL.createObjectURL(qrFile) : (user?.qrCode?.startsWith('http') ? user.qrCode : (process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000') + user?.qrCode)} className="w-full h-full object-cover" />
+                  ) : <QrCode className="text-slate-300" size={32} />}
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                  {isScanning && <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20"><RefreshCcw size={24} className="text-emerald-500 animate-spin" /></div>}
+               </div>
+               <p className="flex-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed italic">Upload UPI QR to bind signature.</p>
+            </div>
+         </div>
+
+         <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-4 ml-1">Account Safety PIN</label>
             <div className="flex justify-between gap-3">
               {pin.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => { pinRefs.current[idx] = el; }}
-                  type="password"
-                  inputMode="numeric"
-                  maxLength={1}
-                  className={`w-full h-16 bg-slate-50 border rounded-3xl text-center text-xl font-bold transition-all duration-300 ${pin[idx] ? 'border-yellow-400 bg-yellow-50/20 shadow-[0_4px_15px_rgba(250,204,21,0.1)]' : 'border-slate-100 bg-white'}`}
-                  value={digit}
-                  onChange={(e) => handlePinChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(idx, e)}
-                  onPaste={handlePaste}
-                />
+                <input key={idx} ref={(el) => { pinRefs.current[idx] = el; }} type="password" inputMode="numeric" maxLength={1} className={`w-full h-16 bg-slate-50 border rounded-3xl text-center text-xl font-bold transition-all ${pin[idx] ? 'border-yellow-400 bg-yellow-50/20' : 'border-slate-100 bg-white'}`} value={digit} onChange={(e) => handlePinChange(idx, e.target.value)} onKeyDown={(e) => handleKeyDown(idx, e)} onPaste={handlePaste} />
               ))}
             </div>
          </div>
 
-         <div className="flex flex-col gap-4">
-            <button 
-               onClick={handleSaveUpi}
-               disabled={isSaving || !isUpiValid || pin.join('').length < 4}
-               className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl active:scale-95 transition-all text-sm flex items-center justify-center gap-3 disabled:opacity-20"
-            >
-               {isSaving ? 'Synchronizing...' : (
-                 <>
-                   <Zap size={18} className="fill-yellow-400 text-yellow-400" /> Save & Sync Registry
-                 </>
-               )}
-            </button>
-            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-widest mt-2 px-4">
-               Direct Neural Verification: Protocol will instantly bind your identity to the P2P Rotation Grid.
-            </p>
-         </div>
+         <button onClick={handleSaveUpi} disabled={isSaving || !isUpiValid || pin.join('').length < 4} className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl active:scale-95 transition-all text-sm flex items-center justify-center gap-3 disabled:opacity-20">
+            {isSaving ? 'Synchronizing...' : <><Zap size={18} className="fill-yellow-400 text-yellow-400" /> Save & Sync Registry</>}
+         </button>
       </div>
-
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
-           <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} className="bg-white rounded-[40px] p-10 max-w-sm w-full text-center shadow-2xl border border-slate-100 italic">
-              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto mb-8 shadow-inner"><HelpCircle size={40} /></div>
-              <h3 className="text-xl font-black uppercase tracking-tighter text-slate-800 mb-4 italic">Confirmation Portal</h3>
-              <p className="text-sm font-bold text-slate-500 leading-relaxed mb-10 italic">Did you see the <span className="text-emerald-600">Account Holder Name</span> and <span className="text-slate-800 underline">₹1 verification signal</span> in your UPI app?</p>
-              
-              <div className="flex flex-col gap-4">
-                 <button onClick={() => confirmVerification(true)} className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Yes, Verified ✅</button>
-                 <button onClick={() => confirmVerification(false)} className="w-full py-4 bg-white text-slate-400 rounded-[24px] font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all underline decoration-slate-200 uppercase">Abort Protocol</button>
-              </div>
-           </motion.div>
-        </div>
-      )}
-
-      <p className="text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-10">Neural Rotation Protocol Active v3.2</p>
+      <p className="text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-10">Neural Rotation Protocol Active v3.3</p>
     </motion.div>
   );
 }

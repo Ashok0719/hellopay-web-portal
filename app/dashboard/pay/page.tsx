@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { QRCodeSVG } from 'qrcode.react';
 
 function AppButton({ icon, label, onClick, color }: { icon: string, label: string, onClick: () => void, color: string }) {
   const [imgError, setImgError] = useState(false);
@@ -59,6 +60,9 @@ function PayContent() {
   const [error, setError] = useState('');
   const [txStatus, setTxStatus] = useState<string | null>(null);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '', type: 'alert' as 'alert' | 'confirm', onConfirm: () => {} });
+  const [isIntentModalOpen, setIsIntentModalOpen] = useState(false);
+  const [currentIntentUrl, setCurrentIntentUrl] = useState('');
+  const [selectedAppName, setSelectedAppName] = useState('');
 
   useEffect(() => {
     const fetchTx = async () => {
@@ -133,24 +137,18 @@ function PayContent() {
       finalIntent = finalIntent.replace(/upi:\/\//i, 'freecharge://');
     }
     
-    console.log('[Neural Redirect]', finalIntent);
+    setCurrentIntentUrl(finalIntent);
+    setSelectedAppName(app?.toUpperCase() || 'UPI APP');
+    setIsIntentModalOpen(true);
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    try {
-      // 1. Direct location change (Standard for most mobile browsers)
-      window.location.href = finalIntent;
-      
-      // 2. Fallback instructions if app doesn't open
+    // Auto-redirect for mobile after a short buffer
+    if (isMobile) {
       setTimeout(() => {
-        setNotice({
-          isOpen: true,
-          title: "App Link Signal Weak",
-          message: "Could not establish neural link to the app automatically. Please copy the UPI ID and pay manually to secure your position.",
-          type: 'alert',
-          onConfirm: () => {}
-        });
-      }, 5000);
-    } catch (e) {
-      console.error('Redirect Error:', e);
+        // window.location.href = finalIntent; 
+        // Note: Intentional: user can click "Open App" in modal if auto-fails
+      }, 1500);
     }
 
     setShowAppSelector(false);
@@ -520,7 +518,186 @@ function PayContent() {
            }}
            onClose={() => setNotice({ ...notice, isOpen: false })}
         />
+
+        <PaymentIntentModal 
+           isOpen={isIntentModalOpen}
+           onClose={() => setIsIntentModalOpen(false)}
+           amount={amount || '0'}
+           upiId={receiverUpi || ''}
+           intentUrl={currentIntentUrl}
+           sellerName={sellerName || 'HelloPay Merchant'}
+           appName={selectedAppName}
+           orderId={orderId || 'HP_ORD_XXX'}
+        />
       </div>
+    </div>
+  );
+}
+
+function PaymentIntentModal({ isOpen, onClose, amount, upiId, intentUrl, sellerName, appName, orderId }: any) {
+  const [copied, setCopied] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    
+    if (isOpen && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      const timer = setTimeout(() => {
+        window.location.href = intentUrl;
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, intentUrl]);
+
+  if (!isOpen) return null;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(decodeURIComponent(upiId));
+    setCopied(true);
+    setShowToast(true);
+    setTimeout(() => {
+      setCopied(false);
+      setShowToast(false);
+    }, 2000);
+  };
+
+  const handleDownload = () => {
+    const canvas = document.querySelector('svg');
+    if (!canvas) return;
+    
+    const svgData = new XMLSerializer().serializeToString(canvas);
+    const canvasElement = document.createElement('canvas');
+    const ctx = canvasElement.getContext('2d');
+    const img = new (window as any).Image();
+    
+    img.onload = () => {
+      canvasElement.width = img.width;
+      canvasElement.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const pngFile = canvasElement.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `HelloPay_QR_${orderId}.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
+    
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
+  const handleRetryOpen = () => {
+    window.location.href = intentUrl;
+  };
+
+  return (
+    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 sm:p-6">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-2xl"
+      />
+      
+      <motion.div 
+        initial={{ scale: 0.8, opacity: 0, y: 40 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        className="bg-white rounded-[44px] w-full max-w-sm overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.15)] relative z-10 border border-white/20"
+      >
+        <div className="p-8 text-center flex flex-col items-center">
+            <div className="w-12 h-1.5 bg-slate-100 rounded-full mb-6" />
+            <h3 className="text-xl font-black text-slate-900 italic uppercase tracking-tighter mb-1">Complete Your Payment</h3>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8">Secure Identity Settlement Portal</p>
+            
+            <div className="mb-0 p-8 bg-slate-50/50 rounded-[44px] border border-slate-100 flex flex-col items-center w-full relative group">
+               <div className="absolute top-4 right-6 flex items-center gap-2">
+                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                   <span className="text-[8px] font-black uppercase text-emerald-600 tracking-widest">Digital Signal Active</span>
+               </div>
+
+               <div className="w-44 h-44 bg-white p-4 rounded-[32px] shadow-sm mb-6 flex items-center justify-center relative shadow-inner">
+                  <QRCodeSVG 
+                    value={intentUrl} 
+                    size={200}
+                    level="H"
+                    includeMargin={false}
+                    className="w-full h-full"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 backdrop-blur-[1px]">
+                     <QrIcon size={40} className="text-slate-900" />
+                  </div>
+               </div>
+               
+               <div className="w-full bg-white rounded-[28px] p-5 shadow-sm border border-slate-50 text-center mb-6">
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-2">Settlement Amount</span>
+                  <div className="text-4xl font-black italic tracking-tighter text-slate-900">₹{(Number(amount) || 0).toLocaleString()}</div>
+               </div>
+
+               <div className="w-full space-y-3">
+                  <div className="flex items-center justify-between bg-white px-5 py-4 rounded-[24px] border border-slate-50 shadow-sm">
+                     <div className="text-left overflow-hidden mr-4">
+                        <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 block">Receiver Identity</span>
+                        <p className="text-[11px] font-black text-slate-700 truncate">{decodeURIComponent(upiId)}</p>
+                     </div>
+                     <button onClick={handleCopy} className={`p-3 rounded-2xl transition-all ${copied ? 'bg-emerald-500 text-white shadow-xl' : 'bg-slate-50 text-slate-400 hover:text-emerald-600'}`}>
+                        {copied ? <Check size={14} /> : <Copy size={14} />}
+                     </button>
+                  </div>
+                  
+                  <div className="flex items-center justify-center gap-2 py-1">
+                     <ShieldCheck size={12} className="text-emerald-500" />
+                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Encrypted Order: {orderId}</span>
+                  </div>
+               </div>
+            </div>
+
+            <div className="w-full flex flex-col gap-4 mt-8 px-2">
+               {isMobile && (
+                  <button 
+                     onClick={handleRetryOpen}
+                     className="w-full py-5 bg-slate-900 text-white rounded-[28px] font-black uppercase tracking-widest text-[10px] shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                  >
+                     <Zap className="fill-yellow-400 text-yellow-400 group-hover:animate-bounce" size={16} /> Open {appName} App
+                  </button>
+               )}
+               
+               <div className="grid grid-cols-2 gap-4 w-full">
+                  <button 
+                    onClick={handleDownload}
+                    className="py-5 bg-white text-slate-700 border border-slate-100 rounded-[28px] font-black uppercase tracking-widest text-[9px] active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-slate-50"
+                  >
+                    <Upload className="rotate-180" size={16} /> Download QR
+                  </button>
+                  <button 
+                    onClick={onClose}
+                    className="py-5 bg-white text-slate-400 rounded-[28px] font-black uppercase tracking-widest text-[9px] active:scale-95 transition-all border border-slate-100"
+                  >
+                    Close
+                  </button>
+               </div>
+            </div>
+
+            <div className="mt-8 flex flex-col items-center gap-2">
+               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center italic leading-relaxed">
+                  If redirect fails, scan signal from desktop <br/> or copy identity for manual injection.
+               </p>
+            </div>
+        </div>
+      </motion.div>
+
+      {/* Copy Toast Integration */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-12 z-[700] px-8 py-4 bg-emerald-600 text-white rounded-[24px] shadow-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-3 border border-emerald-400/30"
+          >
+            <CheckCircle size={14} /> Identity Copied to Clipboard!
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
