@@ -132,9 +132,9 @@ export default function Dashboard() {
     
     const socket = io(socketUrl);
 
-    socket.on('configUpdated', (newConfig) => {
-      console.log('Neural Signal: Config Updated', newConfig);
-      setConfig(newConfig);
+    socket.on('configUpdated', () => {
+      console.log('Neural Signal: Global Registry Shift. Refreshing...');
+      forceSync();
     });
 
     socket.on('userStatusChanged', (data) => {
@@ -435,6 +435,11 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                  <div className="w-4 h-4 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
                     <Copy size={8} />
                  </div>
+              </div>
+              <span className="w-1 h-1 bg-slate-300 rounded-full" />
+              <div className="flex items-center gap-1.5 text-blue-600 font-black px-2 bg-blue-50 rounded-md border border-blue-100">
+                 <Users size={10} />
+                 <span>Nodes: {config?.totalUsers || '...'}</span>
               </div>
               {user?.isSeller && (
                 <Link href="/dashboard/seller" className="bg-emerald-600 text-white px-2 py-0.5 rounded-md flex items-center gap-1 ml-2">
