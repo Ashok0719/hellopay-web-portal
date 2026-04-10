@@ -7,6 +7,7 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
+import Script from 'next/script';
 
 export default function AddMoneyPage() {
   const [amount, setAmount] = useState('');
@@ -119,6 +120,7 @@ export default function AddMoneyPage() {
           </div>
         </motion.div>
       </div>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
     </div>
   );
 }

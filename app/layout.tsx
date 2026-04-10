@@ -39,7 +39,6 @@ export default function RootLayout({
       <body className="font-outfit antialiased transition-colors duration-700">
         <FirebaseManager />
         {children}
-        <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </body>
     </html>
   )
