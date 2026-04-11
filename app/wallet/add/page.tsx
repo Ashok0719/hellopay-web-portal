@@ -91,6 +91,10 @@ export default function AddMoneyPage() {
       if (data.success) {
         setStatus('SUCCESS');
         setTimeout(() => router.push('/dashboard'), 3000);
+      } else {
+        // Neural Fallback: Manual Audit Required
+        setStatus('ERROR');
+        setErrorMessage(data.message || 'Signature unclear. Proof submitted for manual audit.');
       }
     } catch (err: any) {
       console.error(err);
