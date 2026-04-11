@@ -60,10 +60,12 @@ public class MainActivity extends AppCompatActivity {
         settings.setDatabaseEnabled(true);
 
         // Feature: Neural Ghost Mode (Bypass Google Login Block)
-        String chromeUA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36";
+        // Using high-trust Pixel 8 Pro UserAgent to avoid "disallowed_useragent"
+        String chromeUA = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro Build/UQ1A.231205.015) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36";
         settings.setUserAgentString(chromeUA);
 
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        settings.setSupportMultipleWindows(true); // Requirement: Fix "Blank White Screen" during Google OAuth
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
 
@@ -85,7 +87,28 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         
-        webView.setWebChromeClient(new android.webkit.WebChromeClient());
+        webView.setWebChromeClient(new android.webkit.WebChromeClient() {
+            @Override
+            public boolean onCreateWindow(android.webkit.WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
+                android.webkit.WebView newWebView = new android.webkit.WebView(MainActivity.this);
+                newWebView.getSettings().setJavaScriptEnabled(true);
+                newWebView.getSettings().setSupportMultipleWindows(true);
+                newWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+                
+                newWebView.setWebViewClient(new android.webkit.WebViewClient() {
+                    @Override
+                    public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
+                        webView.loadUrl(url); // Load the popup URL in the main view
+                        return true; 
+                    }
+                });
+                
+                android.webkit.WebView.WebViewTransport transport = (android.webkit.WebView.WebViewTransport) resultMsg.obj;
+                transport.setWebView(newWebView);
+                resultMsg.sendToTarget();
+                return true;
+            }
+        });
 
         // The JS Bridge (Requirement: WEB + APK Communication)
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
