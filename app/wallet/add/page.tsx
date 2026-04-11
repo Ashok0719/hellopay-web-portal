@@ -15,7 +15,8 @@ export default function AddMoneyPage() {
   const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState<any>(null);
   const [step, setStep] = useState(1); // 1: Amount, 2: Payment, 3: Verifying
-  const [status, setStatus] = useState<'IDLE' | 'SUCCESS' | 'ERROR'>('IDLE');
+  const [status, setStatus] = useState<'IDLE' | 'SUCCESS' | 'ERROR' | 'VERIFYING'>('IDLE');
+  const [scanResults, setScanResults] = useState<{ amountMatch?: boolean, utrMatch?: boolean, upiMatch?: boolean } | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
   const { user } = useAuthStore();
@@ -88,6 +89,15 @@ export default function AddMoneyPage() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
+      // Feature: Instant Verification HUD Results
+      if (data.results) {
+         setScanResults(data.results);
+      }
+      setStatus('VERIFYING');
+
+      // UI Delay for impact
+      await new Promise(r => setTimeout(r, 2000));
+
       if (data.success) {
         setStatus('SUCCESS');
         setTimeout(() => router.push('/dashboard'), 3000);
@@ -284,7 +294,7 @@ export default function AddMoneyPage() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-slate-900/40 border border-white/5 backdrop-blur-3xl rounded-[48px] p-16 shadow-2xl text-center"
             >
-              {status === 'IDLE' && (
+              {(status === 'IDLE' || status === 'VERIFYING') && (
                 <div className="py-10 flex flex-col items-center gap-8">
                    <div className="relative">
                       <div className="w-24 h-24 rounded-full border-4 border-blue-600/20 animate-ping absolute inset-0"></div>
@@ -293,7 +303,30 @@ export default function AddMoneyPage() {
                       </div>
                    </div>
                    <div>
-                      <h2 className="text-2xl font-black italic tracking-tighter mb-2">Neural Verifying...</h2>
+                      <h2 className="text-2xl font-black italic tracking-tighter mb-8">Neural Verifying...</h2>
+                      
+                      {/* Neural Scan HUD */}
+                      <div className="w-full max-w-xs space-y-3 mb-10 mx-auto">
+                        <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5">
+                           <span className="text-[10px] font-black uppercase text-slate-500">Asset Value</span>
+                           <span className={`text-[10px] font-black uppercase ${scanResults?.amountMatch ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              {scanResults ? (scanResults.amountMatch ? 'COMPLETE' : 'FAILED') : 'SCANNING...'}
+                           </span>
+                        </div>
+                        <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5">
+                           <span className="text-[10px] font-black uppercase text-slate-500">Reference Signal</span>
+                           <span className={`text-[10px] font-black uppercase ${scanResults?.utrMatch ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              {scanResults ? (scanResults.utrMatch ? 'COMPLETE' : 'FAILED') : 'SEARCHING...'}
+                           </span>
+                        </div>
+                        <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5">
+                           <span className="text-[10px] font-black uppercase text-slate-500">Receiver Node</span>
+                           <span className={`text-[10px] font-black uppercase ${scanResults?.upiMatch ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              {scanResults ? (scanResults.upiMatch ? 'COMPLETE' : 'FAILED') : 'VERIFYING...'}
+                           </span>
+                        </div>
+                      </div>
+
                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Processing UTR & Screenshot Signals</p>
                    </div>
                 </div>

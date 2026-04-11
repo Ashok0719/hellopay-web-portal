@@ -112,6 +112,7 @@ function PayContent() {
   const [utr, setUtr] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'verifying' | 'success' | 'failed'>('idle');
+  const [scanResults, setScanResults] = useState<{ amountMatch?: boolean, utrMatch?: boolean, upiMatch?: boolean } | null>(null);
   const [showAppSelector, setShowAppSelector] = useState(false);
 
   const receiverUpi = upiIntent ? (upiIntent.split('pa=')[1] ? upiIntent.split('pa=')[1].split('&')[0] : 'Loading...') : 'Loading...';
@@ -195,8 +196,13 @@ function PayContent() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Simulation of Neural Sync (3 seconds)
-      await new Promise(r => setTimeout(r, 3000));
+      // Extract results from neural engine
+      if (data.results) {
+         setScanResults(data.results);
+      }
+
+      // Simulation of Neural Sync (Delayed for UI impact)
+      await new Promise(r => setTimeout(r, 2000));
 
       if (data.success && data.status === 'SUCCESS') {
         setStatus('success');
@@ -508,8 +514,31 @@ function PayContent() {
                  </div>
               </div>
               <h2 className="text-2xl font-black text-slate-900 italic uppercase tracking-tighter mb-4">Verifying Signal</h2>
+              
+              {/* Neural Scan HUD */}
+              <div className="w-full max-w-xs space-y-3 mb-10">
+                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span className="text-[10px] font-black uppercase text-slate-400">Asset Value</span>
+                    <span className={`text-[10px] font-black uppercase ${scanResults?.amountMatch ? 'text-emerald-500' : 'text-amber-500'}`}>
+                       {scanResults ? (scanResults.amountMatch ? 'COMPLETE' : 'FAILED') : 'SCANNING...'}
+                    </span>
+                 </div>
+                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span className="text-[10px] font-black uppercase text-slate-400">Reference Signal</span>
+                    <span className={`text-[10px] font-black uppercase ${scanResults?.utrMatch ? 'text-emerald-500' : 'text-amber-500'}`}>
+                       {scanResults ? (scanResults.utrMatch ? 'COMPLETE' : 'FAILED') : 'SEARCHING...'}
+                    </span>
+                 </div>
+                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span className="text-[10px] font-black uppercase text-slate-400">Receiver Identity</span>
+                    <span className={`text-[10px] font-black uppercase ${scanResults?.upiMatch ? 'text-emerald-500' : 'text-amber-500'}`}>
+                       {scanResults ? (scanResults.upiMatch ? 'COMPLETE' : 'FAILED') : 'VERIFYING...'}
+                    </span>
+                 </div>
+              </div>
+
               <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] leading-relaxed max-w-xs mb-10">
-                 The Neural OCR engine is analyzing your proof. This typically takes 30-60 seconds. You can safely close this or stay to wait.
+                 The Neural OCR engine is analyzing your proof. Check the results matrix above for real-time status.
               </p>
               <button 
                 onClick={() => router.push('/dashboard')}
