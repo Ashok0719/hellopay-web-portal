@@ -48,10 +48,16 @@ public class MainActivity extends AppCompatActivity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         
-        // Feature: Neural Session Persistence
+        // Feature: Neural Session Persistence (Requirement: Stop Auto-Logout)
         android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        webView.clearCache(true);
+        cookieManager.setAcceptCookie(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cookieManager.setAcceptThirdPartyCookies(webView, true);
+        }
+        
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
 
         // Feature: Neural Ghost Mode (Bypass Google Login Block)
         String chromeUA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36";
