@@ -300,21 +300,26 @@ export default function AddMoneyPage() {
               )}
 
               {status === 'SUCCESS' && (
-                <div className="py-10 flex flex-col items-center gap-8">
-                   <motion.div 
-                     initial={{ scale: 0 }}
-                     animate={{ scale: 1 }}
-                     className="w-24 h-24 bg-emerald-600 rounded-full flex items-center justify-center shadow-[0_20px_60px_rgba(16,185,129,0.4)]"
-                   >
-                      <CheckCircle size={48} className="text-white" />
-                   </motion.div>
-                   <div>
-                      <h2 className="text-3xl font-black italic tracking-tighter text-emerald-500 mb-2">Node Activated!</h2>
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">₹{amount} Propagated Successfully</p>
-                   </div>
-                   <p className="text-xs font-black text-slate-400 italic">Redirecting to Neural Hub...</p>
-                </div>
-              )}
+                 <div className="py-10 flex flex-col items-center gap-8">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="w-24 h-24 bg-emerald-600 rounded-full flex items-center justify-center shadow-[0_20px_60px_rgba(16,185,129,0.4)]"
+                    >
+                       <CheckCircle size={48} className="text-white" />
+                    </motion.div>
+                    <div>
+                       <h2 className="text-3xl font-black italic tracking-tighter text-emerald-500 mb-2">PAYMENT SUCCESSFUL</h2>
+                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Node Activated & Propagated</p>
+                    </div>
+                    <button 
+                      onClick={() => router.push('/dashboard')}
+                      className="px-10 py-5 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-500/20"
+                    >
+                      Return to Dashboard
+                    </button>
+                 </div>
+               )}
 
               {status === 'ERROR' && (
                 <div className="py-10 flex flex-col items-center gap-8">
@@ -322,16 +327,20 @@ export default function AddMoneyPage() {
                       <AlertCircle size={48} className="text-white" />
                    </div>
                    <div>
-                      <h2 className="text-2xl font-black italic tracking-tighter text-red-500 mb-4">Neural Disruption</h2>
-                      <div className="max-w-[280px] mx-auto p-4 bg-red-500/10 border border-red-500/20 rounded-2xl mb-6">
-                        <p className="text-[10px] font-black text-red-400 uppercase leading-relaxed tracking-widest">{errorMessage}</p>
+                      <div className="flex flex-col gap-4">
+                        <button 
+                          onClick={() => { setStep(2); setStatus('IDLE'); }}
+                          className="px-10 py-5 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 transition-all shadow-xl"
+                        >
+                          Re-attempt Propagation
+                        </button>
+                        <button 
+                          onClick={() => router.push('/dashboard')}
+                          className="px-10 py-5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all"
+                        >
+                          Return to Dashboard
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => { setStep(2); setStatus('IDLE'); }}
-                        className="px-10 py-5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all"
-                      >
-                        Re-attempt Propagation
-                      </button>
                    </div>
                 </div>
               )}
