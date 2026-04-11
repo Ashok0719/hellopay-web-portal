@@ -5,11 +5,11 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.hellopay.app"
+        applicationId "com.hellopay.neural.app"
         minSdk 24
         targetSdk 34
         versionCode 1
-        versionName "1.0.0-neural"
+        versionName "1.1.0-neural"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

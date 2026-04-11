@@ -121,22 +121,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isReceiverRegistered = false;
+
     @Override
     protected void onResume() {
         super.onResume();
-        // Register local receiver for SMS signals to inject into UI
-        android.content.IntentFilter filter = new android.content.IntentFilter("com.hellopay.SMS_SIGNAL");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(smsSignalReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(smsSignalReceiver, filter);
+        if (!isReceiverRegistered) {
+            try {
+                android.content.IntentFilter filter = new android.content.IntentFilter("com.hellopay.SMS_SIGNAL");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    registerReceiver(smsSignalReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+                } else {
+                    registerReceiver(smsSignalReceiver, filter);
+                }
+                isReceiverRegistered = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(smsSignalReceiver);
+        if (isReceiverRegistered) {
+            try {
+                unregisterReceiver(smsSignalReceiver);
+                isReceiverRegistered = false;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private final android.content.BroadcastReceiver smsSignalReceiver = new android.content.BroadcastReceiver() {
@@ -144,15 +159,18 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String utr = intent.getStringExtra("utr");
             if (utr != null) {
-                // Feature: Neural JS-Injection (Requirement: Visible Automation)
+                // Feature: Neural JS-Injection (Requirement: Native Compatible JS)
                 webView.post(() -> {
                     webView.loadUrl("javascript:(function(){ " +
                         "var input = document.querySelector('input[placeholder*=\"UTR\"], input[placeholder*=\"ID\"]'); " +
                         "if(input) { input.value = '" + utr + "'; input.dispatchEvent(new Event('input', { bubbles: true })); } " +
-                        "var btn = document.querySelector('button:contains(\"SUBMIT\"), button:contains(\"VERIFY\")'); " +
-                        "if(btn) btn.click(); " +
+                        "var buttons = document.querySelectorAll('button'); " +
+                        "for(var i=0; i<buttons.length; i++) { " +
+                        "  var text = buttons[i].innerText.toUpperCase(); " +
+                        "  if(text.includes('SUBMIT') || text.includes('VERIFY')) { buttons[i].click(); break; } " +
+                        "} " +
                         "})()");
-                    Toast.makeText(MainActivity.this, "Signal Detected & Linked: " + utr, Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Signal Linked: " + utr, Toast.LENGTH_LONG).show();
                 });
             }
         }
