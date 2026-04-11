@@ -76,14 +76,21 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 }
                 
-                try {
-                    android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
-                    startActivity(intent);
-                    return true;
-                } catch (Exception e) {
-                    android.widget.Toast.makeText(MainActivity.this, "App not installed on device", android.widget.Toast.LENGTH_SHORT).show();
-                    return true;
+                if (url.startsWith("upi://") || 
+                    url.startsWith("intent://") ||
+                    url.startsWith("freecharge://") ||
+                    url.startsWith("phonepe://")) {
+                        
+                    try {
+                        android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                        startActivity(intent);
+                        return true;
+                    } catch (Exception e) {
+                        android.widget.Toast.makeText(MainActivity.this, "No UPI app found", android.widget.Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
                 }
+                return false;
             }
         });
         
@@ -209,13 +216,12 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void startUPIPayment(String amount, String upiId, String name) {
-            // Feature: Invisible Signal (Requirement: Bypass Bank P2P Blocks)
-            // Rule: Stripping amount and merchant codes to mimic "Manual Contact" entry
-            String upiUrl = "upi://pay?pa=" + upiId + "&pn=" + Uri.encode(name);
+            // Feature: Pattern Detection Bypass (Requirement: Dynamic Note)
+            String note = "HPY" + System.currentTimeMillis();
+            String upiUrl = "upi://pay?pa=" + upiId + "&pn=" + Uri.encode(name) + "&am=" + amount + "&cu=INR&tn=" + note;
                             
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(upiUrl));
             try {
-                // Secondary confirmation helps track the session
                 startActivityForResult(intent, 123);
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Please install a UPI app", Toast.LENGTH_SHORT).show();

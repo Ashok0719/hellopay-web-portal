@@ -144,19 +144,14 @@ function PayContent() {
        });
     }, 1000);
 
-    // Normalize and handle deep linking
+    // Standardize deep linking (Requirement: Bypass ERR_UNKNOWN_URL_SCHEME)
     let finalIntent = upiIntent.startsWith('upi%3A') ? decodeURIComponent(upiIntent) : upiIntent;
     
-    // Feature 2: Start Timing
-    const startTime = Date.now();
-    localStorage.setItem("upi_txn_start", startTime.toString());
+    // Feature: Pattern Detection Bypass (Requirement: Verified Note)
+    const uniqueNote = `HPY${Date.now().toString().slice(-6)}`;
+    if (finalIntent.includes('?')) finalIntent += `&tn=${uniqueNote}`;
+    else finalIntent += `?tn=${uniqueNote}`;
 
-    // Deep-linking protocol mapping
-    if (app === 'mobikwik') finalIntent = finalIntent.replace(/upi:\/\//i, 'mobikwik://');
-    else if (app === 'freecharge') {
-      finalIntent = finalIntent.replace(/upi:\/\//i, 'freecharge://');
-    }
-    
     setCurrentIntentUrl(finalIntent);
     setSelectedAppName(app?.toUpperCase() || 'UPI APP');
     setIsIntentModalOpen(true);
