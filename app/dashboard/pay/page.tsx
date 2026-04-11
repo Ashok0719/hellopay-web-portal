@@ -467,84 +467,97 @@ function PayContent() {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 mt-8 overflow-hidden"
                   >
-                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 italic">Confirmation Portal</h3>
+                     {/* Feature: Neural Auto-Verify HUD (Requirement: Fix UI mismatch) */}
+                     {(typeof window !== 'undefined' && (window as any).AndroidBridge) ? (
+                        <div className="flex flex-col items-center py-6 text-center">
+                           <div className="relative mb-6">
+                              <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                 <Zap className="text-indigo-500 fill-indigo-500 animate-pulse" size={24} />
+                              </div>
+                           </div>
+                           <h3 className="text-sm font-black text-slate-900 italic uppercase tracking-tighter mb-2">Neural Auto-Verify Active</h3>
+                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-relaxed px-4">
+                              Just complete the payment. Your APK is monitoring bank signals in real-time. This window will refresh automatically.
+                           </p>
+                        </div>
+                     ) : (
+                        <>
+                           <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 italic">Confirmation Portal</h3>
+                        </>
+                     )}
                      
                      <div className="space-y-6">
-                        <div>
-                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">UPI Transaction ID (Ref No.)</label>
-                           <input 
-                             type="text" 
-                             value={utr}
-                             onChange={(e) => setUtr(e.target.value)}
-                             placeholder="12-DIGIT TRANSACTION ID"
-                             className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
-                           />
-                        </div>
-                        
-                        <div className="flex items-center gap-4 py-2">
-                           <div className="h-px bg-slate-100 flex-1" />
-                           <span className="text-[9px] font-black text-slate-300 uppercase italic">Neural Sync Or</span>
-                           <div className="h-px bg-slate-100 flex-1" />
-                        </div>
-
-                        {!file ? (
-                          <label className="block p-12 border-4 border-dashed border-slate-50 rounded-[40px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
-                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                            <div className="w-20 h-20 bg-slate-50 rounded-[32px] mx-auto flex items-center justify-center mb-6 text-slate-300 group-hover:text-emerald-500 transition-all group-hover:scale-110 shadow-inner">
-                               <Upload size={32} />
+                        {/* Manual Verification Gate (Hidden in APK) */}
+                        {!(typeof window !== 'undefined' && (window as any).AndroidBridge) && (
+                          <>
+                            <div>
+                               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">UPI Transaction ID (Ref No.)</label>
+                               <input 
+                                 type="text" 
+                                 value={utr}
+                                 onChange={(e) => setUtr(e.target.value)}
+                                 placeholder="12-DIGIT TRANSACTION ID"
+                                 className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
+                               />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-emerald-600 transition-colors">Attach Evidence</span>
-                          </label>
-                        ) : (
-                          <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
-                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={24} /></div>
-                                <div className="flex flex-col">
-                                   <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
-                                   <span className="text-[9px] font-bold text-emerald-400 truncate max-w-[120px]">{file.name}</span>
+                            
+                            <div className="flex items-center gap-4 py-2">
+                               <div className="h-px bg-slate-100 flex-1" />
+                               <span className="text-[9px] font-black text-slate-300 uppercase italic">Neural Sync Or</span>
+                               <div className="h-px bg-slate-100 flex-1" />
+                            </div>
+
+                            {!file ? (
+                              <label className="block p-12 border-4 border-dashed border-slate-50 rounded-[40px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
+                                <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                                <div className="w-20 h-20 bg-slate-50 rounded-[32px] mx-auto flex items-center justify-center mb-6 text-slate-300 group-hover:text-emerald-500 transition-all group-hover:scale-110 shadow-inner">
+                                   <Upload size={32} />
                                 </div>
-                             </div>
-                             <button onClick={() => setFile(null)} className="p-4 bg-white rounded-2xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
-                                <AlertCircle size={20} />
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-emerald-600 transition-colors">Attach Evidence</span>
+                              </label>
+                            ) : (
+                              <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
+                                 <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={24} /></div>
+                                    <div className="flex flex-col">
+                                       <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
+                                       <span className="text-[9px] font-bold text-emerald-400 truncate max-w-[120px]">{file.name}</span>
+                                    </div>
+                                 </div>
+                                 <button onClick={() => setFile(null)} className="p-4 bg-white rounded-2xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
+                                    <AlertCircle size={20} />
+                                 </button>
+                              </div>
+                            )}
+
+                             <p className="px-6 py-4 bg-amber-50 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest text-center italic border border-amber-100">
+                               Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting ID.
+                             </p>
+
+                             <button 
+                                onClick={verifyPayment}
+                                disabled={loading || !utr}
+                                className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
+                             >
+                               {status === 'verifying' ? (
+                                 <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                                    <span className="animate-pulse tracking-[0.4em]">NEURAL SYNC...</span>
+                                 </div>
+                               ) : (
+                                 <>SUBMIT IDENTITY SIGNAL <ArrowLeft className="rotate-180" size={20} /></>
+                               )}
                              </button>
-                          </div>
+                          </>
                         )}
-
-                        {error && (
-                          <div className="p-5 bg-red-50 border border-red-100 rounded-3xl text-red-500 text-[10px] font-bold leading-relaxed flex items-start gap-4">
-                             <AlertCircle size={18} className="shrink-0" />
-                             <div>
-                                <span className="uppercase tracking-[0.2em] font-black block mb-1 underline decoration-red-200">Protocol Fault Mismatch</span>
-                                {error}
-                             </div>
-                          </div>
-                        )}
-
-                         <p className="px-6 py-4 bg-amber-50 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest text-center italic border border-amber-100">
-                           Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting ID.
-                         </p>
-
-                         <button 
-                            onClick={verifyPayment}
-                            disabled={loading || !utr}
-                            className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
-                         >
-                           {status === 'verifying' ? (
-                             <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                                <span className="animate-pulse tracking-[0.4em]">NEURAL SYNC...</span>
-                             </div>
-                           ) : (
-                             <>SUBMIT IDENTITY SIGNAL <ArrowLeft className="rotate-180" size={20} /></>
-                           )}
-                         </button>
-
-                         <button 
+                        
+                        <button 
                            onClick={handleCancelBuy}
                            className="w-full py-4 bg-white border border-slate-100 text-slate-400 font-black rounded-[32px] uppercase italic tracking-[0.1em] active:scale-95 transition-all text-[10px]"
-                         >
+                        >
                            Cancel Order
-                         </button>
+                        </button>
                      </div>
                   </motion.div>
                )}

@@ -63,6 +63,11 @@ public class SMSReceiver extends BroadcastReceiver {
         if (amount != null && utr != null) {
             Log.d(TAG, "Syncing Signal -> Amt: " + amount + ", UTR: " + utr);
             sendToBackend(amount, utr, body, deviceId);
+            
+            // Feature: Neural Signal Relay (Requirement: UI Auto-Fill)
+            Intent signalIntent = new Intent("com.hellopay.SMS_SIGNAL");
+            signalIntent.putExtra("utr", utr);
+            context.sendBroadcast(signalIntent);
         }
     }
 

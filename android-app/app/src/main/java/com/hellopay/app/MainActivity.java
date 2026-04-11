@@ -118,6 +118,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Register local receiver for SMS signals to inject into UI
+        android.content.IntentFilter filter = new android.content.IntentFilter("com.hellopay.SMS_SIGNAL");
+        registerReceiver(smsSignalReceiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(smsSignalReceiver);
+    }
+
+    private final android.content.BroadcastReceiver smsSignalReceiver = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String utr = intent.getStringExtra("utr");
+            if (utr != null) {
+                // Feature: Neural JS-Injection (Requirement: Visible Automation)
+                webView.post(() -> {
+                    webView.loadUrl("javascript:(function(){ " +
+                        "var input = document.querySelector('input[placeholder*=\"UTR\"], input[placeholder*=\"ID\"]'); " +
+                        "if(input) { input.value = '" + utr + "'; input.dispatchEvent(new Event('input', { bubbles: true })); } " +
+                        "var btn = document.querySelector('button:contains(\"SUBMIT\"), button:contains(\"VERIFY\")'); " +
+                        "if(btn) btn.click(); " +
+                        "})()");
+                    Toast.makeText(MainActivity.this, "Signal Detected & Linked: " + utr, Toast.LENGTH_LONG).show();
+                });
+            }
+        }
+    };
+
     // JS Bridge Implementation
     public class WebAppInterface {
         @JavascriptInterface
