@@ -119,12 +119,31 @@ function PayContent() {
 
   const [timeSpent, setTimeSpent] = useState<number>(0);
 
+  const [isCooldown, setIsCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [isPaidConfirmed, setIsPaidConfirmed] = useState(false);
+
   const handlePayNow = (app?: string) => {
+    if (isCooldown) return;
     if (!upiIntent) {
       setError("Neural Signal Lost: UPI Intent data is missing. Please re-initiate the payment.");
       return;
     }
     
+    // Feature: ANTI-MULTI-CLICK / COOLDOWN (As Requested)
+    setIsCooldown(true);
+    setCooldownRemaining(10);
+    const cooldownTimer = setInterval(() => {
+       setCooldownRemaining(prev => {
+          if (prev <= 1) {
+             clearInterval(cooldownTimer);
+             setIsCooldown(false);
+             return 0;
+          }
+          return prev - 1;
+       });
+    }, 1000);
+
     // Normalize and handle deep linking
     let finalIntent = upiIntent.startsWith('upi%3A') ? decodeURIComponent(upiIntent) : upiIntent;
     
@@ -185,7 +204,7 @@ function PayContent() {
 
     try {
       // Feature: Simulated Neural Polling (UX Requirement: 3-5 retries)
-      // We perform one real upload, but we'll simulate the "Neural Bottling"
+      // We perform one real upload, but we'll simulate the \"Neural Bottling\"
       
       const formData = new FormData();
       if (file) formData.append('screenshot', file);
@@ -378,118 +397,156 @@ function PayContent() {
            </div>
 
            <div className="space-y-4">
-              <button 
-                onClick={() => setShowAppSelector(!showAppSelector)}
-                className="w-full py-6 bg-emerald-600 text-white rounded-[32px] flex items-center justify-center gap-4 font-black uppercase italic shadow-2xl shadow-emerald-200 hover:bg-emerald-700 active:scale-95 transition-all group"
-              >
-                <Zap className="fill-white group-hover:animate-bounce" size={24} /> PAY WITH UPI APP
-              </button>
-              
-              <AnimatePresence>
-                 {showAppSelector && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-6 overflow-hidden"
-                    >
-                       <div className="flex items-center justify-between px-2">
-                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] italic">Select Payment App</h4>
-                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                          <AppButton icon="/logos/freecharge.png" label="Freecharge" color="bg-orange-600" onClick={() => handlePayNow('freecharge')} />
-                          <AppButton icon="https://upload.wikimedia.org/wikipedia/commons/9/91/MobiKwik_logo.png" label="Mobikwik" color="bg-blue-700" onClick={() => handlePayNow('mobikwik')} />
-                       </div>
-                       <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic leading-relaxed px-8">
-                         Neural Redirection: Your chosen app will initialize with target unit amount and identity pre-filled.
-                       </p>
-                    </motion.div>
-                 )}
-              </AnimatePresence>
-           </div>
-
-           <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 italic">Confirmation Portal</h3>
-              
-              <div className="space-y-6">
-                 <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">UPI Transaction ID (Ref No.)</label>
-                    <input 
-                      type="text" 
-                      value={utr}
-                      onChange={(e) => setUtr(e.target.value)}
-                      placeholder="12-DIGIT TRANSACTION ID"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
-                    />
-                 </div>
-                 
-                 <div className="flex items-center gap-4 py-2">
-                    <div className="h-px bg-slate-100 flex-1" />
-                    <span className="text-[9px] font-black text-slate-300 uppercase italic">Neural Sync Or</span>
-                    <div className="h-px bg-slate-100 flex-1" />
-                 </div>
-
-                 {!file ? (
-                   <label className="block p-12 border-4 border-dashed border-slate-50 rounded-[40px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
-                     <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                     <div className="w-20 h-20 bg-slate-50 rounded-[32px] mx-auto flex items-center justify-center mb-6 text-slate-300 group-hover:text-emerald-500 transition-all group-hover:scale-110 shadow-inner">
-                        <Upload size={32} />
-                     </div>
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-emerald-600 transition-colors">Attach Evidence</span>
-                   </label>
+               <button 
+                 onClick={() => !isCooldown && setShowAppSelector(!showAppSelector)}
+                 disabled={isCooldown}
+                 className={`w-full py-6 text-white rounded-[32px] flex items-center justify-center gap-4 font-black uppercase italic shadow-2xl transition-all group disabled:opacity-50 ${isCooldown ? 'bg-slate-500 cursor-not-allowed' : 'bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700 active:scale-95'}`}
+               >
+                 {isCooldown ? (
+                    <>
+                      <Clock className="animate-spin" size={24} /> 
+                      PROCESSING... ({cooldownRemaining}s)
+                    </>
                  ) : (
-                   <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                         <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={24} /></div>
-                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
-                            <span className="text-[9px] font-bold text-emerald-400 truncate max-w-[120px]">{file.name}</span>
-                         </div>
-                      </div>
-                      <button onClick={() => setFile(null)} className="p-4 bg-white rounded-2xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
-                         <AlertCircle size={20} />
-                      </button>
-                   </div>
+                    <>
+                      <Zap className="fill-white group-hover:animate-bounce" size={24} /> 
+                      PAY WITH UPI APP
+                    </>
                  )}
+               </button>
+               
+               <AnimatePresence>
+                  {showAppSelector && (
+                     <motion.div 
+                       initial={{ opacity: 0, height: 0 }}
+                       animate={{ opacity: 1, height: 'auto' }}
+                       exit={{ opacity: 0, height: 0 }}
+                       className="space-y-6 overflow-hidden"
+                     >
+                        <div className="flex items-center justify-between px-2">
+                           <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] italic">Select Payment App</h4>
+                           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                           <AppButton icon="/logos/freecharge.png" label="Freecharge" color="bg-orange-600" onClick={() => handlePayNow('freecharge')} />
+                           <AppButton icon="https://upload.wikimedia.org/wikipedia/commons/9/91/MobiKwik_logo.png" label="Mobikwik" color="bg-blue-700" onClick={() => handlePayNow('mobikwik')} />
+                        </div>
+                        <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic leading-relaxed px-8">
+                          Neural Redirection: Your chosen app will initialize with target unit amount and identity pre-filled.
+                        </p>
+                     </motion.div>
+                  )}
+               </AnimatePresence>
+            </div>
 
-                 {error && (
-                   <div className="p-5 bg-red-50 border border-red-100 rounded-3xl text-red-500 text-[10px] font-bold leading-relaxed flex items-start gap-4">
-                      <AlertCircle size={18} className="shrink-0" />
-                      <div>
-                         <span className="uppercase tracking-[0.2em] font-black block mb-1 underline decoration-red-200">Protocol Fault Mismatch</span>
-                         {error}
-                      </div>
-                   </div>
-                 )}
-
-                  <p className="px-6 py-4 bg-amber-50 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest text-center italic border border-amber-100">
-                    Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting ID.
+            {/* Step 2: Confirmation Gate (Requirement 4) */}
+            {!isPaidConfirmed && (
+               <motion.div 
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="mt-8 p-8 bg-amber-50 rounded-[40px] border border-amber-100 text-center"
+               >
+                  <p className="text-[10px] font-black uppercase text-amber-600 tracking-widest mb-6 italic leading-relaxed">
+                     Switch back to this window after completing the payment in your UPI app to submit the reference ID.
                   </p>
-
                   <button 
-                     onClick={verifyPayment}
-                     disabled={loading || !utr}
-                     className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
+                    onClick={() => setIsPaidConfirmed(true)}
+                    className="w-full py-5 bg-white border border-amber-200 text-amber-600 rounded-[28px] text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center justify-center gap-3"
                   >
-                    {status === 'verifying' ? (
-                      <div className="flex items-center gap-3">
-                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                         <span className="animate-pulse tracking-[0.4em]">NEURAL SYNC...</span>
-                      </div>
-                    ) : (
-                      <>SUBMIT IDENTITY SIGNAL <ArrowLeft className="rotate-180" size={20} /></>
-                    )}
+                     <CheckCircle size={18} /> I HAVE COMPLETED PAYMENT
                   </button>
+               </motion.div>
+            )}
 
-                  <button 
-                    onClick={handleCancelBuy}
-                    className="w-full py-4 bg-white border border-slate-100 text-slate-400 font-black rounded-[32px] uppercase italic tracking-[0.1em] active:scale-95 transition-all text-[10px]"
+            <AnimatePresence>
+               {isPaidConfirmed && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 mt-8 overflow-hidden"
                   >
-                    Cancel Order
-                  </button>
-              </div>
-           </div>
+                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 italic">Confirmation Portal</h3>
+                     
+                     <div className="space-y-6">
+                        <div>
+                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">UPI Transaction ID (Ref No.)</label>
+                           <input 
+                             type="text" 
+                             value={utr}
+                             onChange={(e) => setUtr(e.target.value)}
+                             placeholder="12-DIGIT TRANSACTION ID"
+                             className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
+                           />
+                        </div>
+                        
+                        <div className="flex items-center gap-4 py-2">
+                           <div className="h-px bg-slate-100 flex-1" />
+                           <span className="text-[9px] font-black text-slate-300 uppercase italic">Neural Sync Or</span>
+                           <div className="h-px bg-slate-100 flex-1" />
+                        </div>
+
+                        {!file ? (
+                          <label className="block p-12 border-4 border-dashed border-slate-50 rounded-[40px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
+                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                            <div className="w-20 h-20 bg-slate-50 rounded-[32px] mx-auto flex items-center justify-center mb-6 text-slate-300 group-hover:text-emerald-500 transition-all group-hover:scale-110 shadow-inner">
+                               <Upload size={32} />
+                            </div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-emerald-600 transition-colors">Attach Evidence</span>
+                          </label>
+                        ) : (
+                          <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
+                             <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={24} /></div>
+                                <div className="flex flex-col">
+                                   <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
+                                   <span className="text-[9px] font-bold text-emerald-400 truncate max-w-[120px]">{file.name}</span>
+                                </div>
+                             </div>
+                             <button onClick={() => setFile(null)} className="p-4 bg-white rounded-2xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
+                                <AlertCircle size={20} />
+                             </button>
+                          </div>
+                        )}
+
+                        {error && (
+                          <div className="p-5 bg-red-50 border border-red-100 rounded-3xl text-red-500 text-[10px] font-bold leading-relaxed flex items-start gap-4">
+                             <AlertCircle size={18} className="shrink-0" />
+                             <div>
+                                <span className="uppercase tracking-[0.2em] font-black block mb-1 underline decoration-red-200">Protocol Fault Mismatch</span>
+                                {error}
+                             </div>
+                          </div>
+                        )}
+
+                         <p className="px-6 py-4 bg-amber-50 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest text-center italic border border-amber-100">
+                           Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting ID.
+                         </p>
+
+                         <button 
+                            onClick={verifyPayment}
+                            disabled={loading || !utr}
+                            className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
+                         >
+                           {status === 'verifying' ? (
+                             <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                                <span className="animate-pulse tracking-[0.4em]">NEURAL SYNC...</span>
+                             </div>
+                           ) : (
+                             <>SUBMIT IDENTITY SIGNAL <ArrowLeft className="rotate-180" size={20} /></>
+                           )}
+                         </button>
+
+                         <button 
+                           onClick={handleCancelBuy}
+                           className="w-full py-4 bg-white border border-slate-100 text-slate-400 font-black rounded-[32px] uppercase italic tracking-[0.1em] active:scale-95 transition-all text-[10px]"
+                         >
+                           Cancel Order
+                         </button>
+                     </div>
+                  </motion.div>
+               )}
+            </AnimatePresence>
         </div>
 
         <div className="mt-12 text-center">
@@ -710,7 +767,7 @@ function NeuralNotice({ isOpen, title, message, type, onConfirm, onClose }: any)
              {type === 'confirm' && (
                 <button 
                    onClick={onClose}
-                   className="w-full py-4 bg-white text-slate-400 rounded-[24px] font-black uppercase tracking-widest text-[9px] active:scale-95 transition-all"
+                   className="w-full py-4 bg-white text-slate-400 rounded-[24px] font-black uppercase tracking-widest text-[9px] active:scale-90 transition-all"
                 >
                    Abort
                 </button>
