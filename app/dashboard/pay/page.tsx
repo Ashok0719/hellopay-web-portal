@@ -583,9 +583,6 @@ function PayContent() {
                            Cancel Order
                         </button>
                      </div>
-                  </motion.div>
-               )}
-            </AnimatePresence>
         </div>
 
         <div className="mt-12 text-center">
