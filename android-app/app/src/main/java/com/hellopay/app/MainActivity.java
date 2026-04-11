@@ -126,7 +126,11 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         // Register local receiver for SMS signals to inject into UI
         android.content.IntentFilter filter = new android.content.IntentFilter("com.hellopay.SMS_SIGNAL");
-        registerReceiver(smsSignalReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(smsSignalReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(smsSignalReceiver, filter);
+        }
     }
 
     @Override
