@@ -914,6 +914,11 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
           onClick={() => { setActiveTab('wallet'); }} 
         />
         <MyGridItem 
+          icon={<Send size={28}/>} 
+          label="Send Money" 
+          onClick={() => router.push('/dashboard/send')} 
+        />
+        <MyGridItem 
           icon={<Activity size={28}/>} 
           label="Integral" 
           onClick={() => router.push('/dashboard/payment-history')} 
