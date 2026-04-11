@@ -1404,7 +1404,14 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   };
 
   const handleSaveUpi = async () => {
-    if (!isUpiValid) return;
+    // Neural logic: At least one of UPI or QR must be present to bind identity
+    const hasUpi = upiId && isUpiValid;
+    const hasQr = qrFile || user?.qrCode;
+
+    if (!hasUpi && !hasQr) {
+      setNotice({ isOpen: true, title: "Registry Error", message: "Please provide either a valid UPI ID or a QR Code to proceed." });
+      return;
+    }
     const pinString = pin.join('');
     if (pinString.length < 4) return;
     
@@ -1500,7 +1507,11 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
             </div>
          </div>
 
-         <button onClick={handleSaveUpi} disabled={isSaving || !isUpiValid || pin.join('').length < 4} className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl active:scale-95 transition-all text-sm flex items-center justify-center gap-3 disabled:opacity-20">
+         <button 
+           onClick={handleSaveUpi} 
+           disabled={isSaving || (!(upiId ? isUpiValid : (qrFile || user?.qrCode))) || pin.join('').length < 4} 
+           className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-xl active:scale-95 transition-all text-sm flex items-center justify-center gap-3 disabled:opacity-20"
+         >
             {isSaving ? 'Synchronizing...' : <><Zap size={18} className="fill-yellow-400 text-yellow-400" /> Save & Sync Registry</>}
          </button>
       </div>
