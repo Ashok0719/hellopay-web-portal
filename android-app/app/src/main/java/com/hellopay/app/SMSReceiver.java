@@ -34,14 +34,14 @@ public class SMSReceiver extends BroadcastReceiver {
                         
                         // Capture Device ID for Binding
                         String deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-                        processSMS(messageBody, sender, deviceId);
+                        processSMS(context, messageBody, sender, deviceId);
                     }
                 }
             }
         }
     }
 
-    private void processSMS(String body, String sender, String deviceId) {
+    private void processSMS(Context context, String body, String sender, String deviceId) {
         // Feature: Improved Keyword Detection (Rule 4)
         String lowerBody = body.toLowerCase();
         boolean isFinancial = lowerBody.contains("debited") || 
