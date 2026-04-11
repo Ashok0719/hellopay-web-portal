@@ -20,23 +20,12 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Initialize Gradient Factory
+    - name: Assemble Neural Node (APK)
       run: |
         cd android-app
-        # Attempt to create wrapper if missing
-        gradle wrapper || echo "Global Gradle in use"
+        gradle assembleDebug
 
-    - name: Build Global Assembler
-      run: |
-        cd android-app
-        if [ -f "gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew assembleDebug
-        else
-          gradle assembleDebug
-        fi
-
-    - name: Finalize Neural Asset (APK)
+    - name: Release Asset to Matrix
       uses: actions/upload-artifact@v4
       with:
         name: hellopay-apk
