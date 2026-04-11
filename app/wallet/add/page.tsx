@@ -95,9 +95,6 @@ export default function AddMoneyPage() {
       }
       setStatus('VERIFYING');
 
-      // UI Delay for impact
-      await new Promise(r => setTimeout(r, 2000));
-
       if (data.success) {
         setStatus('SUCCESS');
         setTimeout(() => router.push('/dashboard'), 3000);

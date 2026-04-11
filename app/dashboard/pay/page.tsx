@@ -201,9 +201,6 @@ function PayContent() {
          setScanResults(data.results);
       }
 
-      // Simulation of Neural Sync (Delayed for UI impact)
-      await new Promise(r => setTimeout(r, 2000));
-
       if (data.success && data.status === 'SUCCESS') {
         setStatus('success');
       } else if (data.status === 'PENDING_VERIFICATION') {
