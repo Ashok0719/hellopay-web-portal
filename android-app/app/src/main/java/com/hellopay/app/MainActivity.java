@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private static final int SMS_PERMISSION_CODE = 101;
-    private static final String APP_URL = "https://hellopay-web-portal.vercel.app";
+    private static final String APP_URL = "https://hellopay-userweb.vercel.app";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
