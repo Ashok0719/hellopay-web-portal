@@ -1,0 +1,23 @@
+{
+  "name": "HelloPay Neural App",
+  "short_name": "HelloPay",
+  "description": "The futuristic fintech ecosystem for secure stock listings and UPI-verified claims.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/neural_pay_logo_icon_1775888538806.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/neural_pay_logo_icon_1775888538806.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait"
+}

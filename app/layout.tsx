@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     type: 'website',
   },
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',

@@ -73,7 +73,28 @@ export default function Dashboard() {
   const [showSupportMenu, setShowSupportMenu] = useState(false);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
   const [pinModal, setPinModal] = useState({ isOpen: false, targetId: '' });
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const router = useRouter();
+
+  // Listen for PWA Install Signal
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log('[NEURAL] PWA Installation Signal Detected');
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   // Initial data synchronization
   useEffect(() => {
@@ -302,7 +323,7 @@ export default function Dashboard() {
           />
         )}
         {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} setUser={setUser} setNotice={setNotice} />}
-        {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} />}
+        {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} deferredPrompt={deferredPrompt} handleInstall={handleInstall} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} />}
         {activeTab === 'wallet' && (
           <WalletView 
@@ -783,7 +804,7 @@ function StatisticsView({ user, config, setUser, setNotice }: any) {
   );
 }
 
-function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab, setShowWalletHub, router, onWithdraw }: any) {
+function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab, setShowWalletHub, router, onWithdraw, deferredPrompt, handleInstall }: any) {
   const [upiId, setUpiId] = useState(user?.upiId || user?.verifiedUpiId || '');
   const [pin, setPin] = useState(user?.pin || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -811,7 +832,35 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
     >
       <h2 className="text-2xl font-bold text-center text-[#10b981] mb-8">My Asset</h2>
 
-      <div className="flex flex-col gap-4 mb-10">
+      <div className="flex flex-col gap-4 mb-4">
+        {/* PWA Install Promotion */}
+        {deferredPrompt && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-6 mb-4 shadow-xl border border-white/5 relative overflow-hidden group active:scale-95 transition-all cursor-pointer"
+            onClick={handleInstall}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex items-center gap-6 relative z-10">
+               <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-inner group-hover:border-emerald-500/50 transition-colors">
+                  <Smartphone size={32} className="text-emerald-400" />
+               </div>
+               <div className="flex-1">
+                  <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.3em] mb-1 italic">Native Deployment</h3>
+                  <p className="text-lg font-black text-white italic tracking-tighter leading-none mb-2">Install HelloPay App</p>
+                  <div className="flex items-center gap-2">
+                     <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Enhanced Node Connectivity</span>
+                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+                  </div>
+               </div>
+               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+                  <Plus size={20} className="text-white" />
+               </div>
+            </div>
+          </motion.div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <AssetCard 
             icon={<CreditCard size={20}/>} 
