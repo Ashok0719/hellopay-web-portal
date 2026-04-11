@@ -180,7 +180,17 @@ public class MainActivity extends AppCompatActivity {
     public class WebAppInterface {
         @JavascriptInterface
         public void startUPIPayment(String amount, String upiId, String name) {
-            String upiUrl = "upi://pay?pa=" + upiId + "&pn=" + Uri.encode(name) + "&am=" + amount + "&cu=INR";
+            // Feature: Neural Tunneling (Requirement: Bypass "Transaction Blocked")
+            // tr: Transaction Reference, mc: Merchant Code (5411 = Grocery/Misc)
+            String txnRef = "HP" + System.currentTimeMillis();
+            String upiUrl = "upi://pay?pa=" + upiId + 
+                            "&pn=" + Uri.encode(name) + 
+                            "&am=" + amount + 
+                            "&cu=INR" + 
+                            "&tr=" + txnRef + 
+                            "&mc=5411" + 
+                            "&mode=02&purpose=00";
+                            
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(upiUrl));
             try {
                 // Feature: Neural Secondary Confirmation (Rule 4)
