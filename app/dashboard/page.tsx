@@ -29,6 +29,8 @@ import {
   CheckCircle,
   Lock,
   RefreshCcw,
+  Bot,
+  MessageCircle,
   ChevronRight,
   Camera,
   Users,
@@ -333,12 +335,12 @@ export default function Dashboard() {
                 onClick={() => { window.open('https://t.me/+zqQiwcniaF45ZTY1', '_blank'); setShowSupportMenu(false); }}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-blue-50 hover:bg-blue-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shadow-inner">
-                  <Send size={20} />
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10 group-hover/btn:scale-110 transition-transform">
+                  <img src="/telegram_premium_logo_1775888711967.png" alt="Telegram" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-left">
-                  <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest block leading-none mb-1">Telegram</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Join Official Channel</span>
+                  <span className="text-[10px] font-black uppercase text-blue-600 tracking-[0.2em] block leading-none mb-1">Telegram</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Join Official Hub</span>
                 </div>
               </button>
 
@@ -347,12 +349,12 @@ export default function Dashboard() {
                 onClick={() => { setShowSupportChat(true); setShowSupportMenu(false); }}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-emerald-50 hover:bg-emerald-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 shadow-inner">
-                  <Bot size={20} />
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/10 group-hover/btn:scale-110 transition-transform">
+                  <img src="/neural_support_bot_logo_1775888733873.png" alt="Support" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-left">
-                  <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest block leading-none mb-1">24/7 Support</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Open Neural Bot Hub</span>
+                  <span className="text-[10px] font-black uppercase text-emerald-600 tracking-[0.2em] block leading-none mb-1">24/7 Support</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Open Neural Bot</span>
                 </div>
               </button>
             </motion.div>
@@ -363,15 +365,14 @@ export default function Dashboard() {
           onClick={() => setShowSupportMenu(!showSupportMenu)}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className={`w-16 h-16 rounded-full shadow-[0_12px_48px_rgba(0,0,0,0.2)] flex flex-col items-center justify-center border transition-all relative pointer-events-auto ${showSupportMenu ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/40' : 'bg-white border-emerald-50'}`}
+          className={`w-16 h-16 rounded-full shadow-[0_12px_48px_rgba(0,0,0,0.2)] flex flex-col items-center justify-center border transition-all relative pointer-events-auto ${showSupportMenu ? 'bg-slate-900 border-slate-900 text-white shadow-slate-500/40' : 'bg-white border-emerald-50'}`}
         >
-          {showSupportMenu ? <Star size={28} className="animate-spin-slow" /> : (
+          {showSupportMenu ? <Star size={28} className="text-yellow-400 fill-yellow-400 animate-pulse" /> : (
             <>
               <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full absolute top-2 right-2 animate-ping" />
-              <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm">
+              <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm group-hover:bg-emerald-100">
                  <Bot size={28} />
               </div>
-              <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1">Support</span>
             </>
           )}
         </motion.button>

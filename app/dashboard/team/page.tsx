@@ -161,10 +161,10 @@ export default function TeamPage() {
            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
            <h3 className="text-[10px] font-black mb-8 text-slate-500 uppercase tracking-[0.4em] italic leading-none">Signal Propagation Hub</h3>
            <div className="grid grid-cols-4 gap-4">
-              <ShareIcon icon={<Send className="text-white fill-white" size={24}/>} label="Telegram" color="bg-blue-400" />
-              <ShareIcon icon={<MessageSquare className="text-white fill-white" size={24}/>} label="Facebook" color="bg-blue-600" />
-              <ShareIcon icon={<MessageCircle className="text-white fill-white" size={24}/>} label="Whatsapp" color="bg-green-500" />
-              <ShareIcon icon={<Share2 className="text-white" size={24}/>} label="Copy Node" color="bg-gradient-to-br from-indigo-500 to-purple-600" />
+               <ShareIcon icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg"><img src="/telegram_premium_logo_1775888711967.png" alt="T" className="w-full h-full object-cover" /></div>} label="Telegram" color="transparent" />
+               <ShareIcon icon={<MessageSquare className="text-white fill-white" size={24}/>} label="Facebook" color="bg-blue-700" />
+               <ShareIcon icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg"><img src="/neural_support_bot_logo_1775888733873.png" alt="S" className="w-full h-full object-cover" /></div>} label="Support" color="transparent" />
+               <ShareIcon icon={<Share2 className="text-white" size={24}/>} label="Copy Node" color="bg-gradient-to-br from-indigo-500 to-purple-600" />
            </div>
         </div>
       </div>
