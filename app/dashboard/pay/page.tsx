@@ -200,14 +200,13 @@ function PayContent() {
     setError('');
 
     try {
-      // Feature: Simulated Neural Polling (UX Requirement: 3-5 retries)
-      // We perform one real upload, but we'll simulate the \"Neural Bottling\"
-      
+      // Feature: Instant UTR Settlement (Requirement: No Screenshot Necessary)
       const formData = new FormData();
       if (file) formData.append('screenshot', file);
       formData.append('utr', utr.trim());
       formData.append('timeSpent', timeSpent.toString());
 
+      // We allow submission even without 'file' - Backend will handle UTR-only verification
       const { data } = await api.post(`/stocks/transactions/${transactionId}/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
