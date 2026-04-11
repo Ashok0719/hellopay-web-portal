@@ -1635,8 +1635,8 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
          </button>
       </div>
       <p className="text-center mt-4">
-        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
-           Only @freecharge handles are authorized for this node
+        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100">
+           Universal Identity Signal Protocol Enabled
         </span>
       </p>
       <p className="text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-10">Neural Rotation Protocol Active v3.3</p>
