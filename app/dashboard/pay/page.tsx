@@ -142,13 +142,10 @@ function PayContent() {
     setIsIntentModalOpen(true);
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    // Auto-redirect for mobile after a short buffer
+
+    // Auto-redirect for mobile immediately
     if (isMobile) {
-      setTimeout(() => {
-        // window.location.href = finalIntent; 
-        // Note: Intentional: user can click "Open App" in modal if auto-fails
-      }, 1500);
+      window.location.href = finalIntent;
     }
 
     setShowAppSelector(false);
