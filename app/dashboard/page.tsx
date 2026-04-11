@@ -1390,20 +1390,9 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const pinRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  const upiRegex = /^[a-z0-9._-]{3,}@[a-z]{2,}$/;
-  const validHandles = ['freecharge'];
-
   const validateUpi = (id: string) => {
-    if (!upiRegex.test(id)) return false;
-    const [userPart, handle] = id.split('@');
-    if (/^\d+$/.test(userPart)) {
-      if (userPart.length < 8 || userPart.length > 15) return false;
-    } else {
-      if (userPart.length < 3) return false;
-    }
-    if (userPart.includes('..') || userPart.includes('__') || userPart.includes('--')) return false;
-    if (!validHandles.includes(handle)) return false;
-    return true;
+    // Neural Flexible Protocol: Support all global UPI identifies
+    return /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]{2,}$/.test(id);
   };
 
   const isUpiValid = validateUpi(upiId);
@@ -1530,12 +1519,10 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
             <input 
               value={upiId} 
               onChange={(e) => {
-                let t = e.target.value.toLowerCase().trim();
-                // Auto-append @freecharge if only numbers/chars are entered and user is done
-                setUpiId(t);
+                setUpiId(e.target.value.toLowerCase().trim());
               }} 
               className={`w-full px-8 py-5 rounded-3xl text-sm font-bold border ${isUpiValid ? 'bg-emerald-50/20 border-emerald-100' : 'bg-slate-50 border-slate-100'}`} 
-              placeholder="id@freecharge" 
+              placeholder="e.g. name@upi" 
             />
          </div>
 

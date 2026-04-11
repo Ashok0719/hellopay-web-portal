@@ -132,12 +132,7 @@ function PayContent() {
     localStorage.setItem("upi_txn_start", startTime.toString());
 
     // Deep-linking protocol mapping
-    if (app === 'paytm') finalIntent = finalIntent.replace(/upi:\/\//i, 'paytmmp://');
-    else if (app === 'phonepe') finalIntent = finalIntent.replace(/upi:\/\//i, 'phonepe://');
-    else if (app === 'gpay') {
-      // Neural Fix: GPay (Tez) protocol varies by device, upi:// is safest fallback but tez:// forces gPay
-      finalIntent = finalIntent.replace(/upi:\/\//i, 'tez://upi/'); 
-    }
+    if (app === 'mobikwik') finalIntent = finalIntent.replace(/upi:\/\//i, 'mobikwik://');
     else if (app === 'freecharge') {
       finalIntent = finalIntent.replace(/upi:\/\//i, 'freecharge://');
     }
@@ -403,10 +398,8 @@ function PayContent() {
                           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                        </div>
                        <div className="grid grid-cols-2 gap-4">
-                          <AppButton icon="/logos/gpay.png" label="Google Pay" color="bg-blue-500" onClick={() => handlePayNow('gpay')} />
-                          <AppButton icon="/logos/phonepe.png" label="PhonePe" color="bg-indigo-600" onClick={() => handlePayNow('phonepe')} />
-                          <AppButton icon="/logos/paytm.png" label="Paytm" color="bg-sky-400" onClick={() => handlePayNow('paytm')} />
                           <AppButton icon="/logos/freecharge.png" label="Freecharge" color="bg-orange-600" onClick={() => handlePayNow('freecharge')} />
+                          <AppButton icon="https://upload.wikimedia.org/wikipedia/commons/9/91/MobiKwik_logo.png" label="Mobikwik" color="bg-blue-700" onClick={() => handlePayNow('mobikwik')} />
                        </div>
                        <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic leading-relaxed px-8">
                          Neural Redirection: Your chosen app will initialize with target unit amount and identity pre-filled.
@@ -501,11 +494,8 @@ function PayContent() {
 
         <div className="mt-12 text-center">
            <div className="flex items-center justify-center gap-6 opacity-30 grayscale mb-6">
-               <img src="/logos/phonepe.png" className="h-4" />
-               <img src="/logos/paytm.png" className="h-4" />
-               <img src="/logos/gpay.png" className="h-4" />
-               <img src="https://img.icons8.com/color/48/amazon-pay.png" className="h-4" />
                <img src="/logos/freecharge.png" className="h-4" />
+               <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/MobiKwik_logo.png" className="h-4" />
            </div>
            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 italic flex items-center justify-center gap-2">
               <ShieldCheck size={12} className="text-emerald-500" /> Neural Security Mesh Protected
