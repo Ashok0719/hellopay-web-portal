@@ -1133,10 +1133,6 @@ function DepositModal({ isOpen, onClose, onSelect, config }: any) {
   if (!isOpen) return null;
 
   const methods = [
-    { id: 'phonepe', name: 'Phonepe', icon: 'https://img.icons8.com/color/48/phonepe.png', color: '#5f259f' },
-    { id: 'gpay', name: 'GPay', icon: 'https://img.icons8.com/color/48/google-pay.png', color: '#4285F4' },
-    { id: 'paytm', name: 'Paytm', icon: 'https://img.icons8.com/color/48/paytm.png', color: '#00baf2' },
-    { id: 'mobikwik', name: 'Mobikwik', icon: 'https://img.icons8.com/color/48/mobikwik.png', color: '#0055a4' },
     { id: 'freecharge', name: 'Freecharge', icon: 'https://img.icons8.com/color/48/freecharge.png', color: '#ff611d' },
   ];
 
@@ -1340,10 +1336,7 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
   const pinRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const upiRegex = /^[a-z0-9._-]{3,}@[a-z]{2,}$/;
-  const validHandles = [
-    'okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'ybl', 'ibl', 'axl', 'apl', 'paytm', 'upi',
-    'ptaxis', 'ptsbi', 'pthdfc'
-  ];
+  const validHandles = ['freecharge'];
 
   const validateUpi = (id: string) => {
     if (!upiRegex.test(id)) return false;
@@ -1472,7 +1465,16 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
               Receiving UPI ID
               {upiId && <span className={`text-[9px] ${isUpiValid ? 'text-emerald-500' : 'text-red-500'}`}>{isUpiValid ? 'VALID' : 'INVALID'}</span>}
             </label>
-            <input value={upiId} onChange={(e) => setUpiId(e.target.value.toLowerCase().trim())} className={`w-full px-8 py-5 rounded-3xl text-sm font-bold border ${isUpiValid ? 'bg-emerald-50/20 border-emerald-100' : 'bg-slate-50 border-slate-100'}`} placeholder="UPI ID" />
+            <input 
+              value={upiId} 
+              onChange={(e) => {
+                let t = e.target.value.toLowerCase().trim();
+                // Auto-append @freecharge if only numbers/chars are entered and user is done
+                setUpiId(t);
+              }} 
+              className={`w-full px-8 py-5 rounded-3xl text-sm font-bold border ${isUpiValid ? 'bg-emerald-50/20 border-emerald-100' : 'bg-slate-50 border-slate-100'}`} 
+              placeholder="id@freecharge" 
+            />
          </div>
 
          <div>
@@ -1502,6 +1504,11 @@ function WalletView({ user, setUser, onDeposit, setNotice }: any) {
             {isSaving ? 'Synchronizing...' : <><Zap size={18} className="fill-yellow-400 text-yellow-400" /> Save & Sync Registry</>}
          </button>
       </div>
+      <p className="text-center mt-4">
+        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+           Only @freecharge handles are authorized for this node
+        </span>
+      </p>
       <p className="text-[9px] text-center text-slate-300 font-bold uppercase tracking-[0.4em] py-10">Neural Rotation Protocol Active v3.3</p>
     </motion.div>
   );
