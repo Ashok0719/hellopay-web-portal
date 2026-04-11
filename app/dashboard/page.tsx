@@ -571,7 +571,7 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       </div>
 
       {/* APK Integration Banner (Requirement: Both Web and APK parallel) */}
-      {!((window as any).AndroidBridge) && (
+      {(typeof window !== 'undefined' && !((window as any).AndroidBridge)) && (
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
