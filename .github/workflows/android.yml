@@ -23,7 +23,8 @@ jobs:
     - name: Assemble Neural Node (APK)
       run: |
         cd android-app
-        gradle assembleDebug
+        # Build with full trace for high-fidelity auditing
+        gradle assembleDebug --no-daemon --stacktrace
 
     - name: Release Asset to Matrix
       uses: actions/upload-artifact@v4
