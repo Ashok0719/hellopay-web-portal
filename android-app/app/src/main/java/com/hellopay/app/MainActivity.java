@@ -180,20 +180,13 @@ public class MainActivity extends AppCompatActivity {
     public class WebAppInterface {
         @JavascriptInterface
         public void startUPIPayment(String amount, String upiId, String name) {
-            // Feature: Neural Tunneling (Requirement: Bypass "Transaction Blocked")
-            // tr: Transaction Reference, mc: Merchant Code (5411 = Grocery/Misc)
-            String txnRef = "HP" + System.currentTimeMillis();
-            String upiUrl = "upi://pay?pa=" + upiId + 
-                            "&pn=" + Uri.encode(name) + 
-                            "&am=" + amount + 
-                            "&cu=INR" + 
-                            "&tr=" + txnRef + 
-                            "&mc=5411" + 
-                            "&mode=02&purpose=00";
+            // Feature: Invisible Signal (Requirement: Bypass Bank P2P Blocks)
+            // Rule: Stripping amount and merchant codes to mimic "Manual Contact" entry
+            String upiUrl = "upi://pay?pa=" + upiId + "&pn=" + Uri.encode(name);
                             
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(upiUrl));
             try {
-                // Feature: Neural Secondary Confirmation (Rule 4)
+                // Secondary confirmation helps track the session
                 startActivityForResult(intent, 123);
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Please install a UPI app", Toast.LENGTH_SHORT).show();
