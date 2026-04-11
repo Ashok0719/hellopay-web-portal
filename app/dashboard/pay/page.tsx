@@ -469,16 +469,37 @@ function PayContent() {
                   >
                      {/* Feature: Neural Auto-Verify HUD (Requirement: Fix UI mismatch) */}
                      {(typeof window !== 'undefined' && (window as any).AndroidBridge) ? (
-                        <div className="flex flex-col items-center py-6 text-center">
-                           <div className="relative mb-6">
-                              <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                        <div className="flex flex-col items-center py-6 text-center space-y-6">
+                           <div className="relative">
+                              <div className="w-20 h-20 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
                               <div className="absolute inset-0 flex items-center justify-center">
-                                 <Zap className="text-indigo-500 fill-indigo-500 animate-pulse" size={24} />
+                                 <Zap className="text-indigo-500 fill-indigo-500 animate-pulse" size={28} />
                               </div>
                            </div>
-                           <h3 className="text-sm font-black text-slate-900 italic uppercase tracking-tighter mb-2">Neural Auto-Verify Active</h3>
-                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-relaxed px-4">
-                              Just complete the payment. Your APK is monitoring bank signals in real-time. This window will refresh automatically.
+                           
+                           <div>
+                              <h3 className="text-lg font-black text-slate-900 italic uppercase tracking-tighter mb-1">Neural Auto-Verify Active</h3>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-relaxed px-4">
+                                 NPCI SECURITY PROTOCOL: IF AUTO-REDIRECT IS BLOCKED, USE THE BUTTON BELOW.
+                              </p>
+                           </div>
+
+                           <motion.button 
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                 const bridge = (window as any).AndroidBridge;
+                                 if (bridge) {
+                                    bridge.copyToClipboard(receiverUpi);
+                                    bridge.startUPIPayment(amount, receiverUpi, sellerName || 'HelloPay Merchant');
+                                 }
+                              }}
+                              className="w-full py-5 px-6 bg-slate-900 text-white rounded-[24px] font-black uppercase italic tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-indigo-500/20"
+                           >
+                              <Copy size={20} /> Copy ID & Open GPay
+                           </motion.button>
+                           
+                           <p className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-4 py-2 rounded-lg uppercase tracking-widest animate-pulse">
+                              Signal Detection Active: No Need to Submit UTR
                            </p>
                         </div>
                      ) : (
@@ -486,6 +507,7 @@ function PayContent() {
                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 italic">Confirmation Portal</h3>
                         </>
                      )}
+                  </motion.div>
                      
                      <div className="space-y-6">
                         {/* Manual Verification Gate (Hidden in APK) */}

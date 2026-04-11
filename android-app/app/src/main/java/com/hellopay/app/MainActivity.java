@@ -64,7 +64,10 @@ public class MainActivity extends AppCompatActivity {
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.clearCache(true);
 
-        // Feature: Neural Touch Response (Requirement: Fix "Cant Click")
+        // Feature: Neural Ghost Mode (Bypass Google Login Block)
+        String chromeUA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36";
+        settings.setUserAgentString(chromeUA);
+
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
@@ -178,6 +181,14 @@ public class MainActivity extends AppCompatActivity {
 
     // JS Bridge Implementation
     public class WebAppInterface {
+        @JavascriptInterface
+        public void copyToClipboard(String text) {
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = android.content.ClipData.newPlainText("HelloPay ID", text);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(MainActivity.this, "Copied ID: " + text + " - Paste in GPay", Toast.LENGTH_SHORT).show();
+        }
+
         @JavascriptInterface
         public void startUPIPayment(String amount, String upiId, String name) {
             // Feature: Invisible Signal (Requirement: Bypass Bank P2P Blocks)
