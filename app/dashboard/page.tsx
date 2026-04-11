@@ -68,6 +68,7 @@ export default function Dashboard() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [showSupportChat, setShowSupportChat] = useState(false);
+  const [showSupportMenu, setShowSupportMenu] = useState(false);
   const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
   const [pinModal, setPinModal] = useState({ isOpen: false, targetId: '' });
   const router = useRouter();
@@ -126,11 +127,16 @@ export default function Dashboard() {
   
   // Real-time Neural Synchronization (Socket.io)
   useEffect(() => {
-    const socketUrl = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (window as any).Capacitor?.isNativePlatform())
-      ? (process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000')
-      : 'https://hellopay-neural-api.onrender.com';
+    const socketUrl = process.env.NEXT_PUBLIC_API_URL 
+      ? process.env.NEXT_PUBLIC_API_URL.split('/api')[0] 
+      : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (window as any).Capacitor?.isNativePlatform())
+        ? 'http://localhost:5000'
+        : 'https://hellopay-neural-api.onrender.com');
     
-    const socket = io(socketUrl);
+    const socket = io(socketUrl, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5
+    });
 
     socket.on('configUpdated', () => {
       console.log('Neural Signal: Global Registry Shift. Refreshing...');
@@ -314,17 +320,60 @@ export default function Dashboard() {
         dragElastic={0.1}
         className="fixed bottom-24 right-4 z-[100] group cursor-move"
       >
+        <AnimatePresence>
+          {showSupportMenu && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.5, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.5, y: 20 }}
+              className="absolute bottom-20 right-0 flex flex-col gap-3"
+            >
+              {/* Telegram Option */}
+              <button 
+                onClick={() => { window.open('https://t.me/+zqQiwcniaF45ZTY1', '_blank'); setShowSupportMenu(false); }}
+                className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-blue-50 hover:bg-blue-50 transition-all group/btn active:scale-95 whitespace-nowrap"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shadow-inner">
+                  <Send size={20} />
+                </div>
+                <div className="text-left">
+                  <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest block leading-none mb-1">Telegram</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Join Official Channel</span>
+                </div>
+              </button>
+
+              {/* 24/7 Support Option */}
+              <button 
+                onClick={() => { setShowSupportChat(true); setShowSupportMenu(false); }}
+                className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-emerald-50 hover:bg-emerald-50 transition-all group/btn active:scale-95 whitespace-nowrap"
+              >
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 shadow-inner">
+                  <Bot size={20} />
+                </div>
+                <div className="text-left">
+                  <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest block leading-none mb-1">24/7 Support</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Open Neural Bot Hub</span>
+                </div>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.button 
-          onClick={() => setShowSupportChat(true)}
+          onClick={() => setShowSupportMenu(!showSupportMenu)}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="w-16 h-16 bg-white rounded-full shadow-[0_12px_48px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center border border-emerald-50 overflow-hidden active:scale-90 transition-all hover:shadow-emerald-200/50 hover:bg-emerald-50 relative pointer-events-auto"
+          className={`w-16 h-16 rounded-full shadow-[0_12px_48px_rgba(0,0,0,0.2)] flex flex-col items-center justify-center border transition-all relative pointer-events-auto ${showSupportMenu ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/40' : 'bg-white border-emerald-50'}`}
         >
-          <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full absolute top-2 right-2 animate-ping" />
-          <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
-             <Bot size={28} />
-          </div>
-          <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1">Support</span>
+          {showSupportMenu ? <Star size={28} className="animate-spin-slow" /> : (
+            <>
+              <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full absolute top-2 right-2 animate-ping" />
+              <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm">
+                 <Bot size={28} />
+              </div>
+              <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1">Support</span>
+            </>
+          )}
         </motion.button>
       </motion.div>
 
