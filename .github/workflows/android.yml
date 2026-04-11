@@ -20,14 +20,18 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Initialize Gradle Wrapper
+      run: |
+        cd android-app
+        gradle wrapper
+
     - name: Grant execute permission for gradlew
-      run: chmod +x android-app/gradlew || true
+      run: chmod +x android-app/gradlew
 
     - name: Build with Gradle
       run: |
         cd android-app
-        # Using a universal gradle command
-        ./gradlew assembleDebug || gradle assembleDebug
+        ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
