@@ -57,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
             settings.setMediaPlaybackRequiresUserGesture(false);
         }
 
+        // Feature: Neural Cache-Buster (Requirement: Instant web parity)
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.clearCache(true);
+
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
