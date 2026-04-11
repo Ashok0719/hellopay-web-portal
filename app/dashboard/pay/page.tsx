@@ -414,12 +414,12 @@ function PayContent() {
               
               <div className="space-y-6">
                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">Reference ID (UTR String)</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">UPI Transaction ID (Ref No.)</label>
                     <input 
                       type="text" 
                       value={utr}
                       onChange={(e) => setUtr(e.target.value)}
-                      placeholder="12-22 DIGIT UTR NUMBER"
+                      placeholder="12-DIGIT TRANSACTION ID"
                       className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
                     />
                  </div>
@@ -464,7 +464,7 @@ function PayContent() {
                  )}
 
                   <p className="px-6 py-4 bg-amber-50 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest text-center italic border border-amber-100">
-                    Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting UTR.
+                    Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting ID.
                   </p>
 
                   <button 

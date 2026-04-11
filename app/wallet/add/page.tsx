@@ -233,11 +233,11 @@ export default function AddMoneyPage() {
 
               <div className="space-y-8">
                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">UTR Reference (12 Digits)</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">UPI Transaction ID (12 Digits)</label>
                     <input 
                       type="text"
                       maxLength={12}
-                      placeholder="Enter 12-digit UTR number"
+                      placeholder="Enter 12-digit Transaction ID"
                       className="w-full bg-slate-950/50 border border-white/5 rounded-2xl py-5 px-6 font-mono text-lg font-black text-blue-400 placeholder:text-slate-700 focus:border-blue-600 outline-none transition-all"
                       value={utr}
                       onChange={(e) => setUtr(e.target.value)}
