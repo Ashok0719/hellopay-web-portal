@@ -935,7 +935,7 @@ function PaymentView({ user, config, handleClaim, listings }: any) {
                 <div className="flex items-center gap-2">
                   <span className={`text-2xl font-black ${split.isPinned ? 'text-amber-600' : 'text-emerald-600'}`}>₹{split.amount.toLocaleString()}</span>
                   <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded-full tracking-wider">
-                    Available from {split.ownerId?.name || 'User'} [Node {split.stockId.substring(split.stockId.length-4)}]
+                    Available from {split.ownerId?.name || 'User'} [{split.stockId}]
                   </span>
                 </div>
                 <div className="flex gap-3 text-xs">
