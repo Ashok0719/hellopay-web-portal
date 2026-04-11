@@ -1,9 +1,7 @@
 package com.hellopay.app;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,16 +11,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
-    private static final int SMS_PERMISSION_CODE = 101;
-    // URL of your production Vercel app
     private static final String APP_URL = "https://hellopay-web-portal.vercel.app";
 
     @Override
@@ -32,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
 
         webView = findViewById(R.id.webview);
         setupWebView();
-        checkSmsPermissions();
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -47,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         
-        // Feature: Neural Session Persistence (Requirement: Fix Login Stuck)
+        // Feature: Neural Session Persistence
         android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -63,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
+                // Handle Native UPI Intent for GPay, PhonePe, Paytm
                 if (url.startsWith("upi://")) {
                     try {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -80,25 +73,6 @@ public class MainActivity extends AppCompatActivity {
         // The JS Bridge (Requirement: WEB + APK Communication)
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
         webView.loadUrl(APP_URL);
-    }
-
-    private void checkSmsPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
-            
-            // Feature: User Explanation Screen (Requirement: Trust Building)
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Automated Verification")
-                .setMessage("HelloPay uses SMS signals to verify your UPI payments automatically. We do NOT store or misuse your private messages. This is required for instant settlement.")
-                .setPositiveButton("Enable Signal", (dialog, which) -> {
-                    ActivityCompat.requestPermissions(MainActivity.this, 
-                        new String[]{Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS}, 
-                        SMS_PERMISSION_CODE);
-                })
-                .setNegativeButton("Manual Only", (dialog, which) -> {
-                    Toast.makeText(MainActivity.this, "Auto-verification disabled. You must submit UTR manually.", Toast.LENGTH_LONG).show();
-                })
-                .show();
-        }
     }
 
     @Override
