@@ -570,6 +570,34 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
         </div>
       </div>
 
+      {/* APK Integration Banner (Requirement: Both Web and APK parallel) */}
+      {!((window as any).AndroidBridge) && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-indigo-600 rounded-[32px] p-6 mb-8 text-white relative overflow-hidden group shadow-xl"
+        >
+          <div className="absolute top-0 right-0 w-32 h-full bg-white/10 -skew-x-12 translate-x-16 group-hover:translate-x-0 transition-transform duration-1000" />
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-4">
+               <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white backdrop-blur-md">
+                  <Smartphone size={24} />
+               </div>
+               <div>
+                  <h3 className="text-sm font-black uppercase tracking-tight italic">Upgrade to HelloPay APK</h3>
+                  <p className="text-[9px] font-bold text-indigo-100 uppercase tracking-widest leading-none mt-1">Enable Auto-SMS Payment Detection</p>
+               </div>
+            </div>
+            <button 
+              onClick={() => window.open('https://github.com/Ashok0719/hellopay-android/releases/latest/download/hellopay.apk', '_blank')}
+              className="px-6 py-3 bg-white text-indigo-600 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+            >
+              Get APK
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Stats Bar (Emerald-Dual Pane) */}
       <div className="bg-[#10b981] rounded-3xl p-4 mb-8 flex items-center justify-between text-white shadow-md relative overflow-hidden">
         <div className="absolute top-[-50%] right-[-10%] w-20 h-20 bg-yellow-400/30 rounded-full blur-xl pointer-events-none" />

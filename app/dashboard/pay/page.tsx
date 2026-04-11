@@ -161,10 +161,12 @@ function PayContent() {
     setSelectedAppName(app?.toUpperCase() || 'UPI APP');
     setIsIntentModalOpen(true);
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    // Auto-redirect for mobile immediately
-    if (isMobile) {
+    // Requirement: WEB + APK Communication (JS Bridge)
+    if ((window as any).AndroidBridge) {
+        (window as any).AndroidBridge.startUPIPayment(amount, receiverUpi, "HelloPay");
+        setIsCooldown(true);
+        // Cooldown handled in native too but we lock web UI
+    } else if (isMobile) {
       window.location.href = finalIntent;
     }
 
