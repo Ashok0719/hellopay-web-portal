@@ -1,0 +1,36 @@
+name: Build HelloPay APK
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x android-app/gradlew || true
+
+    - name: Build with Gradle
+      run: |
+        cd android-app
+        # If gradlew doesn't exist yet, we'll use a gradle action or generate it
+        gradle build
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: hellopay-apk
+        path: android-app/app/build/outputs/apk/debug/app-debug.apk
