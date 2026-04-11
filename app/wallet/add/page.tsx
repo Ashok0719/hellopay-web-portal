@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, ArrowLeft, ShieldCheck, Zap, QrCode, Upload, CheckCircle, RefreshCw, AlertCircle, Info } from 'lucide-react';
