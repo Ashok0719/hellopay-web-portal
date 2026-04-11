@@ -50,17 +50,6 @@ public class MainActivity extends AppCompatActivity {
         
         // Feature: Neural Session Persistence
         android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
-        cookieManager.setAcceptCookie(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            cookieManager.setAcceptThirdPartyCookies(webView, true);
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            settings.setMediaPlaybackRequiresUserGesture(false);
-        }
-
-        // Feature: Neural Cache-Buster (Requirement: Instant web parity)
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.clearCache(true);
 
@@ -71,26 +60,26 @@ public class MainActivity extends AppCompatActivity {
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
-        
-        webView.setWebChromeClient(new android.webkit.WebChromeClient());
-        
-        webView.setWebViewClient(new WebViewClient() {
+
+        webView.setWebViewClient(new android.webkit.WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString();
-                if (url.startsWith("upi://")) {
-                    try {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                        startActivity(intent);
-                        return true;
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "No UPI app found", Toast.LENGTH_SHORT).show();
-                        return true;
-                    }
+            public boolean shouldOverrideUrlLoading(android.webkit.WebView view, String url) {
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    return false;
                 }
-                return false;
+                
+                try {
+                    android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                } catch (Exception e) {
+                    android.widget.Toast.makeText(MainActivity.this, "App not installed on device", android.widget.Toast.LENGTH_SHORT).show();
+                    return true;
+                }
             }
         });
+        
+        webView.setWebChromeClient(new android.webkit.WebChromeClient());
 
         // The JS Bridge (Requirement: WEB + APK Communication)
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
