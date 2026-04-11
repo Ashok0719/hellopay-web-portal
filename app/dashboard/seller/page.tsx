@@ -23,8 +23,8 @@ export default function SellerDashboard() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    if (!formData.sellerUpiId.endsWith('@freecharge')) {
-      setError('Only @freecharge UPI IDs are permitted.');
+    if (!formData.sellerUpiId.includes('@')) {
+      setError('Neural Protocol: A valid UPI ID containing "@" is required.');
       setLoading(false);
       return;
     }
@@ -129,15 +129,12 @@ export default function SellerDashboard() {
               <QrCode className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
               <input
                 type="text"
-                placeholder="id@freecharge"
-                className={`w-full bg-slate-900 border rounded-2xl py-4 pl-14 pr-6 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-700 font-bold ${formData.sellerUpiId && !formData.sellerUpiId.endsWith('@freecharge') ? 'border-red-500 text-red-500' : 'border-slate-800 text-indigo-400'}`}
+                placeholder="id@bank"
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 pl-14 pr-6 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-700 text-indigo-400 font-bold"
                 value={formData.sellerUpiId}
                 onChange={(e) => setFormData({ ...formData, sellerUpiId: e.target.value.toLowerCase().trim() })}
                 required
               />
-              {!formData.sellerUpiId.endsWith('@freecharge') && formData.sellerUpiId.length > 0 && (
-                <p className="text-[8px] text-red-500 font-black uppercase tracking-widest mt-2 ml-1">Must use @freecharge handle</p>
-              )}
             </div>
           </div>
 
