@@ -44,6 +44,30 @@ export default function AddMoneyPage() {
     return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=${cu}&tn=${tn}`;
   };
 
+  const [matchedSeller, setMatchedSeller] = useState<any>(null);
+  
+  const handleInitiateLink = async () => {
+    if (!amount) return;
+    setLoading(true);
+    try {
+      const { data } = await api.post('/wallet/match-p2p', { amount });
+      if (data.success) {
+        setMatchedSeller(data.seller);
+        setStep(2);
+      } else {
+        // Fallback or message
+        setMatchedSeller(null);
+        setStep(2);
+      }
+    } catch (err) {
+      console.error('Match failed, fallback to admin');
+      setMatchedSeller(null);
+      setStep(2);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerify = async () => {
     if (!amount || !utr || !screenshot) {
       setErrorMessage('Neural signals incomplete: Amount, UTR, and Screenshot required.');
@@ -81,6 +105,15 @@ export default function AddMoneyPage() {
     if (e.target.files && e.target.files[0]) {
       setScreenshot(e.target.files[0]);
     }
+  };
+
+  const getImageUrl = (path: string) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')) || 'https://hellopay-neural-api.onrender.com';
+    const base = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    const p = path.startsWith('/') ? path : `/${path}`;
+    return `${base}${p}`;
   };
 
   return (
@@ -140,11 +173,12 @@ export default function AddMoneyPage() {
                 </div>
 
                 <button
-                  onClick={() => setStep(2)}
-                  disabled={!amount || Number(amount) < (config?.minDeposit || 100)}
+                  onClick={handleInitiateLink}
+                  disabled={loading || !amount || Number(amount) < (config?.minDeposit || 100)}
                   className="w-full bg-blue-600 py-8 rounded-[28px] text-xl font-black flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_60px_rgba(37,99,235,0.3)] disabled:opacity-30 italic uppercase tracking-widest text-sm"
                 >
-                  Initiate Neural Link <Zap size={24} className="fill-white" />
+                  {loading ? <RefreshCw className="animate-spin" size={20} /> : 'Initiate Neural Link'} 
+                  {!loading && <Zap size={24} className="fill-white" />}
                 </button>
               </div>
             </motion.div>
@@ -168,19 +202,23 @@ export default function AddMoneyPage() {
               </div>
 
               <div className="bg-white/5 rounded-[40px] p-8 border border-white/5 mb-10 text-center">
-                 <div className="mb-6 inline-block p-4 bg-white rounded-3xl">
-                    {/* Dynamic QR Code from Config */}
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(generateUpiData())}`} 
-                      alt="Payment QR" 
-                      className="w-40 h-40"
-                    />
-                 </div>
-                 <div className="flex flex-col gap-2">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Receiver Identity (UPI)</p>
-                    <p className="text-xl font-black font-mono text-blue-400">{config?.receiverUpiId || 'admin@okaxis'}</p>
-                 </div>
-              </div>
+                  <div className="mb-6 inline-block p-4 bg-white rounded-3xl">
+                     {/* Dynamic QR Code from Seller or Config */}
+                     <img 
+                       src={matchedSeller?.qrCode ? getImageUrl(matchedSeller.qrCode) : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(generateUpiData())}`} 
+                       alt="Payment QR" 
+                       className="w-40 h-40"
+                     />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                        {matchedSeller ? `Receiver: ${matchedSeller.name}` : 'Receiver Identity (UPI)'}
+                     </p>
+                     <p className="text-xl font-black font-mono text-blue-400">
+                        {matchedSeller?.upiId || config?.receiverUpiId || 'admin@okaxis'}
+                     </p>
+                  </div>
+               </div>
 
               <div className="space-y-8">
                  <div className="space-y-3">
