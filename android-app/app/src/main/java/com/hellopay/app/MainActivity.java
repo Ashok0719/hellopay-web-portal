@@ -61,6 +61,13 @@ public class MainActivity extends AppCompatActivity {
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.clearCache(true);
 
+        // Feature: Neural Touch Response (Requirement: Fix "Cant Click")
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        
+        webView.setWebChromeClient(new android.webkit.WebChromeClient());
+        
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
