@@ -508,7 +508,9 @@ function PayContent() {
                         </>
                      )}
                   </motion.div>
-                     
+               )}
+            </AnimatePresence>
+
                      <div className="space-y-6">
                         {/* Manual Verification Gate (Hidden in APK) */}
                         {!(typeof window !== 'undefined' && (window as any).AndroidBridge) && (
