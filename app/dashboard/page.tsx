@@ -42,7 +42,6 @@ import {
   LayoutGrid,
   Target,
   MessageSquare,
-  Bot,
   CircleUser,
   ArrowUp,
   ArrowDown,
