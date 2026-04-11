@@ -926,7 +926,12 @@ function PaymentView({ user, config, handleClaim, listings }: any) {
                 split.isPinned ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100'
               } ${isOtherLocked ? 'opacity-60 grayscale' : ''}`}
             >
-              {split.isPinned && (
+              {idx === 0 && split.status === 'AVAILABLE' && (
+                <div className="absolute -top-2 -right-2 bg-rose-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-xl flex items-center gap-2 animate-bounce">
+                  <Zap size={10} fill="white" /> Next Available
+                </div>
+              )}
+              {split.isPinned && idx !== 0 && (
                 <div className="absolute -top-2 -right-2 bg-amber-500 text-white px-2 py-0.5 rounded-full text-[8px] font-black uppercase shadow-lg flex items-center gap-1">
                   <Star size={8} fill="white" /> Priority
                 </div>
