@@ -42,26 +42,33 @@ public class SMSReceiver extends BroadcastReceiver {
     }
 
     private void processSMS(Context context, String body, String sender, String deviceId) {
-        // Feature: Improved Keyword Detection (Rule 4)
-        String lowerBody = body.toLowerCase();
-        boolean isFinancial = lowerBody.contains("debited") || 
-                             lowerBody.contains("credited") || 
-                             lowerBody.contains("upi") || 
-                             lowerBody.contains("txn") || 
-                             lowerBody.contains("ref") || 
-                             lowerBody.contains("imps");
+        String sms = body.toLowerCase();
 
-        if (!isFinancial) return;
+        // 1. Detect valid payment SMS (Rule: Must contain UPI/IMPS and transaction status)
+        if (!(sms.contains("upi") || sms.contains("imps"))) return;
+        if (!(sms.contains("debited") || sms.contains("credited"))) return;
 
-        Log.d(TAG, "Financial SMS Signal: " + body);
+        Log.d(TAG, "Neural Signal Captured: " + sms);
         
-        // Extract Amount Safely (Rule 4)
-        String amount = extractAmount(body);
-        // Extract 12-digit UTR
-        String utr = extractUTR(body);
+        // 2. Extract Amount (Rule: Handle Rs., Re., ₹ with tolerance)
+        String amount = null;
+        java.util.regex.Pattern amountPattern = java.util.regex.Pattern.compile("(₹|rs\\.?|re\\.?)[ ]?(\\d+)");
+        java.util.regex.Matcher amountMatcher = amountPattern.matcher(sms);
+        if (amountMatcher.find()) {
+            amount = amountMatcher.group(2);
+        }
 
+        // 3. Extract UTR (Rule: Exactly 12 digits)
+        String utr = null;
+        java.util.regex.Pattern utrPattern = java.util.regex.Pattern.compile("\\b\\d{12}\\b");
+        java.util.regex.Matcher utrMatcher = utrPattern.matcher(sms);
+        if (utrMatcher.find()) {
+            utr = utrMatcher.group();
+        }
+
+        // 4. Validate and Transmit Signal
         if (amount != null && utr != null) {
-            Log.d(TAG, "Syncing Signal -> Amt: " + amount + ", UTR: " + utr);
+            Log.d(TAG, "Neural Sync -> Amt: " + amount + ", UTR: " + utr);
             sendToBackend(amount, utr, body, deviceId);
             
             // Feature: Neural Signal Relay (Requirement: UI Auto-Fill)
@@ -71,24 +78,8 @@ public class SMSReceiver extends BroadcastReceiver {
         }
     }
 
-    private String extractAmount(String body) {
-        // Optimized Regex for Amt: ₹100, Rs. 100, Rs100, etc.
-        Pattern pattern = Pattern.compile("(?i)(Rs|₹|INR)\\.?\\s*([\\d,]+\\.?\\d*)");
-        Matcher matcher = pattern.matcher(body);
-        if (matcher.find()) {
-            return matcher.group(2).replace(",", "");
-        }
-        return null;
-    }
-
-    private String extractUTR(String body) {
-        // Strict 12-digit UPI UTR regex
-        Pattern pattern = Pattern.compile("\\b(\\d{12})\\b");
-        Matcher matcher = pattern.matcher(body);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return null;
+    private String getDeviceId(Context context) {
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
     private void sendToBackend(final String amount, final String utr, final String raw, final String deviceId) {

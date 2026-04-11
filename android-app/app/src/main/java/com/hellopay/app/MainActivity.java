@@ -161,7 +161,8 @@ public class MainActivity extends AppCompatActivity {
             String upiUrl = "upi://pay?pa=" + upiId + "&pn=" + Uri.encode(name) + "&am=" + amount + "&cu=INR";
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(upiUrl));
             try {
-                startActivity(intent);
+                // Feature: Neural Secondary Confirmation (Rule 4)
+                startActivityForResult(intent, 123);
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Please install a UPI app", Toast.LENGTH_SHORT).show();
             }
@@ -170,6 +171,15 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void showToast(String message) {
             Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 123) {
+            // Feature: Soft Confirmation (Backup Trace)
+            Toast.makeText(this, "Payment Application Closed - Syncing Signal...", Toast.LENGTH_LONG).show();
         }
     }
 }
