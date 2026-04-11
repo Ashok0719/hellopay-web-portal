@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "HelloPay"
 include ':app'
-include ':gradle:wrapper'

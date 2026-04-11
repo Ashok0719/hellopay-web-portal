@@ -3,8 +3,6 @@ name: Build HelloPay APK
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -20,11 +18,15 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: 8.2
+
     - name: Assemble Neural Node (APK)
       run: |
         cd android-app
-        # Build with full trace for high-fidelity auditing
-        gradle assembleDebug --no-daemon --stacktrace
+        gradle assembleDebug --stacktrace
 
     - name: Release Asset to Matrix
       uses: actions/upload-artifact@v4
