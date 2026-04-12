@@ -46,6 +46,8 @@ function PayContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(typeof navigator !== 'undefined' ? navigator.userAgent : '');
+  
   const orderId = searchParams.get('orderId');
   const amount = searchParams.get('amount');
   const upiIntent = searchParams.get('upiIntent') || '';
@@ -436,7 +438,7 @@ function PayContent() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                            <AppButton 
-                              icon="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz-8jR7Z_T2z-Z8L_sR9E4_6X6gK67_8Z5_g&s" 
+                              icon="https://logos-world.net/wp-content/uploads/2023/07/Freecharge-Logo.png" 
                               label="Freecharge" 
                               color="bg-orange-600" 
                               onClick={() => handlePayNow('freecharge')} 
