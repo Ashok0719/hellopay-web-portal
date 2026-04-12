@@ -230,7 +230,7 @@ function PayContent() {
       setError(msg);
       setStatus('idle');
       
-      if (msg.includes('Fraud Detected')) {
+      if (msg.includes('TRANSACTION BLOCKED')) {
          setStatus('failed');
          setTimeout(() => router.push('/dashboard'), 3000);
       }
