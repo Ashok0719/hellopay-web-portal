@@ -543,35 +543,6 @@ function PayContent() {
                                 />
                              </div>
                              
-                             <div className="flex items-center gap-4 py-1">
-                                <div className="h-px bg-slate-100 flex-1" />
-                                <span className="text-[8px] font-black text-slate-300 uppercase italic">Or Pulse Evidence</span>
-                                <div className="h-px bg-slate-100 flex-1" />
-                             </div>
- 
-                             {!file ? (
-                               <label className="block p-5 border-2 border-dashed border-slate-100 rounded-[32px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
-                                 <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                                 <div className="flex items-center justify-center gap-3">
-                                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-emerald-500 transition-all shadow-inner">
-                                       <Upload size={20} />
-                                    </div>
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] group-hover:text-emerald-600 transition-colors">Attach Proof</span>
-                                 </div>
-                               </label>
-                             ) : (
-                               <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-[24px] flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={20} /></div>
-                                     <div className="flex flex-col">
-                                        <span className="text-[8px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
-                                     </div>
-                                  </div>
-                                  <button onClick={() => setFile(null)} className="p-2 bg-white rounded-xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
-                                     <AlertCircle size={16} />
-                                  </button>
-                               </div>
-                             )}
  
                               <button 
                                  onClick={verifyPayment}
