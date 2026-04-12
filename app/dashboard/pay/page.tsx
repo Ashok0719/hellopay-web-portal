@@ -314,83 +314,76 @@ function PayContent() {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24 max-w-lg mx-auto shadow-2xl border-x border-slate-100">
       
       {/* Dynamic Header */}
-      <div className="bg-white p-6 flex items-center justify-between sticky top-0 z-50 border-b border-slate-50 shadow-sm">
-        <button onClick={() => router.back()} className="p-2 border border-slate-100 rounded-2xl text-slate-400 hover:bg-slate-50 transition-all">
-          <ArrowLeft size={24} />
+      <div className="bg-white p-4 flex items-center justify-between sticky top-0 z-50 border-b border-slate-50 shadow-sm">
+        <button onClick={() => router.back()} className="p-1.5 border border-slate-100 rounded-xl text-slate-400 hover:bg-slate-50 transition-all">
+          <ArrowLeft size={20} />
         </button>
         <div className="text-center">
-          <h1 className="text-lg font-black italic uppercase text-slate-800 tracking-tighter leading-none">Security Checkout</h1>
-          <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-1">HelloPay Neural Protected</p>
+          <h1 className="text-base font-black italic uppercase text-slate-800 tracking-tighter leading-none">Security Checkout</h1>
+          <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-0.5">HelloPay Neural Protected</p>
         </div>
-        <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
-           <ShieldCheck size={24} />
+        <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+           <ShieldCheck size={20} />
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4">
         {/* Real-time Countdown Heartbeat */}
         {timeLeft !== null && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 bg-amber-50 border border-amber-100 rounded-[32px] p-6 flex items-center justify-between shadow-sm relative overflow-hidden group"
+            className="mb-4 bg-amber-50 border border-amber-100 rounded-[24px] p-4 flex items-center justify-between shadow-sm relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 w-32 h-full bg-amber-500/5 -skew-x-12 translate-x-16 group-hover:translate-x-0 transition-transform duration-1000" />
-            <div className="flex items-center gap-4 relative z-10">
-              <div className={`p-4 bg-white rounded-2xl shadow-sm ${timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-amber-500 anim-float'}`}>
-                <Clock size={24} />
+            <div className="flex items-center gap-3 relative z-10">
+              <div className={`p-3 bg-white rounded-xl shadow-sm ${timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-amber-500 anim-float'}`}>
+                <Clock size={20} />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase text-amber-600 tracking-[0.2em] italic mb-1">Decentralized Window</span>
-                <span className={`text-3xl font-black italic tracking-tighter tabular-nums leading-none ${timeLeft < 300 ? 'text-red-600' : 'text-slate-800'}`}>
+                <span className="text-[9px] font-black uppercase text-amber-600 tracking-[0.2em] italic mb-0.5">Neural Session</span>
+                <span className={`text-2xl font-black italic tracking-tighter tabular-nums leading-none ${timeLeft < 300 ? 'text-red-600' : 'text-slate-800'}`}>
                   {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                 </span>
               </div>
             </div>
-            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${timeLeft < 300 ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-white text-slate-400 border border-slate-100 shadow-sm'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${timeLeft < 300 ? 'bg-white animate-ping' : 'bg-amber-400'}`} />
-              {timeLeft < 300 ? 'Urgent Signal' : 'Signal Active'}
+            <div className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${timeLeft < 300 ? 'bg-red-500 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100 shadow-sm'}`}>
+              {timeLeft < 300 ? 'Urgent' : 'Active'}
             </div>
           </motion.div>
         )}
 
         {/* Transaction Telemetry Card */}
-        <div className="bg-slate-900 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden mb-8 group">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[60px]" />
-           <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/10 rounded-full blur-[80px]" />
+        <div className="bg-slate-900 rounded-[32px] p-6 text-white shadow-2xl relative overflow-hidden mb-4 group">
+           <div className="absolute top-0 right-0 w-32 h-24 bg-emerald-500/10 rounded-full blur-[50px]" />
            
            <div className="relative z-10 text-center">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4 block italic">Settlement Signal</span>
-              <div className="text-6xl font-black italic tracking-tighter tabular-nums mb-4 drop-shadow-[0_4px_12px_rgba(255,255,255,0.1)]">₹{(Number(amount) || 0).toLocaleString()}</div>
+              <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 block italic">Settlement Signal</span>
+              <div className="text-4xl font-black italic tracking-tighter tabular-nums mb-3 drop-shadow-[0_4px_12px_rgba(255,255,255,0.1)]">₹{(Number(amount) || 0).toLocaleString()}</div>
               
-              <div className="inline-flex flex-col items-center gap-2 p-6 bg-white/5 border border-white/10 rounded-[32px] w-full">
-                 <h4 className="text-[10px] font-black uppercase text-emerald-400 tracking-widest italic opacity-80">You are paying to node:</h4>
-                 <div className="text-xl font-black italic text-white tracking-widest leading-none mb-1 shadow-glow">{sellerName || 'SYSTEM_HUB'}</div>
-                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">ID: {sellerIdDisplay || '******'}</p>
-                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Digital Asset ID Binding Verified</p>
+              <div className="inline-flex flex-col items-center gap-1.5 p-4 bg-white/5 border border-white/10 rounded-[24px] w-full">
+                 <h4 className="text-[8px] font-black uppercase text-emerald-400 tracking-widest italic opacity-80">Receiving Node:</h4>
+                 <div className="text-base font-black italic text-white tracking-widest leading-none mb-0.5">{sellerName || 'SYSTEM_HUB'}</div>
+                 <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Digital Asset Binding Verified</p>
               </div>
            </div>
         </div>
 
-        {/* Payment Logic Matrix */}
-        <div className="space-y-6">
-           <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
-               <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic">Receiver Terminal</h3>
-                  <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[9px] font-black uppercase tracking-widest">Online Signal</div>
-               </div>
+        {/* Payment Logic Matrix *        <div className="space-y-4">
+           <div className="bg-white rounded-[32px] p-5 shadow-sm border border-slate-100 mb-4 relative overflow-hidden text-center">
+               <h3 className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 italic">Receiver Identity</h3>
 
-               <div className="mt-8 flex items-center gap-4 bg-slate-50 px-8 py-5 rounded-[24px] border border-slate-100 w-full group">
-                 <div className="p-3 bg-white rounded-2xl shadow-sm text-emerald-600"><Smartphone size={20} /></div>
+               <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-[20px] border border-slate-100 w-full group">
+                 <div className="p-2 bg-white rounded-xl shadow-sm text-emerald-600"><Smartphone size={16} /></div>
                  <div className="flex-1 overflow-hidden">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">UPI Identity Profile</p>
-                    <p className="text-sm font-black text-slate-700 truncate tracking-tight">{receiverUpi}</p>
+                    <p className="text-xs font-black text-slate-700 truncate tracking-tight">{receiverUpi}</p>
                  </div>
-                 <button onClick={copyUpi} className={`p-3 rounded-2xl transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-slate-400 hover:text-emerald-600 shadow-sm'}`}>
-                    {copied ? <Check size={18} /> : <Copy size={18} />}
+                 <button onClick={copyUpi} className={`p-2 rounded-xl transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-slate-400 hover:text-emerald-600 shadow-sm'}`}>
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
                  </button>
                </div>
            </div>
+v>
 
            <div className="space-y-4">
                <button 
@@ -438,18 +431,18 @@ function PayContent() {
             {/* Step 2: Confirmation Gate (Requirement 4) */}
             {!isPaidConfirmed && (
                <motion.div 
-                 initial={{ opacity: 0, y: 20 }}
+                 initial={{ opacity: 0, y: 10 }}
                  animate={{ opacity: 1, y: 0 }}
-                 className="mt-8 p-8 bg-amber-50 rounded-[40px] border border-amber-100 text-center"
+                 className="mt-4 p-5 bg-amber-50 rounded-[32px] border border-amber-100 text-center"
                >
-                  <p className="text-[10px] font-black uppercase text-amber-600 tracking-widest mb-6 italic leading-relaxed">
-                     Switch back to this window after completing the payment in your UPI app to submit the reference ID.
+                  <p className="text-[9px] font-black uppercase text-amber-600 tracking-widest mb-4 italic leading-relaxed">
+                     Switch back after paying to submit reference ID.
                   </p>
                   <button 
                     onClick={() => setIsPaidConfirmed(true)}
-                    className="w-full py-5 bg-white border border-amber-200 text-amber-600 rounded-[28px] text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-white border border-amber-200 text-amber-600 rounded-[24px] text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center justify-center gap-3"
                   >
-                     <CheckCircle size={18} /> I HAVE COMPLETED PAYMENT
+                     <CheckCircle size={16} /> I HAVE PAID
                   </button>
                </motion.div>
             )}
@@ -509,64 +502,58 @@ function PayContent() {
                         {/* Manual Verification Gate (Hidden in APK) */}
                         {!(typeof window !== 'undefined' && (window as any).AndroidBridge) && (
                           <>
-                            <div>
-                               <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-3 italic">UPI Transaction ID (Ref No.)</label>
-                               <input 
-                                 type="text" 
-                                 value={utr}
-                                 onChange={(e) => setUtr(e.target.value)}
-                                 placeholder="12-DIGIT TRANSACTION ID"
-                                 className="w-full bg-slate-50 border border-slate-200 rounded-[24px] px-8 py-5 text-sm font-black tracking-widest focus:outline-emerald-500 placeholder:opacity-30 placeholder:italic italic"
-                               />
-                            </div>
-                            
-                            <div className="flex items-center gap-4 py-2">
-                               <div className="h-px bg-slate-100 flex-1" />
-                               <span className="text-[9px] font-black text-slate-300 uppercase italic">Neural Sync Or</span>
-                               <div className="h-px bg-slate-100 flex-1" />
-                            </div>
-
-                            {!file ? (
-                              <label className="block p-12 border-4 border-dashed border-slate-50 rounded-[40px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
-                                <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                                <div className="w-20 h-20 bg-slate-50 rounded-[32px] mx-auto flex items-center justify-center mb-6 text-slate-300 group-hover:text-emerald-500 transition-all group-hover:scale-110 shadow-inner">
-                                   <Upload size={32} />
-                                </div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-emerald-600 transition-colors">Attach Evidence</span>
-                              </label>
-                            ) : (
-                              <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
-                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={24} /></div>
-                                    <div className="flex flex-col">
-                                       <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
-                                       <span className="text-[9px] font-bold text-emerald-400 truncate max-w-[120px]">{file.name}</span>
+                             <div className="mt-4">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block ml-4 mb-2 italic">Transaction ID (UTR)</label>
+                                <input 
+                                  type="text" 
+                                  value={utr}
+                                  onChange={(e) => setUtr(e.target.value)}
+                                  placeholder="12-DIGIT ID"
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-[20px] px-6 py-4 text-sm font-black tracking-[0.2em] focus:outline-emerald-500 placeholder:opacity-30 italic"
+                                />
+                             </div>
+                             
+                             <div className="flex items-center gap-4 py-1">
+                                <div className="h-px bg-slate-100 flex-1" />
+                                <span className="text-[8px] font-black text-slate-300 uppercase italic">Or Pulse Evidence</span>
+                                <div className="h-px bg-slate-100 flex-1" />
+                             </div>
+ 
+                             {!file ? (
+                               <label className="block p-5 border-2 border-dashed border-slate-100 rounded-[32px] cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/50 transition-all text-center group">
+                                 <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                                 <div className="flex items-center justify-center gap-3">
+                                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-emerald-500 transition-all shadow-inner">
+                                       <Upload size={20} />
                                     </div>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] group-hover:text-emerald-600 transition-colors">Attach Proof</span>
                                  </div>
-                                 <button onClick={() => setFile(null)} className="p-4 bg-white rounded-2xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
-                                    <AlertCircle size={20} />
-                                 </button>
-                              </div>
-                            )}
-
-                             <p className="px-6 py-4 bg-amber-50 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest text-center italic border border-amber-100">
-                               Neural Instruction: After successful payment, please wait 30 seconds for signal propagation before submitting ID.
-                             </p>
-
-                             <button 
-                                onClick={verifyPayment}
-                                disabled={loading || !utr}
-                                className="w-full py-6 bg-slate-900 text-white font-black rounded-[32px] uppercase italic tracking-[0.1em] shadow-2xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4"
-                             >
-                               {status === 'verifying' ? (
-                                 <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                                    <span className="animate-pulse tracking-[0.4em]">NEURAL SYNC...</span>
-                                 </div>
-                               ) : (
-                                 <>SUBMIT IDENTITY SIGNAL <ArrowLeft className="rotate-180" size={20} /></>
-                               )}
-                             </button>
+                               </label>
+                             ) : (
+                               <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-[24px] flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm"><CheckCircle size={20} /></div>
+                                     <div className="flex flex-col">
+                                        <span className="text-[8px] font-black uppercase text-emerald-600 tracking-widest">Evidence Synced</span>
+                                     </div>
+                                  </div>
+                                  <button onClick={() => setFile(null)} className="p-2 bg-white rounded-xl text-slate-300 hover:text-red-500 transition-all shadow-sm">
+                                     <AlertCircle size={16} />
+                                  </button>
+                               </div>
+                             )}
+ 
+                              <button 
+                                 onClick={verifyPayment}
+                                 disabled={loading || !utr}
+                                 className="w-full py-5 bg-slate-900 text-white font-black rounded-[28px] uppercase italic tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-4 text-xs"
+                              >
+                                {status === 'verifying' ? (
+                                  <span className="animate-pulse tracking-[0.3em]">SYNCHRONIZING...</span>
+                                ) : (
+                                  <>SUBMIT SIGNAL <Zap size={16} className="fill-white" /></>
+                                )}
+                              </button>
                           </>
                         )}
                         
