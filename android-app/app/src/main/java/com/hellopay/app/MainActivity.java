@@ -231,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (launchIntent != null) {
                 try {
+                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(launchIntent);
                     Toast.makeText(MainActivity.this, "Redirecting to Home Screen...", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {

@@ -218,8 +218,10 @@ function PayContent() {
 
       if (data.success && data.status === 'SUCCESS') {
         setStatus('success');
-      } else if (data.status === 'PENDING_VERIFICATION') {
-        } else {
+      } else if (data.status === 'PENDING_VERIFICATION' || data.status === 'PENDING_REVIEW') {
+        setStatus('idle');
+        setTxStatus(data.status);
+      } else {
         setStatus('failed');
         setError(data.message || 'Verification Mismatch: Neural OCR Signal Fault.');
       }
