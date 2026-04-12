@@ -52,12 +52,12 @@ export default function RefundPage() {
           </section>
 
           <section className="p-8 rounded-[40px] bg-slate-900 border border-slate-800">
-             <h3 className="text-xl font-bold text-slate-100 mb-4 uppercase">SUPPORT CONTACT</h3>
+             <h3 className="text-xl font-bold text-slate-100 mb-4 uppercase italic">Support Signal</h3>
              <p className="text-sm font-black text-emerald-400 flex items-center gap-2">
-                <ShieldCheck size={16}/> support@Hellopay.com
+                <ShieldCheck size={16}/> support@hellopay.io
              </p>
-             <p className="text-xs text-slate-600 mt-4 leading-loose">
-                Expected ticket response time: 2-4 hours for financial criticality.
+             <p className="text-[10px] text-slate-600 mt-4 leading-loose uppercase tracking-widest font-black">
+                Static Head node: Level 15, Eros Corporate Tower, Nehru Place, New Delhi, 110019
              </p>
           </section>
         </div>

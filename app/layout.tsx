@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 }
 
 import FirebaseManager from './FirebaseManager'
+import Footer from '@/components/Footer'
 
 export default function RootLayout({
   children,
@@ -39,7 +40,10 @@ export default function RootLayout({
     <html lang="en" className={`${outfit.variable}`}>
       <body className="font-outfit antialiased transition-colors duration-700">
         <FirebaseManager />
-        {children}
+        <main className="min-h-screen">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   )

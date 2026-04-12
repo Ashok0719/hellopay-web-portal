@@ -52,9 +52,10 @@ export default function TermsPage() {
           </section>
 
           <section className="p-8 rounded-[40px] bg-slate-900 border border-slate-800">
-             <h3 className="text-xl font-bold text-slate-100 mb-4 whitespace-nowrap">GOVERNING LAW & JURISDICTION</h3>
-             <p className="text-sm">
-                These terms are governed by the laws of India. Any disputes arising from the use of this ecosystem shall be subject to the exclusive jurisdiction of the courts located in New Delhi.
+             <h3 className="text-xl font-bold text-slate-100 mb-4 whitespace-nowrap uppercase italic">Support Signal</h3>
+             <p className="text-sm font-black text-indigo-400 mb-4">support@hellopay.io</p>
+             <p className="text-[10px] text-slate-600 leading-loose uppercase tracking-widest font-black">
+                Static Head node: Level 15, Eros Corporate Tower, Nehru Place, New Delhi, 110019
              </p>
           </section>
         </div>

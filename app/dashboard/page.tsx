@@ -241,14 +241,13 @@ export default function Dashboard() {
     setIsClaiming(true);
     
     try {
-      // Direct Purchase Linkage: PIN verification removed for faster rotation
-      const { data } = await api.post(`/stocks/buy`, { stockId });
+      // Fastring Integration: Create Order and Lock Stock in one protocol
+      const { data } = await api.post(`/stocks/create-order`, { stockId });
       if (data.success) {
-        const { transaction, stock } = data;
-        const recipientName = encodeURIComponent(stock.ownerId?.name || 'HelloPay Seller');
-        const upiIntent = `upi://pay?pa=${stock.ownerId?.upiId || 'admin@upi'}&pn=${recipientName}&am=${transaction.amount}&cu=INR`;
-        const sellerId = stock.ownerId?.userIdNumber || '******';
-        router.push(`/dashboard/pay?orderId=${transaction.transactionId}&amount=${transaction.amount}&upiIntent=${encodeURIComponent(upiIntent)}&txnId=${transaction._id}&sellerId=${sellerId}`);
+        const { orderId, paymentUrl, transactionId, amount, buyerName } = data;
+        
+        // Redirect to specialized Fastring-enabled Pay Page
+        router.push(`/dashboard/pay?orderId=${orderId}&paymentUrl=${encodeURIComponent(paymentUrl)}&amount=${amount}&txnId=${transactionId}&name=${encodeURIComponent(buyerName)}`);
       }
     } catch (err: any) {
       setNotice({
@@ -443,8 +442,16 @@ export default function Dashboard() {
           isOpen={showDepositModal} 
           onClose={() => setShowDepositModal(false)}
           config={config}
-          onSelect={(method: string, amt: string) => {
-            router.push(`/dashboard/pay?amount=${amt}&method=${method}`);
+          onSelect={async (method: string, amt: string) => {
+            try {
+              // Create a direct wallet recharge order
+              const { data } = await api.post('/wallet/add-money', { amount: amt });
+              if (data.success) {
+                router.push(`/dashboard/pay?orderId=${data.orderId}&paymentUrl=${encodeURIComponent(data.paymentUrl)}&amount=${amt}&name=${encodeURIComponent(user?.name || '')}`);
+              }
+            } catch (err) {
+               console.error('Recharge Initiation Fault:', err);
+            }
             setShowDepositModal(false);
           }}
         />

@@ -47,17 +47,18 @@ export default function PrivacyPage() {
                 <ShieldCheck className="text-indigo-500" /> 3. Third-Party Matrix
              </h2>
              <p>
-                We collaborate with verified partners like Razorpay for payment orchestration. Your financial details (CVV, Card Pins) never touch HelloPay's primary core; they are processed securely by our PCI-DSS compliant partners.
+                We collaborate with verified partners like Fastring App for payment orchestration. Your financial details never touch HelloPay's primary core; they are processed securely by our protected partners.
              </p>
           </section>
 
-          <section className="p-8 rounded-[40px] bg-slate-900 border border-slate-800">
-             <h3 className="text-xl font-bold text-slate-100 mb-4">Hello GUARANTEE</h3>
-             <p className="text-sm">
-                We will never trade or sell your financial history to any external data harvesting entities. Your privacy is our highest priority in the era of digital payments.
-             </p>
-          </section>
-        </div>
+        <section className="p-8 rounded-[40px] bg-slate-900 border border-slate-800">
+           <h3 className="text-xl font-bold text-slate-100 mb-4 uppercase italic">Support Signal</h3>
+           <p className="text-sm font-black text-indigo-400">support@hellopay.io</p>
+           <p className="text-[10px] text-slate-600 mt-4 leading-loose uppercase tracking-widest font-black">
+              Static Head node: Level 15, Eros Corporate Tower, Nehru Place, New Delhi, 110019
+           </p>
+        </section>
+      </div>
 
         <div className="mt-24 pt-12 border-t border-slate-900 text-center text-slate-700 text-xs font-bold uppercase tracking-widest leading-loose">
            Copyright © 2026 Hello Financial Ecosystem. Version V1.0.0-PROD
