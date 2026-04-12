@@ -125,12 +125,12 @@ function PayContent() {
 
   const handlePayNow = (app?: string) => {
     if (isCooldown) return;
-    if (!upiIntent) {
-      setError("Neural Signal Lost: UPI Intent data is missing. Please re-initiate the payment.");
-      return;
-    }
     
-    // Feature: ANTI-MULTI-CLICK / COOLDOWN (As Requested)
+    // Feature: PURE REDIRECTION (Requirement: Home Page Only, No Auto-Fill)
+    let finalIntent = "upi://pay"; 
+    if (app === 'freecharge') finalIntent = "freecharge://";
+    if (app === 'mobikwik') finalIntent = "mobikwik://";
+
     setIsCooldown(true);
     setCooldownRemaining(10);
     const cooldownTimer = setInterval(() => {
@@ -144,25 +144,16 @@ function PayContent() {
        });
     }, 1000);
 
-    // Standardize deep linking (Requirement: Bypass ERR_UNKNOWN_URL_SCHEME)
-    let finalIntent = upiIntent.startsWith('upi%3A') ? decodeURIComponent(upiIntent) : upiIntent;
-    
-    // Feature: Pattern Detection Bypass (Requirement: Verified Note)
-    const uniqueNote = `HPY${Date.now().toString().slice(-6)}`;
-    if (finalIntent.includes('?')) finalIntent += `&tn=${uniqueNote}`;
-    else finalIntent += `?tn=${uniqueNote}`;
-
     setCurrentIntentUrl(finalIntent);
     setSelectedAppName(app?.toUpperCase() || 'UPI APP');
-    setIsIntentModalOpen(true);
-
-    // Requirement: WEB + APK Communication (JS Bridge)
+    
+    // Requirement: APK Home Redirection
     if ((window as any).AndroidBridge) {
-        (window as any).AndroidBridge.startUPIPayment(amount, receiverUpi, "HelloPay");
-        setIsCooldown(true);
-        // Cooldown handled in native too but we lock web UI
+        (window as any).AndroidBridge.startUPIPayment(amount, receiverUpi, app || 'HelloPay');
     } else if (isMobile) {
       window.location.href = finalIntent;
+    } else {
+      setIsIntentModalOpen(true);
     }
 
     setShowAppSelector(false);
