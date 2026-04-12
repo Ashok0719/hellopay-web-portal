@@ -219,12 +219,10 @@ function PayContent() {
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Neural Link Fault: Connection Terminated.';
       setError(msg);
-      setStatus('idle');
+      setStatus('failed'); // Feature: Force Failed state for all rejections
       
-      if (msg.includes('TRANSACTION BLOCKED')) {
-         setStatus('failed');
-         setTimeout(() => router.push('/dashboard'), 3000);
-      }
+      // Feature: Fraud Ejection (Requirement: Failed & Auto-Redirect to Home)
+      setTimeout(() => router.push('/dashboard'), 3000);
     } finally {
       setLoading(false);
     }
