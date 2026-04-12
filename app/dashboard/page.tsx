@@ -244,10 +244,16 @@ export default function Dashboard() {
       // Fastring Integration: Create Order and Lock Stock in one protocol
       const { data } = await api.post(`/stocks/create-order`, { stockId });
       if (data.success) {
-        const { orderId, paymentUrl, transactionId, amount, buyerName } = data;
+        const paymentUrl = data.paymentUrl || data.payment_url;
+        const orderId = data.orderId || data.id;
+        const transactionId = data.transactionId;
+        const amount = data.amount;
         
-        // Redirect to specialized Fastring-enabled Pay Page
-        router.push(`/dashboard/pay?orderId=${orderId}&paymentUrl=${encodeURIComponent(paymentUrl)}&amount=${amount}&txnId=${transactionId}&name=${encodeURIComponent(buyerName)}`);
+        if (paymentUrl) {
+          router.push(`/dashboard/pay?orderId=${orderId}&paymentUrl=${encodeURIComponent(paymentUrl)}&amount=${amount}&txnId=${transactionId}&name=${encodeURIComponent(user?.name || '')}`);
+        } else {
+          throw new Error('Payment signal not found');
+        }
       }
     } catch (err: any) {
       setNotice({
@@ -446,8 +452,11 @@ export default function Dashboard() {
             try {
               // Create a direct wallet recharge order
               const { data } = await api.post('/wallet/add-money', { amount: amt });
-              if (data.success) {
-                router.push(`/dashboard/pay?orderId=${data.orderId}&paymentUrl=${encodeURIComponent(data.paymentUrl)}&amount=${amt}&name=${encodeURIComponent(user?.name || '')}`);
+              if (data.success && data.paymentUrl) {
+                router.push(`/dashboard/pay?orderId=${data.orderId || 'HP_RECHARGE'}&paymentUrl=${encodeURIComponent(data.paymentUrl)}&amount=${amt}&name=${encodeURIComponent(user?.name || '')}`);
+              } else {
+                setNotice({ isOpen: true, title: "Neural Link Error", message: "Failed to initialize Fastring payment session. Please try again." });
+              }
               }
             } catch (err) {
                console.error('Recharge Initiation Fault:', err);
