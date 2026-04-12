@@ -390,6 +390,17 @@ function PayContent() {
                     {copied ? <Check size={14} /> : <Copy size={14} />}
                  </button>
                </div>
+
+               {/* Feature: Security Bypass (Requirement: Solve "Transaction Blocked") */}
+               <div className="mt-4 p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/50 flex items-center justify-between">
+                  <div className="flex flex-col text-left">
+                     <span className="text-[7px] font-black uppercase text-emerald-600 tracking-widest mb-1 italic">Security Bypass Note</span>
+                     <span className="text-sm font-black text-slate-800 tracking-widest italic uppercase">{"GIFT" + Math.floor(1000 + Math.random() * 9000)}</span>
+                  </div>
+                  <div className="text-[7px] font-black uppercase bg-white px-3 py-2 rounded-lg text-slate-400 border border-slate-100 leading-tight text-right italic">
+                     Enter in "Add Note"<br/>to unblock payment
+                  </div>
+               </div>
            </div>
 
            <div className="space-y-4">
