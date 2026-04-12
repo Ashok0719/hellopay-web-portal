@@ -226,7 +226,14 @@ function PayContent() {
         setError(data.message || 'Verification Mismatch: Neural OCR Signal Fault.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Neural Link Fault: Connection Terminated.');
+      const msg = err.response?.data?.message || 'Neural Link Fault: Connection Terminated.';
+      setError(msg);
+      
+      // Feature: Fraud Ejection (Requirement: Failed & Auto-Redirect)
+      if (msg.includes('Fraud Detected')) {
+         setStatus('failed');
+         setTimeout(() => router.push('/dashboard'), 3000);
+      }
     } finally {
       setLoading(false);
     }
