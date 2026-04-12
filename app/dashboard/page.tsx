@@ -457,7 +457,6 @@ export default function Dashboard() {
               } else {
                 setNotice({ isOpen: true, title: "Neural Link Error", message: "Failed to initialize Fastring payment session. Please try again." });
               }
-              }
             } catch (err) {
                console.error('Recharge Initiation Fault:', err);
             }
