@@ -128,8 +128,8 @@ function PayContent() {
     
     // Feature: PURE REDIRECTION (Requirement: Home Page Only, No Auto-Fill)
     let finalIntent = "upi://pay"; 
-    if (app === 'freecharge') finalIntent = "freecharge://";
-    if (app === 'mobikwik') finalIntent = "mobikwik://";
+    if (app === 'freecharge') finalIntent = "intent://#Intent;scheme=freecharge;package=com.freecharge.android;end;";
+    if (app === 'mobikwik') finalIntent = "intent://#Intent;scheme=mobikwik;package=com.mobikwik_new;end;";
 
     setIsCooldown(true);
     setCooldownRemaining(10);
@@ -437,8 +437,18 @@ function PayContent() {
                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                           <AppButton icon="/logos/freecharge.png" label="Freecharge" color="bg-orange-600" onClick={() => handlePayNow('freecharge')} />
-                           <AppButton icon="https://upload.wikimedia.org/wikipedia/commons/9/91/MobiKwik_logo.png" label="Mobikwik" color="bg-blue-700" onClick={() => handlePayNow('mobikwik')} />
+                           <AppButton 
+                              icon="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz-8jR7Z_T2z-Z8L_sR9E4_6X6gK67_8Z5_g&s" 
+                              label="Freecharge" 
+                              color="bg-orange-600" 
+                              onClick={() => handlePayNow('freecharge')} 
+                           />
+                           <AppButton 
+                              icon="https://upload.wikimedia.org/wikipedia/commons/9/91/MobiKwik_logo.png" 
+                              label="Mobikwik" 
+                              color="bg-blue-700" 
+                              onClick={() => handlePayNow('mobikwik')} 
+                           />
                         </div>
                         <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest italic leading-relaxed px-8">
                           Neural Redirection: Your chosen app will initialize with target unit amount and identity pre-filled.
