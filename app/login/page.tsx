@@ -8,7 +8,7 @@ import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import { auth, googleProvider } from '@/lib/firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
 
 function NeuralBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -110,16 +110,41 @@ export default function LoginPage() {
   const resetPinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    // Neural Check to prevent redirect loops
     const checkAuth = async () => {
+      // 1. Check for existing session
       const authData = localStorage.getItem('hellopay-auth-storage');
       if (authData) {
         try {
           const parsed = JSON.parse(authData);
           if (parsed.state?.token) {
             router.replace('/dashboard');
+            return;
           }
         } catch (e) {}
+      }
+
+      // 2. Check for redirect result from Google
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          setGoogleLoading(true);
+          const idToken = await result.user.getIdToken();
+          const { data } = await api.post('/auth/firebase-login', { idToken });
+          
+          if (data.needsSetup) {
+            setTempUser(data);
+            setSetupMode(true);
+          } else {
+            setToken(data.token);
+            setUser(data);
+            router.push('/dashboard');
+          }
+        }
+      } catch (err: any) {
+        console.error('Redirect Result Error:', err);
+        setError(err.message || 'Google Auth Failed');
+      } finally {
+        setGoogleLoading(false);
       }
     };
     checkAuth();
@@ -207,27 +232,11 @@ export default function LoginPage() {
     setGoogleLoading(true);
     setError('');
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      const { data } = await api.post('/auth/firebase-login', { idToken });
-      
-      if (data.needsSetup) {
-        setTempUser(data);
-        setSetupMode(true);
-      } else {
-        localStorage.setItem('hellopay-auth-storage', JSON.stringify({
-          state: { user: data, token: data.token, isAuthenticated: true },
-          version: 0
-        }));
-        setToken(data.token);
-        setUser(data);
-        router.push('/dashboard');
-      }
+      // Direct Navigation Protocol: Bypass popup blockers
+      await signInWithRedirect(auth, googleProvider);
     } catch (err: any) {
       console.error('Google Auth Error:', err);
-      const msg = err.response?.data?.message || err.message || 'Google Auth Failed';
-      setError(msg);
-    } finally {
+      setError(err.message || 'Google Auth Failed');
       setGoogleLoading(false);
     }
   };
