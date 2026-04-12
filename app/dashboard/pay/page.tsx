@@ -50,6 +50,23 @@ function PayContent() {
     window.location.href = paymentUrl;
   };
 
+  const handleCancel = async () => {
+    if (!transactionId) {
+      router.push('/dashboard');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await api.post(`/stocks/transactions/${transactionId}/cancel`);
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('Neural Release Fault:', err);
+      // Fallback: still go back to dashboard
+      router.push('/dashboard');
+    }
+  };
+
   if (txStatus === 'SUCCESS') {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
@@ -122,6 +139,14 @@ function PayContent() {
                 <span className="text-[9px] opacity-70 tracking-widest not-italic">Fast & Secure UPI Redirect</span>
               </>
             )}
+          </button>
+
+          <button 
+            onClick={handleCancel}
+            disabled={loading}
+            className="w-full py-4 text-slate-400 hover:text-slate-600 font-black uppercase italic tracking-widest text-[10px] transition-all hover:bg-slate-100 rounded-[20px]"
+          >
+            Abort & Release Node
           </button>
 
           <div className="bg-white rounded-[32px] p-6 border border-slate-100 flex items-start gap-4 shadow-sm">
