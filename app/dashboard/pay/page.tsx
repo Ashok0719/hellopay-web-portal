@@ -369,7 +369,8 @@ function PayContent() {
            </div>
         </div>
 
-        {/* Payment Logic Matrix *        <div className="space-y-4">
+        {/* Payment Logic Matrix */}
+        <div className="space-y-4">
            <div className="bg-white rounded-[32px] p-5 shadow-sm border border-slate-100 mb-4 relative overflow-hidden text-center">
                <h3 className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 italic">Receiver Identity</h3>
 
@@ -383,7 +384,6 @@ function PayContent() {
                  </button>
                </div>
            </div>
-v>
 
            <div className="space-y-4">
                <button 
