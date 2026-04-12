@@ -392,13 +392,24 @@ function PayContent() {
                </div>
 
                {/* Feature: Security Bypass (Requirement: Solve "Transaction Blocked") */}
-               <div className="mt-4 p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/50 flex items-center justify-between">
-                  <div className="flex flex-col text-left">
-                     <span className="text-[7px] font-black uppercase text-emerald-600 tracking-widest mb-1 italic">Security Bypass Note</span>
+               <div className="mt-4 p-5 bg-emerald-50/50 rounded-[28px] border border-emerald-100/50 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-3 opacity-10"><ShieldCheck size={40} /></div>
+                  
+                  <div className="flex flex-col text-left mb-4">
+                     <span className="text-[8px] font-black uppercase text-emerald-600 tracking-widest mb-1 italic">Security Bypass Protocol</span>
                      <span className="text-sm font-black text-slate-800 tracking-widest italic uppercase">{"GIFT" + Math.floor(1000 + Math.random() * 9000)}</span>
                   </div>
-                  <div className="text-[7px] font-black uppercase bg-white px-3 py-2 rounded-lg text-slate-400 border border-slate-100 leading-tight text-right italic">
-                     Enter in "Add Note"<br/>to unblock payment
+
+                  <div className="space-y-2">
+                     <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 italic">
+                        <div className="w-1 h-1 bg-emerald-500 rounded-full" /> USE "ADD NOTE" IN BANK APP
+                     </p>
+                     <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 italic">
+                        <div className="w-1 h-1 bg-emerald-500 rounded-full" /> IF BLOCKED, TRY MOBIKWIK APP
+                     </p>
+                     <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 italic">
+                        <div className="w-1 h-1 bg-emerald-500 rounded-full" /> SCAN QR INSTEAD OF COPY-PASTE
+                     </p>
                   </div>
                </div>
            </div>
