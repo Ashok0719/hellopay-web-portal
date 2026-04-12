@@ -216,15 +216,28 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void startUPIPayment(String amount, String upiId, String name) {
-            // Feature: Pattern Detection Bypass (Requirement: Dynamic Note)
-            String note = "HPY" + System.currentTimeMillis();
-            String upiUrl = "upi://pay?pa=" + upiId + "&pn=" + Uri.encode(name) + "&am=" + amount + "&cu=INR&tn=" + note;
-                            
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(upiUrl));
-            try {
-                startActivityForResult(intent, 123);
-            } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Please install a UPI app", Toast.LENGTH_SHORT).show();
+            // Feature: PURE REDIRECTION (Requirement: Freecharge & Mobikwik Home Only)
+            PackageManager pm = getPackageManager();
+            Intent launchIntent = null;
+            
+            if (name != null) {
+                String app = name.toLowerCase();
+                if (app.contains("freecharge")) {
+                    launchIntent = pm.getLaunchIntentForPackage("com.freecharge.android");
+                } else if (app.contains("mobikwik")) {
+                    launchIntent = pm.getLaunchIntentForPackage("com.mobikwik_new");
+                }
+            }
+
+            if (launchIntent != null) {
+                try {
+                    startActivity(launchIntent);
+                    Toast.makeText(MainActivity.this, "Redirecting to Home Screen...", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "App not installed on this device.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(MainActivity.this, "Neutral Protocol: Please open your UPI app manually.", Toast.LENGTH_SHORT).show();
             }
         }
 

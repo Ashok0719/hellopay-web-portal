@@ -219,17 +219,15 @@ function PayContent() {
       if (data.success && data.status === 'SUCCESS') {
         setStatus('success');
       } else if (data.status === 'PENDING_VERIFICATION') {
-        setStatus('idle'); 
-        setTxStatus('PENDING_VERIFICATION');
-      } else {
+        } else {
         setStatus('failed');
         setError(data.message || 'Verification Mismatch: Neural OCR Signal Fault.');
       }
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Neural Link Fault: Connection Terminated.';
       setError(msg);
+      setStatus('idle');
       
-      // Feature: Fraud Ejection (Requirement: Failed & Auto-Redirect)
       if (msg.includes('Fraud Detected')) {
          setStatus('failed');
          setTimeout(() => router.push('/dashboard'), 3000);
