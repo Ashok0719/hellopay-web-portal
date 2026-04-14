@@ -241,13 +241,13 @@ export default function Dashboard() {
     setIsClaiming(true);
     
     try {
-      // Razorpay Integration: Create Order and Lock Stock in one protocol
-      const { data } = await api.post(`/stocks/create-order`, { stockId });
+      // Neural 2.0: Use Manual Purchase Flow (No Razorpay)
+      const { data } = await api.post(`/stocks/buy`, { stockId });
       if (data.success) {
-        const { order, transactionId, amount, key, buyerName, buyerEmail } = data;
+        const { transaction, stock } = data;
         
-        // Redirect to specialized Razorpay-enabled Pay Page
-        router.push(`/dashboard/pay?rzpOrderId=${order.id}&amount=${amount}&rzpKey=${key}&txnId=${transactionId}&name=${encodeURIComponent(buyerName)}&email=${encodeURIComponent(buyerEmail)}`);
+        // Redirect to specialized manual Pay Page
+        router.push(`/dashboard/pay?txnId=${transaction._id}&amount=${stock.amount}&stockId=${stock._id}`);
       }
     } catch (err: any) {
       setNotice({
@@ -443,15 +443,8 @@ export default function Dashboard() {
           onClose={() => setShowDepositModal(false)}
           config={config}
           onSelect={async (method: string, amt: string) => {
-            try {
-              // Create a direct wallet recharge order
-              const { data } = await api.post('/wallet/add-money', { amount: amt });
-              if (data.id) {
-                router.push(`/dashboard/pay?rzpOrderId=${data.id}&amount=${amt}&rzpKey=${data.key}&name=${encodeURIComponent(user?.name || '')}&email=${encodeURIComponent(user?.email || '')}`);
-              }
-            } catch (err) {
-               console.error('Recharge Initiation Fault:', err);
-            }
+            // Direct redirect to manual verification page
+            router.push(`/dashboard/pay?amount=${amt}`);
             setShowDepositModal(false);
           }}
         />
@@ -1134,13 +1127,8 @@ function TransactionItem({ tx }: any) {
   
   const handleResume = () => {
     if (isPurchase && (isPending || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION')) {
-      const seller = tx.sellerId || tx.otherParty;
-      const upiId = seller?.upiId || 'admin@upi';
-      const sellerName = encodeURIComponent(seller?.name || 'HelloPay Seller');
-      const upiIntent = `upi://pay?pa=${upiId}&pn=${sellerName}&am=${tx.amount}&cu=INR`;
-      const sellerIdNum = seller?.userIdNumber || '******';
-      
-      router.push(`/dashboard/pay?orderId=${tx.transactionId}&amount=${tx.amount}&upiIntent=${encodeURIComponent(upiIntent)}&txnId=${tx._id}&sellerId=${sellerIdNum}`);
+      // Resume manual verification for Stock Node
+      router.push(`/dashboard/pay?txnId=${tx._id}&amount=${tx.amount}&stockId=${tx.stockId}`);
     }
   };
 
