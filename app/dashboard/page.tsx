@@ -322,7 +322,7 @@ export default function Dashboard() {
         )}
         {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} setUser={setUser} setNotice={setNotice} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} deferredPrompt={deferredPrompt} handleInstall={handleInstall} />}
-        {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} />}
+        {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} forceSync={forceSync} />}
         {activeTab === 'wallet' && (
           <WalletView 
             key="wallet" 
@@ -947,7 +947,7 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
 
 // --- Payment View (Virtual Split Marketplace) ---
 // Shows ONLY other users' split units. Owner never sees own splits.
-function PaymentView({ user, config, handleClaim, listings }: any) {
+function PaymentView({ user, config, handleClaim, listings, forceSync }: any) {
   const [activeFilter, setActiveFilter] = useState('All');
 
   // Filter out the current user's own splits for the Payment/Master marketplace
@@ -1031,7 +1031,7 @@ function PaymentView({ user, config, handleClaim, listings }: any) {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              onDoubleClick={() => window.location.reload()}
+              onDoubleClick={forceSync}
               className={`px-4 py-2 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
                 activeFilter === filter
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
