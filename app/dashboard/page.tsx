@@ -218,7 +218,17 @@ export default function Dashboard() {
         api.get('/transactions/history')
       ]);
       if (profile.status === 'fulfilled')  setUser(profile.value.data);
-      if (stocks.status === 'fulfilled')   setListings(stocks.value.data.stocks || []);
+      if (stocks.status === 'fulfilled') {
+        const newStocks = stocks.value.data.stocks || [];
+        setListings(newStocks);
+        setNotice({ 
+          isOpen: true, 
+          title: "Neural Sync Success", 
+          message: newStocks.length > 0 
+            ? `Marketplace Synchronized: ${newStocks.length} nodes detected in the mesh.` 
+            : "Marketplace Synchronized: Mesh is currently clear. No active splits detected." 
+        });
+      }
       if (config.status === 'fulfilled')   setConfig(config.value.data);
       if (history.status === 'fulfilled')  setHistory(history.value.data || []);
     } catch (err) {}
@@ -322,7 +332,7 @@ export default function Dashboard() {
         )}
         {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} setUser={setUser} setNotice={setNotice} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} deferredPrompt={deferredPrompt} handleInstall={handleInstall} />}
-        {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} forceSync={forceSync} />}
+        {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} forceSync={forceSync} isSyncing={isSyncing} />}
         {activeTab === 'wallet' && (
           <WalletView 
             key="wallet" 
@@ -947,7 +957,7 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
 
 // --- Payment View (Virtual Split Marketplace) ---
 // Shows ONLY other users' split units. Owner never sees own splits.
-function PaymentView({ user, config, handleClaim, listings, forceSync }: any) {
+function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing }: any) {
   const [activeFilter, setActiveFilter] = useState('All');
 
   // Filter out the current user's own splits for the Payment/Master marketplace
@@ -985,9 +995,14 @@ function PaymentView({ user, config, handleClaim, listings, forceSync }: any) {
       <div className="flex items-center justify-between mb-5">
         <div className="w-10" />
         <h2 className="text-2xl font-bold text-center text-emerald-600">Marketplace</h2>
-        <Link href="/dashboard/payment-history" className="p-2 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors shadow-sm">
-          <Clock size={24} />
-        </Link>
+        <div className="flex items-center gap-2">
+           <button onClick={forceSync} className="p-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm">
+             <RefreshCcw size={24} className={isSyncing ? 'animate-spin' : ''} />
+           </button>
+           <Link href="/dashboard/payment-history" className="p-2 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors shadow-sm">
+             <Clock size={24} />
+           </Link>
+        </div>
       </div>
 
       {/* Wallet Status Card */}
