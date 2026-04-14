@@ -337,33 +337,6 @@ function PayContent() {
   );
 }
 
-          <div className="bg-white rounded-[32px] p-6 border border-slate-100 flex items-start gap-4 shadow-sm">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl shrink-0">
-               <AlertCircle size={20} />
-            </div>
-            <div>
-               <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Payment Instructions</h4>
-               <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
-                 Do not close this page after payment. You will be automatically redirected once our neural engine confirms the settlement.
-               </p>
-            </div>
-          </div>
-
-          <div className="pt-8 text-center">
-            <div className="flex items-center justify-center gap-6 opacity-30 grayscale mb-6">
-                <img src="https://logos-world.net/wp-content/uploads/2023/07/Freecharge-Logo.png" alt="Freecharge" className="h-4" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/MobiKwik_logo.png" alt="Mobikwik" className="h-4" />
-            </div>
-            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-300 italic flex items-center justify-center gap-2">
-               <ShieldCheck size={12} className="text-emerald-500" /> Banking Grade Security Mesh
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function PayPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-black text-emerald-600 uppercase tracking-[0.5em] animate-pulse italic">Neural Signal Initializing...</div>}>
