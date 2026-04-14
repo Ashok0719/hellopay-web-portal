@@ -993,6 +993,7 @@ function PaymentView({ user, config, handleClaim, listings }: any) {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
+              onDoubleClick={() => window.location.reload()}
               className={`px-4 py-2 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
                 activeFilter === filter
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
