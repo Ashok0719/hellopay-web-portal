@@ -2,9 +2,10 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle, ShieldCheck, Zap, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Zap, AlertCircle, XCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
+import { io } from 'socket.io-client';
 
 function PayContent() {
   const searchParams = useSearchParams();
@@ -19,15 +20,37 @@ function PayContent() {
   const [paymentApp, setPaymentApp] = useState('freecharge');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [txStatus, setTxStatus] = useState<'PENDING' | 'PENDING_AUDIT' | 'SUCCESS'>('PENDING');
+  const [txStatus, setTxStatus] = useState<'PENDING' | 'PENDING_AUDIT' | 'SUCCESS' | 'FAILED'>('PENDING');
   const [transaction, setTransaction] = useState<any>(null);
   const [config, setConfig] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes
+  const [rejectReason, setRejectReason] = useState('');
+
+  // 0. Neural Socket Listener
+  useEffect(() => {
+    const backendUrl = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) 
+      ? 'http://localhost:5000' 
+      : 'https://hellopay-neural-api.onrender.com';
+    
+    const socket = io(backendUrl);
+
+    socket.on('payment_settled', (data: any) => {
+      if (data.transactionId === transactionId) {
+        if (data.status === 'SUCCESS') {
+           setTxStatus('SUCCESS');
+        } else if (data.status === 'FAILED') {
+           setRejectReason(data.reason || 'Verification Failed');
+           setTxStatus('FAILED');
+        }
+      }
+    });
+
+    return () => { socket.disconnect(); };
+  }, [transactionId]);
 
   // 1. Fetch Transaction & Seller Info
   useEffect(() => {
     if (!transactionId) {
-      // If no transactionId, this is likely a wallet recharge. Fetch admin config.
       const fetchConfig = async () => {
         try {
           const { data } = await api.get('/wallet/config');
@@ -44,6 +67,10 @@ function PayContent() {
         const { data } = await api.get(`/stocks/transactions/${transactionId}`);
         if (data.success) {
           setTransaction(data.transaction);
+          // If transaction is already pending audit, set status
+          if (data.transaction.status === 'PENDING_VERIFICATION') {
+            setTxStatus('PENDING_AUDIT');
+          }
         }
       } catch (err) {
         console.error('Neural Sync Loss:', err);
@@ -56,11 +83,23 @@ function PayContent() {
   useEffect(() => {
     if (timeLeft <= 0) {
       setError('Neural Window Expired: This node has been released.');
+      autoCancel();
       return;
     }
     const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [timeLeft]);
+
+  const autoCancel = async () => {
+    try {
+      if (stockId && transactionId) {
+        await api.post(`/stocks/transactions/${transactionId}/cancel`);
+      }
+      setTimeout(() => router.push('/dashboard'), 3000);
+    } catch (err) {
+      router.push('/dashboard');
+    }
+  };
 
   const formatTime = (seconds: number) => {
     const min = Math.floor(seconds / 60);
@@ -70,10 +109,11 @@ function PayContent() {
 
   // 3. App Redirect Logic
   const handleAppRedirect = (app: string) => {
+    if (txStatus === 'PENDING_AUDIT') return; // Shield active upload
+    
     const upiId = transaction?.sellerId?.upiId || config?.receiverUpiId || 'neural.pay@bank';
     const upiUrl = `upi://pay?pa=${upiId}&pn=HelloPay&am=${amount}&cu=INR&tr=${transactionId || 'RECHARGE'}`;
     
-    // Attempt deep link for specific apps if possible, otherwise generic UPI
     if (app === 'freecharge') {
       window.location.href = `freecharge://upi/pay?pa=${upiId}&pn=HelloPay&am=${amount}&cu=INR`;
     } else if (app === 'mobikwik') {
@@ -82,13 +122,14 @@ function PayContent() {
       window.location.href = upiUrl;
     }
     
-    // Fallback to generic UPI after 2 seconds if deep link fails (mobile only)
     setTimeout(() => {
       window.location.href = upiUrl;
     }, 2000);
   };
 
   const handleManualSubmit = async () => {
+    if (txStatus === 'PENDING_AUDIT') return; // Strict: One time upload only
+    
     if (!utr || !screenshot) {
       setError('Neural signals missing: UTR and Screenshot required.');
       return;
@@ -124,16 +165,20 @@ function PayContent() {
     }
   };
 
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
   const handleCancel = async () => {
-    if (!window.confirm('Are you sure? This node will be available for other participants.')) return;
-    try {
-      if (stockId && transactionId) {
-        await api.post(`/stocks/transactions/${transactionId}/cancel`);
-      }
-      router.push('/dashboard');
-    } catch (err) {
-      router.push('/dashboard');
+    if (txStatus === 'PENDING_AUDIT') return;
+    
+    // Performance Optimization: Trigger redirect immediately for better UX
+    // while the neural node processes the release in the background
+    const stockId = searchParams.get('stockId');
+    const transactionId = searchParams.get('txnId');
+    
+    if (stockId && transactionId) {
+       api.post(`/stocks/transactions/${transactionId}/cancel`).catch(console.error);
     }
+    router.push('/dashboard');
   };
 
   if (txStatus === 'SUCCESS') {
@@ -151,6 +196,21 @@ function PayContent() {
     );
   }
 
+  if (txStatus === 'FAILED') {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center text-white">
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xs">
+          <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center mb-10 mx-auto shadow-2xl shadow-red-600/20">
+            <XCircle className="text-white" size={48} />
+          </div>
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter">Rejected</h1>
+          <p className="text-slate-500 font-bold mt-4 leading-relaxed">{rejectReason || 'Neural signals mismatched. Node released.'}</p>
+          <button onClick={() => router.push('/dashboard')} className="mt-12 px-10 py-6 bg-red-700 rounded-[32px] text-white font-black uppercase italic shadow-2xl active:scale-95 transition-all w-full tracking-widest text-xs">Home Page</button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (txStatus === 'PENDING_AUDIT') {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center text-white">
@@ -160,6 +220,7 @@ function PayContent() {
             </div>
             <h1 className="text-2xl font-black italic uppercase tracking-tighter">Auditing Signal...</h1>
             <p className="text-slate-500 font-bold mt-4 leading-relaxed italic uppercase text-[10px] tracking-[0.2em]">Our neural nodes are auditing your signal. Settlement will occur instantly upon validation.</p>
+            <p className="mt-4 text-[9px] text-amber-500/60 uppercase font-black animate-pulse">DO NOT RE-UPLOAD OR REFRESH</p>
             <button onClick={() => router.push('/dashboard')} className="mt-12 px-8 py-5 bg-white/5 border border-white/10 text-white rounded-[28px] font-black uppercase text-xs tracking-[0.3em] w-full">Back to Dashboard</button>
          </motion.div>
       </div>
@@ -168,8 +229,25 @@ function PayContent() {
 
   return (
     <div className="min-h-screen bg-[#020617] text-white font-sans pb-24 max-w-lg mx-auto border-x border-white/5">
+      {/* Premium Cancellation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-white/10 rounded-[40px] p-8 max-w-sm w-full shadow-2xl">
+              <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mb-6 border border-red-500/20">
+                 <AlertCircle className="text-red-500" size={32} />
+              </div>
+              <h3 className="text-xl font-black italic uppercase tracking-tighter text-white mb-2">Release Node?</h3>
+              <p className="text-slate-500 font-bold text-xs uppercase tracking-widest leading-relaxed mb-8">This node will be released back to the marketplace. Are you sure you want to abort?</p>
+              <div className="flex gap-4">
+                 <button onClick={() => setShowCancelModal(false)} className="flex-1 py-4 bg-white/5 rounded-2xl text-slate-400 font-black uppercase text-[10px] tracking-widest">Back</button>
+                 <button onClick={handleCancel} className="flex-1 py-4 bg-red-600 rounded-2xl text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-red-600/20">Confirm</button>
+              </div>
+           </motion.div>
+        </div>
+      )}
+
       <div className="p-4 flex items-center justify-between sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5">
-        <button onClick={handleCancel} className="p-2 bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all"><ArrowLeft size={20} /></button>
+        <button onClick={() => router.push('/dashboard')} className="p-2 bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all"><ArrowLeft size={20} /></button>
         <div className="text-center">
           <h1 className="text-sm font-black italic uppercase tracking-tighter">Neural Verification</h1>
           <p className="text-[8px] font-black text-amber-500 uppercase tracking-widest">P2P Secure Settlement</p>
@@ -228,15 +306,60 @@ function PayContent() {
                   className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-6 text-white font-black italic tracking-widest focus:border-indigo-500 outline-none transition-all"
                   value={utr}
                   onChange={(e) => setUtr(e.target.value)}
+                  disabled={txStatus === 'PENDING_AUDIT'}
                 />
              </div>
 
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Screenshot Proof</label>
-                <div onClick={() => document.getElementById('ss-node')?.click()} className={`w-full h-32 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${screenshot ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 bg-black/40 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
-                   <input id="ss-node" type="file" hidden onChange={(e) => setScreenshot(e.target.files?.[0] || null)} accept="image/*" />
+                <div onClick={() => txStatus !== 'PENDING_AUDIT' && document.getElementById('ss-node')?.click()} className={`w-full h-32 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-2 transition-all ${txStatus === 'PENDING_AUDIT' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${screenshot ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 bg-black/40 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
+                   <input id="ss-node" type="file" hidden onChange={(e) => setScreenshot(e.target.files?.[0] || null)} accept="image/*" disabled={txStatus === 'PENDING_AUDIT'} />
                    {screenshot ? (
                      <>
+                        <CheckCircle size={24} className="text-emerald-500" />
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Signal Captured</span>
+                     </>
+                   ) : (
+                     <>
+                        <Zap size={24} className="text-slate-600" />
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attach Proof Signal</span>
+                     </>
+                   )}
+                </div>
+             </div>
+          </div>
+
+          {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-[10px] font-black uppercase tracking-widest text-center animate-shake">{error}</div>}
+
+          <div className="flex gap-4">
+             <button 
+               onClick={() => setShowCancelModal(true)}
+               className="flex-1 h-16 bg-white/5 border border-white/10 rounded-2xl text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+               disabled={txStatus === 'PENDING_AUDIT'}
+             >
+                Cancel
+             </button>
+             <button 
+               onClick={handleManualSubmit}
+               disabled={loading || !utr || !screenshot || timeLeft <= 0 || txStatus === 'PENDING_AUDIT'}
+               className="flex-[2] h-16 bg-indigo-600 rounded-2xl text-white font-black uppercase italic text-xs tracking-[0.2em] shadow-xl shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50"
+             >
+                {loading ? 'AUDITING...' : txStatus === 'PENDING_AUDIT' ? 'SIGNAL SUBMITTED' : 'Submit Verification'}
+             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PayPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-black text-emerald-600 uppercase tracking-[0.5em] animate-pulse italic">Neural Signal Initializing...</div>}>
+      <PayContent />
+    </Suspense>
+  );
+}
                         <CheckCircle size={24} className="text-emerald-500" />
                         <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Signal Captured</span>
                      </>
