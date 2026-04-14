@@ -24,17 +24,17 @@ export default function Footer() {
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Protocol Matrix</h3>
             <ul className="space-y-4">
-              <li><Link href="/(legal)/about" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">About Core</Link></li>
-              <li><Link href="/(legal)/contact" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Support Node</Link></li>
+              <li><Link href="/about" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">About Core</Link></li>
+              <li><Link href="/contact" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Support Node</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Legal Signatures</h3>
             <ul className="space-y-4">
-              <li><Link href="/(legal)/terms" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Terms of Engagement</Link></li>
-              <li><Link href="/(legal)/privacy" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Privacy Protocol</Link></li>
-              <li><Link href="/(legal)/refund" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Refund Reversal</Link></li>
+              <li><Link href="/terms" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Terms of Engagement</Link></li>
+              <li><Link href="/privacy" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Privacy Protocol</Link></li>
+              <li><Link href="/refund" className="text-slate-500 hover:text-indigo-400 font-bold text-sm transition-colors block uppercase tracking-widest italic text-[10px]">Refund Reversal</Link></li>
             </ul>
           </div>
         </div>
