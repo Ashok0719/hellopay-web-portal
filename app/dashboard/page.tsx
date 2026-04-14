@@ -807,18 +807,35 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
   const [upiId, setUpiId] = useState(user?.upiId || user?.verifiedUpiId || '');
   const [pin, setPin] = useState(user?.pin || '');
   const [isSaving, setIsSaving] = useState(false);
-  
+  const [giftCode, setGiftCode] = useState('');
+  const [isClaiming, setIsClaiming] = useState(false);
+
   const saveProfile = async () => {
     setIsSaving(true);
     try {
       const { data } = await api.put('/auth/profile', { upiId, currentPin: pin });
       setUser({ ...user, upiId: data.upiId, verifiedUpiId: data.verifiedUpiId });
-      
       setNotice({ isOpen: true, title: "Registry Updated", message: "Your neural registry profile has been successfully synchronized." });
     } catch (err: any) {
       setNotice({ isOpen: true, title: "Neural Link Error", message: err.response?.data?.message || "Failed to establish a secure link to save your profile." });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleClaimGift = async () => {
+    if (!giftCode) return alert('Enter a valid gift signal');
+    setIsClaiming(true);
+    try {
+      const { data } = await api.post('/gift-codes/claim', { code: giftCode });
+      alert(data.message);
+      setGiftCode('');
+      const profile = await api.get('/auth/profile');
+      setUser(profile.data);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Signal claim failed');
+    } finally {
+      setIsClaiming(false);
     }
   };
 
@@ -832,6 +849,27 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
       <h2 className="text-2xl font-bold text-center text-[#10b981] mb-8">My Asset</h2>
 
       <div className="flex flex-col gap-4 mb-4">
+        {/* Gift Code Integration */}
+        <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-2">
+           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 ml-1 italic">Gift Signal Redemption</p>
+           <div className="flex gap-3">
+              <input 
+                 type="text" 
+                 placeholder="Enter 10-char signal"
+                 value={giftCode}
+                 onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
+                 className="flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-xs font-black italic tracking-widest focus:outline-emerald-500"
+              />
+              <button 
+                onClick={handleClaimGift}
+                disabled={isClaiming}
+                className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
+              >
+                {isClaiming ? 'SYNCING...' : 'CLAIM'}
+              </button>
+           </div>
+        </div>
+
         {/* PWA Install Promotion */}
         {deferredPrompt && (
           <motion.div 
