@@ -185,10 +185,6 @@ function PayContent() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 rounded-full blur-[60px]" />
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Total Payable</p>
           <div className="text-6xl font-black italic tracking-tighter text-white mb-2">₹{amount}</div>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-             <ShieldCheck size={12} className="text-emerald-500" />
-             <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest leading-none">AI Secure Escrow</span>
-          </div>
           
           <div className="mt-10 p-5 bg-black/40 rounded-3xl border border-white/5">
              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">
