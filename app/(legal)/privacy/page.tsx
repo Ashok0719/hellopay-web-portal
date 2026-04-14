@@ -47,7 +47,7 @@ export default function PrivacyPage() {
                 <ShieldCheck className="text-indigo-500" /> 3. Third-Party Matrix
              </h2>
              <p>
-                We collaborate with verified partners like Fastring App for payment orchestration. Your financial details never touch HelloPay's primary core; they are processed securely by our protected partners.
+                We collaborate with verified partners like Razorpay for payment orchestration. Your financial details (CVV, Card Pins) never touch HelloPay's primary core; they are processed securely by our PCI-DSS compliant partners.
              </p>
           </section>
 

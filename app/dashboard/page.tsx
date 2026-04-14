@@ -151,7 +151,7 @@ export default function Dashboard() {
   useEffect(() => {
     const socketUrl = process.env.NEXT_PUBLIC_API_URL 
       ? process.env.NEXT_PUBLIC_API_URL.split('/api')[0] 
-      : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (window as any).Capacitor?.isNativePlatform())
+      : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:5000'
         : 'https://hellopay-neural-api.onrender.com');
     
@@ -241,19 +241,13 @@ export default function Dashboard() {
     setIsClaiming(true);
     
     try {
-      // Fastring Integration: Create Order and Lock Stock in one protocol
+      // Razorpay Integration: Create Order and Lock Stock in one protocol
       const { data } = await api.post(`/stocks/create-order`, { stockId });
       if (data.success) {
-        const paymentUrl = data.paymentUrl || data.payment_url;
-        const orderId = data.orderId || data.id;
-        const transactionId = data.transactionId;
-        const amount = data.amount;
+        const { order, transactionId, amount, key, buyerName, buyerEmail } = data;
         
-        if (paymentUrl) {
-          router.push(`/dashboard/pay?orderId=${orderId}&paymentUrl=${encodeURIComponent(paymentUrl)}&amount=${amount}&txnId=${transactionId}&name=${encodeURIComponent(user?.name || '')}`);
-        } else {
-          throw new Error('Payment signal not found');
-        }
+        // Redirect to specialized Razorpay-enabled Pay Page
+        router.push(`/dashboard/pay?rzpOrderId=${order.id}&amount=${amount}&rzpKey=${key}&txnId=${transactionId}&name=${encodeURIComponent(buyerName)}&email=${encodeURIComponent(buyerEmail)}`);
       }
     } catch (err: any) {
       setNotice({
@@ -452,10 +446,8 @@ export default function Dashboard() {
             try {
               // Create a direct wallet recharge order
               const { data } = await api.post('/wallet/add-money', { amount: amt });
-              if (data.success && data.paymentUrl) {
-                router.push(`/dashboard/pay?orderId=${data.orderId || 'HP_RECHARGE'}&paymentUrl=${encodeURIComponent(data.paymentUrl)}&amount=${amt}&name=${encodeURIComponent(user?.name || '')}`);
-              } else {
-                setNotice({ isOpen: true, title: "Neural Link Error", message: "Failed to initialize Fastring payment session. Please try again." });
+              if (data.id) {
+                router.push(`/dashboard/pay?rzpOrderId=${data.id}&amount=${amt}&rzpKey=${data.key}&name=${encodeURIComponent(user?.name || '')}&email=${encodeURIComponent(user?.email || '')}`);
               }
             } catch (err) {
                console.error('Recharge Initiation Fault:', err);

@@ -10,7 +10,9 @@ if (typeof window !== 'undefined') {
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL 
     ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
-    : 'http://localhost:5000/api',
+    : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:5000/api'
+        : 'https://hellopay-neural-api.onrender.com/api'),
   withCredentials: true,
   timeout: 60000, // 🔥 60s timeout to handle Render cold starts
 });

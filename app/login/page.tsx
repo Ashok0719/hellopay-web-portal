@@ -8,7 +8,7 @@ import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import { auth, googleProvider } from '@/lib/firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
 
 function NeuralBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -111,6 +111,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // 1. Check for existing session
       const authData = localStorage.getItem('hellopay-auth-storage');
       if (authData) {
         try {
@@ -120,6 +121,30 @@ export default function LoginPage() {
             return;
           }
         } catch (e) {}
+      }
+
+      // 2. Check for redirect result from Google
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          setGoogleLoading(true);
+          const idToken = await result.user.getIdToken();
+          const { data } = await api.post('/auth/firebase-login', { idToken });
+          
+          if (data.needsSetup) {
+            setTempUser(data);
+            setSetupMode(true);
+          } else {
+            setToken(data.token);
+            setUser(data);
+            router.push('/dashboard');
+          }
+        }
+      } catch (err: any) {
+        console.error('Redirect Result Error:', err);
+        setError(err.message || 'Google Auth Failed');
+      } finally {
+        setGoogleLoading(false);
       }
     };
     checkAuth();
@@ -207,31 +232,11 @@ export default function LoginPage() {
     setGoogleLoading(true);
     setError('');
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      
-      const { data } = await api.post('/auth/firebase-login', { idToken });
-      
-      if (data.needsSetup) {
-        setTempUser(data);
-        setSetupMode(true);
-      } else {
-        setToken(data.token);
-        setUser(data);
-        router.push('/dashboard');
-      }
+      // Direct Navigation Protocol: Bypass popup blockers
+      await signInWithRedirect(auth, googleProvider);
     } catch (err: any) {
       console.error('Google Auth Error:', err);
-      // Displaying Firebase error codes directly which are more informative
-      const errorCode = err.code || 'unknown';
-      if (errorCode === 'auth/popup-blocked') {
-        setError('Popup Blocked: Please enable popups for this site.');
-      } else if (errorCode === 'auth/cancelled-popup-request') {
-        // Silently handle user cancellation
-      } else {
-        setError(`Auth Error [${errorCode}]: ${err.message}`);
-      }
-    } finally {
+      setError(err.message || 'Google Auth Failed');
       setGoogleLoading(false);
     }
   };
