@@ -191,10 +191,16 @@ function PayContent() {
           </div>
           
           <div className="mt-10 p-5 bg-black/40 rounded-3xl border border-white/5">
-             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">Receiver Address</p>
+             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">
+                {transaction?.sellerId ? `Target Node: ${transaction.sellerId.name}` : 'Neural Registry: Admin Node'}
+             </p>
              <div className="flex items-center justify-between group">
                 <span className="text-sm font-black text-indigo-400 font-mono tracking-tight select-all">{transaction?.sellerId?.upiId || config?.receiverUpiId || 'neural.pay@bank'}</span>
-                <button onClick={() => { navigator.clipboard.writeText(transaction?.sellerId?.upiId || config?.receiverUpiId || ''); alert('Copied!'); }} className="text-[8px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-lg border border-indigo-500/20 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Copy</button>
+                <button onClick={() => { 
+                  const copyId = transaction?.sellerId?.upiId || config?.receiverUpiId || '';
+                  navigator.clipboard.writeText(copyId); 
+                  alert('Address Bound to Clipboard!'); 
+                }} className="text-[8px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-lg border border-indigo-500/20 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Copy</button>
              </div>
           </div>
         </div>
