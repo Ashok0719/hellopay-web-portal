@@ -294,6 +294,23 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans max-w-lg mx-auto shadow-2xl overflow-hidden relative border-x border-slate-200">
       {/* Neural Loading Overlay (Purchasing Speed Fix) */}
       <AnimatePresence>
+        {isSyncing && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] bg-emerald-900/40 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center"
+          >
+            <div className="relative mb-6">
+              <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <RefreshCcw className="text-white animate-pulse" size={20} />
+              </div>
+            </div>
+            <h3 className="text-sm font-black text-white italic uppercase tracking-[0.3em] mb-1">Synching Nodes...</h3>
+            <p className="text-emerald-200 text-[8px] font-bold uppercase tracking-widest anim-pulse">Updating Neural Asset Registry</p>
+          </motion.div>
+        )}
         {isClaiming && (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -1045,12 +1062,15 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
           return (
             <button
               key={filter}
-              onClick={() => setActiveFilter(filter)}
+              onClick={() => {
+                if (activeFilter === filter) forceSync();
+                else setActiveFilter(filter);
+              }}
               onDoubleClick={forceSync}
               className={`px-4 py-2 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
                 activeFilter === filter
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200 active:scale-90'
+                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95'
               }`}
             >
               {filter} ({count})
