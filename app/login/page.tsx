@@ -8,7 +8,7 @@ import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import { auth, googleProvider } from '@/lib/firebase';
-import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, signInWithPopup } from 'firebase/auth';
 
 function NeuralBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -123,33 +123,42 @@ export default function LoginPage() {
         } catch (e) {}
       }
 
-      // 2. Check for redirect result from Google
+      // 2. Check for redirect result from Google (Legacy handler for in-progress redirects)
       try {
         const result = await getRedirectResult(auth);
         if (result) {
-          setGoogleLoading(true);
-          const idToken = await result.user.getIdToken();
-          const { data } = await api.post('/auth/firebase-login', { idToken });
-          
-          if (data.needsSetup) {
-            setTempUser(data);
-            setSetupMode(true);
-          } else {
-            setToken(data.token);
-            setUser(data);
-            router.push('/dashboard');
-          }
+          await handleFirebaseResult(result);
         }
       } catch (err: any) {
         console.error('Redirect Result Error:', err);
-        setError(err.message || 'Google Auth Failed');
-      } finally {
-        setGoogleLoading(false);
       }
     };
+    
     checkAuth();
     api.get('/health').catch(() => {});
   }, [router]);
+
+  const handleFirebaseResult = async (result: any) => {
+    setGoogleLoading(true);
+    try {
+      const idToken = await result.user.getIdToken();
+      const { data } = await api.post('/auth/firebase-login', { idToken });
+      
+      if (data.needsSetup) {
+        setTempUser(data);
+        setSetupMode(true);
+      } else {
+        setToken(data.token);
+        setUser(data);
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      console.error('Firebase Processing Error:', err);
+      setError(err.response?.data?.message || 'Neural Signal processing failure');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handlePinChange = (index: number, value: string, mode: 'login' | 'setup' | 'reset' = 'login') => {
     if (!/^\d*$/.test(value)) return;
@@ -232,12 +241,21 @@ export default function LoginPage() {
     setGoogleLoading(true);
     setError('');
     try {
-      // Direct Navigation Protocol: Bypass popup blockers
-      await signInWithRedirect(auth, googleProvider);
+      // Identity Projection Sequence: Use Popup for immediate verification
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result) {
+        await handleFirebaseResult(result);
+      }
     } catch (err: any) {
       console.error('Google Auth Error:', err);
-      setError(err.message || 'Google Auth Failed');
-      setGoogleLoading(false);
+      // Fallback logic for systems that block popups
+      if (err.code === 'auth/popup-blocked') {
+        setError('Popup blocked. Retrying with direct projection...');
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        setError(err.message || 'Google Auth Failed');
+        setGoogleLoading(false);
+      }
     }
   };
 
