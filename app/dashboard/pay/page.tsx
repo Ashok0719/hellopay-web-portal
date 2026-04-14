@@ -25,6 +25,7 @@ function PayContent() {
   const [config, setConfig] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes
   const [rejectReason, setRejectReason] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // 0. Neural Socket Listener
   useEffect(() => {
@@ -67,7 +68,6 @@ function PayContent() {
         const { data } = await api.get(`/stocks/transactions/${transactionId}`);
         if (data.success) {
           setTransaction(data.transaction);
-          // If transaction is already pending audit, set status
           if (data.transaction.status === 'PENDING_VERIFICATION') {
             setTxStatus('PENDING_AUDIT');
           }
@@ -109,7 +109,7 @@ function PayContent() {
 
   // 3. App Redirect Logic
   const handleAppRedirect = (app: string) => {
-    if (txStatus === 'PENDING_AUDIT') return; // Shield active upload
+    if (txStatus === 'PENDING_AUDIT') return;
     
     const upiId = transaction?.sellerId?.upiId || config?.receiverUpiId || 'neural.pay@bank';
     const upiUrl = `upi://pay?pa=${upiId}&pn=HelloPay&am=${amount}&cu=INR&tr=${transactionId || 'RECHARGE'}`;
@@ -128,7 +128,7 @@ function PayContent() {
   };
 
   const handleManualSubmit = async () => {
-    if (txStatus === 'PENDING_AUDIT') return; // Strict: One time upload only
+    if (txStatus === 'PENDING_AUDIT') return;
     
     if (!utr || !screenshot) {
       setError('Neural signals missing: UTR and Screenshot required.');
@@ -165,13 +165,9 @@ function PayContent() {
     }
   };
 
-  const [showCancelModal, setShowCancelModal] = useState(false);
-
   const handleCancel = async () => {
     if (txStatus === 'PENDING_AUDIT') return;
     
-    // Performance Optimization: Trigger redirect immediately for better UX
-    // while the neural node processes the release in the background
     const stockId = searchParams.get('stockId');
     const transactionId = searchParams.get('txnId');
     
@@ -229,7 +225,6 @@ function PayContent() {
 
   return (
     <div className="min-h-screen bg-[#020617] text-white font-sans pb-24 max-w-lg mx-auto border-x border-white/5">
-      {/* Premium Cancellation Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900 border border-white/10 rounded-[40px] p-8 max-w-sm w-full shadow-2xl">
@@ -345,49 +340,6 @@ function PayContent() {
                className="flex-[2] h-16 bg-indigo-600 rounded-2xl text-white font-black uppercase italic text-xs tracking-[0.2em] shadow-xl shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50"
              >
                 {loading ? 'AUDITING...' : txStatus === 'PENDING_AUDIT' ? 'SIGNAL SUBMITTED' : 'Submit Verification'}
-             </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function PayPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-black text-emerald-600 uppercase tracking-[0.5em] animate-pulse italic">Neural Signal Initializing...</div>}>
-      <PayContent />
-    </Suspense>
-  );
-}
-                        <CheckCircle size={24} className="text-emerald-500" />
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Signal Captured</span>
-                     </>
-                   ) : (
-                     <>
-                        <Zap size={24} className="text-slate-600" />
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attach Proof Signal</span>
-                     </>
-                   )}
-                </div>
-             </div>
-          </div>
-
-          {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-[10px] font-black uppercase tracking-widest text-center animate-shake">{error}</div>}
-
-          <div className="flex gap-4">
-             <button 
-               onClick={handleCancel}
-               className="flex-1 h-16 bg-white/5 border border-white/10 rounded-2xl text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-all"
-             >
-                Cancel
-             </button>
-             <button 
-               onClick={handleManualSubmit}
-               disabled={loading || !utr || !screenshot || timeLeft <= 0}
-               className="flex-[2] h-16 bg-indigo-600 rounded-2xl text-white font-black uppercase italic text-xs tracking-[0.2em] shadow-xl shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50"
-             >
-                {loading ? 'AUDITING...' : 'Submit Verification'}
              </button>
           </div>
         </div>
