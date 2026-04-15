@@ -101,7 +101,7 @@ export default function LoginPage() {
   const [setupMode, setSetupMode] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   
-  const [setupData, setSetupData] = useState({ name: '', password: '', confirmPassword: '', pin: ['', '', '', ''] });
+  const [setupData, setSetupData] = useState({ name: '', password: '', confirmPassword: '', pin: ['', '', '', ''], referralCode: '' });
   const [resetData, setResetData] = useState({ email: '', newPassword: '', pin: ['', '', '', ''] });
   const [tempUser, setTempUser] = useState<any>(null);
   
@@ -111,6 +111,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // ⚡ Capture Referral from URL
+      const params = new URLSearchParams(window.location.search);
+      const refCode = params.get('ref');
+      if (refCode) {
+        setSetupData(prev => ({ ...prev, referralCode: refCode.toUpperCase() }));
+      }
+
       // 1. Check for existing session
       const authData = localStorage.getItem('hellopay-auth-storage');
       if (authData) {
@@ -269,7 +276,8 @@ export default function LoginPage() {
         userId: tempUser._id,
         name: setupData.name,
         password: setupData.password,
-        pin: pinString
+        pin: pinString,
+        referralCode: setupData.referralCode
       }, {
         headers: { Authorization: `Bearer ${tempUser.token}` }
       });
@@ -367,7 +375,21 @@ export default function LoginPage() {
                 <div className="text-center"><h2 className="text-xl font-bold text-white mb-2">Finalize Profile</h2><p className="text-[10px] text-slate-500 uppercase tracking-widest">Register your identity</p></div>
                 <input type="text" placeholder="Full Name" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold" value={setupData.name} onChange={(e) => setSetupData({ ...setupData, name: e.target.value })} />
                 <input type="password" placeholder="Create Secret Passkey" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold" value={setupData.password} onChange={(e) => setSetupData({ ...setupData, password: e.target.value })} />
-                <input type="password" placeholder="Confirm Passkey" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold" value={setupData.confirmPassword} onChange={(e) => setSetupData({ ...setupData, confirmPassword: e.target.value })} />
+                <input type="password" placeholder="Confirm Passkey" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold outline-none focus:border-indigo-500/50" value={setupData.confirmPassword} onChange={(e) => setSetupData({ ...setupData, confirmPassword: e.target.value })} />
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Referral Code (Optional)</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors"><Sparkles size={16} /></div>
+                    <input 
+                      type="text" 
+                      placeholder="GIFT-CODE" 
+                      className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white font-black uppercase tracking-widest outline-none focus:border-amber-500/50" 
+                      value={setupData.referralCode} 
+                      onChange={(e) => setSetupData({ ...setupData, referralCode: e.target.value.toUpperCase() })} 
+                    />
+                  </div>
+                </div>
                 <div className="flex gap-3 justify-center">
                   {[0, 1, 2, 3].map((idx) => (
                     <input key={idx} ref={(el) => { setupPinRefs.current[idx] = el; }} type="password" maxLength={1} inputMode="numeric" className="w-12 h-14 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-white font-bold text-xl focus:border-indigo-500 outline-none" value={setupData.pin[idx]} onChange={(e) => handlePinChange(idx, e.target.value, 'setup')} onKeyDown={(e) => { if (e.key === 'Backspace' && !setupData.pin[idx] && idx > 0) setupPinRefs.current[idx - 1]?.focus(); }} />
