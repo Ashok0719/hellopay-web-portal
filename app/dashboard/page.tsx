@@ -374,7 +374,7 @@ function Dashboard() {
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-blue-50 hover:bg-blue-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
                 <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10 group-hover/btn:scale-110 transition-transform">
-                  <img src="/telegram_premium_logo_1775888711967.png" alt="Telegram" className="w-full h-full object-cover" />
+                  <img src="/telegram_support.png" alt="Telegram" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-black uppercase text-blue-600 tracking-[0.2em] block leading-none mb-1">Telegram</span>
@@ -388,7 +388,7 @@ function Dashboard() {
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-emerald-50 hover:bg-emerald-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
                 <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/10 group-hover/btn:scale-110 transition-transform">
-                  <img src="/neural_support_bot_logo_1775888733873.png" alt="Support" className="w-full h-full object-cover" />
+                  <img src="/neural_support.png" alt="Support" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-black uppercase text-emerald-600 tracking-[0.2em] block leading-none mb-1">24/7 Support</span>
