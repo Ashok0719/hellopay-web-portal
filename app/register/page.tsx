@@ -230,7 +230,7 @@ function RegisterContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-10 sm:py-20 px-6 font-sans relative overflow-x-hidden overflow-y-auto">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-6 sm:py-20 px-4 sm:px-6 font-sans relative overflow-x-hidden overflow-y-auto w-full">
       <NeuralBackground />
       
       {/* 3D Animated Background Elements */}
@@ -262,12 +262,12 @@ function RegisterContent() {
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[520px] p-1 shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[48px] bg-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto"
+        className="w-full max-w-[520px] p-0.5 shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[40px] sm:rounded-[48px] bg-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto"
       >
-        <div className="p-10 sm:p-12">
-            <div className="text-center mb-10">
-                <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-3 drop-shadow-lg">New Node Activation</h2>
-                <p className="text-indigo-200 text-xs font-bold uppercase tracking-[0.2em]">Bind your identity to the network</p>
+        <div className="p-6 sm:p-12">
+            <div className="text-center mb-8 sm:mb-10">
+                <h2 className="text-2xl sm:text-4xl font-black text-white italic uppercase tracking-tighter mb-3 drop-shadow-lg">New Node Activation</h2>
+                <p className="text-indigo-200 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">Bind your identity to the network</p>
             </div>
 
             {error && (
@@ -295,7 +295,7 @@ function RegisterContent() {
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-base sm:text-xs tracking-widest"
+                      className="w-full bg-black/30 border border-white/10 rounded-2xl sm:rounded-3xl py-5 sm:py-5 pl-14 sm:pl-16 pr-6 sm:pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-xs tracking-widest"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -313,7 +313,7 @@ function RegisterContent() {
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-16 pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-base sm:text-xs tracking-widest"
+                      className="w-full bg-black/30 border border-white/10 rounded-2xl sm:rounded-3xl py-5 sm:py-5 pl-14 sm:pl-16 pr-6 sm:pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-xs tracking-widest"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -325,11 +325,11 @@ function RegisterContent() {
                       <div className="absolute inset-y-0 left-6 flex items-center text-slate-500 group-focus-within:text-amber-400 transition-colors">
                           <Lock size={18} />
                       </div>
-                      <input
+                       <input
                           required
                           type="password"
                           placeholder="CREATE PASSWORD"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest"
+                          className="w-full bg-black/30 border border-white/10 rounded-2xl sm:rounded-3xl py-5 sm:py-5 pl-12 sm:pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-xs tracking-widest"
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       />
@@ -342,7 +342,7 @@ function RegisterContent() {
                           required
                           type="password"
                           placeholder="CONFIRM PASSWORD"
-                          className="w-full bg-black/30 border border-white/10 rounded-3xl py-6 sm:py-5 pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-base sm:text-xs tracking-widest"
+                          className="w-full bg-black/30 border border-white/10 rounded-2xl sm:rounded-3xl py-5 sm:py-5 pl-12 sm:pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-xs tracking-widest"
                           value={formData.confirmPassword}
                           onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       />
@@ -352,7 +352,7 @@ function RegisterContent() {
               {/* 4-Digit Security PIN */}
               <div className="space-y-4 bg-white/5 p-6 rounded-[32px] border border-white/5 relative overflow-hidden">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block italic ml-2">Define Safety PIN (4 Digits)</label>
-                <div className="flex gap-4 justify-center">
+                 <div className="flex gap-2 sm:gap-4 justify-center">
                   {[0, 1, 2, 3].map((idx) => (
                     <input
                       key={idx}
@@ -360,7 +360,7 @@ function RegisterContent() {
                       type="password"
                       maxLength={1}
                       inputMode="numeric"
-                      className="w-14 h-16 bg-black/40 border border-white/10 rounded-2xl text-center text-white font-bold text-2xl focus:border-indigo-500 outline-none transition-all"
+                      className="w-12 h-14 sm:w-14 sm:h-16 bg-black/40 border border-white/10 rounded-xl sm:rounded-2xl text-center text-white font-bold text-xl sm:text-2xl focus:border-indigo-500 outline-none transition-all"
                       value={formData.pin[idx]}
                       onChange={(e) => handlePinChange(idx, e.target.value)}
                       onKeyDown={(e) => {

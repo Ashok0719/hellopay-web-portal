@@ -52,7 +52,7 @@ body {
 }
 
 .neural-glow {
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2), 0 0 40px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 20px rgba(80, 83, 233, 0.2), 0 0 40px rgba(97, 99, 245, 0.1);
 }
 
 .btn-neural {

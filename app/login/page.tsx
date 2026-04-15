@@ -292,7 +292,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center px-6 overflow-hidden bg-[#020617] font-outfit">
+  return (
+    <div className="min-h-screen relative flex items-center justify-center px-4 sm:px-6 overflow-hidden bg-[#020617] font-outfit w-full">
       <NeuralBackground />
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
@@ -300,9 +301,9 @@ export default function LoginPage() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-md relative z-10 mx-auto"
       >
-        <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
+        <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-6 sm:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
           <div className="relative z-10">
             <div className="text-center mb-10">
               <div className="flex justify-center mb-4">
@@ -338,14 +339,14 @@ export default function LoginPage() {
                     <label className="text-xs font-bold text-slate-500 uppercase ml-1">Identity Node</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors"><UserCircle size={18} /></div>
-                      <input type="email" placeholder="Email Address" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
+                      <input type="email" placeholder="Email Address" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-12 sm:pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold text-xs sm:text-base" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase ml-1">Access Token</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within:text-indigo-500 transition-colors"><Lock size={18} /></div>
-                      <input type="password" placeholder="Passkey" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold" value={password} onChange={(e) => setPassword(e.target.value)} />
+                      <input type="password" placeholder="Passkey" required className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-4 pl-12 sm:pl-14 pr-4 text-white outline-none focus:border-indigo-500/50 font-bold text-xs sm:text-base" value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
                     <div className="text-right pr-2">
                       <button type="button" onClick={() => setResetMode(true)} className="text-[10px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300">Forgot Passkey?</button>
@@ -353,9 +354,9 @@ export default function LoginPage() {
                   </div>
                   <div className="space-y-3 bg-white/5 p-5 rounded-3xl border border-white/5">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block text-center">Safety PIN</label>
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex gap-2 sm:gap-3 justify-center">
                       {[0, 1, 2, 3].map((idx) => (
-                        <input key={idx} ref={(el) => { pinRefs.current[idx] = el; }} type="password" maxLength={1} inputMode="numeric" className="w-12 h-14 bg-slate-950/50 border border-white/10 rounded-2xl text-center text-white font-bold text-xl focus:border-indigo-500 outline-none" value={pin[idx]} onChange={(e) => handlePinChange(idx, e.target.value)} onKeyDown={(e) => { if (e.key === 'Backspace' && !pin[idx] && idx > 0) pinRefs.current[idx - 1]?.focus(); }} />
+                        <input key={idx} ref={(el) => { pinRefs.current[idx] = el; }} type="password" maxLength={1} inputMode="numeric" className="w-10 h-12 sm:w-12 sm:h-14 bg-slate-950/50 border border-white/10 rounded-xl sm:rounded-2xl text-center text-white font-bold text-lg sm:text-xl focus:border-indigo-500 outline-none" value={pin[idx]} onChange={(e) => handlePinChange(idx, e.target.value)} onKeyDown={(e) => { if (e.key === 'Backspace' && !pin[idx] && idx > 0) pinRefs.current[idx - 1]?.focus(); }} />
                       ))}
                     </div>
                   </div>
