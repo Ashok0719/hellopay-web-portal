@@ -139,12 +139,14 @@ function PayContent() {
         const { data } = await api.get(`/stocks/transactions/${transactionId}`);
         if (data.success) {
           setTransaction(data.transaction);
-          if (data.transaction.status === 'PENDING_VERIFICATION') {
-            setTxStatus('PENDING_AUDIT');
-          }
+          setAmount(data.transaction.amount.toString());
+          setTxStatus(data.transaction.status);
+        } else {
+          // Neural Self-Healing: Redirect if node is lost
+          router.push('/dashboard');
         }
       } catch (err) {
-        console.error('Neural Sync Loss:', err);
+        router.push('/dashboard');
       }
     };
     fetchTx();
@@ -166,6 +168,12 @@ function PayContent() {
       if (stockId && transactionId) {
         await api.post(`/stocks/transactions/${transactionId}/cancel`);
       }
+      setNotice({
+        isOpen: true,
+        title: 'SESSION EXPIRED',
+        message: 'This neural window has closed. The node has been restocked.',
+        type: 'error'
+      });
       setTimeout(() => router.push('/dashboard'), 3000);
     } catch (err) {
       router.push('/dashboard');
@@ -246,11 +254,31 @@ function PayContent() {
       });
       if (data.success) {
         setTxStatus('PENDING_AUDIT');
+        setNotice({
+          isOpen: true,
+          title: 'SIGNALS SUBMITTED',
+          message: 'Your proof is now being audited by the Neural Node.',
+          type: 'success'
+        });
       } else {
-        setError(data.message || 'Submission failed.');
+        if (data.status === 'FAILED') {
+           setNotice({
+             isOpen: true,
+             title: 'VERIFICATION FAILED',
+             message: 'Neural signals did not match. This node has been restocked.',
+             type: 'error'
+           });
+           setTimeout(() => router.push('/dashboard'), 3000);
+        } else {
+           setError(data.message || 'Submission failed.');
+        }
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Neural Gateway Timeout.');
+      const msg = err.response?.data?.message || 'Neural Gateway Timeout.';
+      setError(msg);
+      if (msg.includes('INVALID') || msg.includes('EXPECTED')) {
+         setTimeout(() => router.push('/dashboard'), 2000);
+      }
     } finally {
       setLoading(false);
     }
