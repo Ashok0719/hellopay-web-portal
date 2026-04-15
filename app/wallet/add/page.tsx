@@ -7,6 +7,7 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
+import NeuralNotice from '@/components/NeuralNotice';
 
 export default function AddMoneyPage() {
   const [amount, setAmount] = useState('');
@@ -18,6 +19,8 @@ export default function AddMoneyPage() {
   const [status, setStatus] = useState<'IDLE' | 'SUCCESS' | 'ERROR' | 'VERIFYING'>('IDLE');
   const [scanResults, setScanResults] = useState<{ amountMatch?: boolean, utrMatch?: boolean, upiMatch?: boolean } | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(4);
   const router = useRouter();
   const { user } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,6 +28,24 @@ export default function AddMoneyPage() {
   useEffect(() => {
     fetchConfig();
   }, []);
+
+  // Auto-redirect countdown when success popup is shown
+  useEffect(() => {
+    if (!showSuccessPopup) return;
+    setRedirectCountdown(4);
+    const interval = setInterval(() => {
+      setRedirectCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          router.push('/dashboard');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSuccessPopup]);
 
   const fetchConfig = async () => {
     try {
@@ -97,7 +118,8 @@ export default function AddMoneyPage() {
 
       if (data.success) {
         setStatus('SUCCESS');
-        setTimeout(() => router.push('/dashboard'), 3000);
+        setShowSuccessPopup(true);
+        setTimeout(() => router.push('/dashboard'), 4000);
       } else {
         // Neural Fallback: Manual Audit Required
         setStatus('ERROR');
@@ -379,5 +401,18 @@ export default function AddMoneyPage() {
         </AnimatePresence>
       </div>
     </div>
+
+    {/* Payment Success Popup */}
+    <AnimatePresence>
+      {showSuccessPopup && (
+        <NeuralNotice
+          isOpen={showSuccessPopup}
+          title="Payment Successful! 🎉"
+          message={`Your deposit of ₹${amount} has been verified. Wallet is being credited. Redirecting in ${redirectCountdown}s...`}
+          type="info"
+          onClose={() => { setShowSuccessPopup(false); router.push('/dashboard'); }}
+        />
+      )}
+    </AnimatePresence>
   );
 }

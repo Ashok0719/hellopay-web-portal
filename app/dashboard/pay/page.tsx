@@ -28,7 +28,9 @@ function PayContent() {
   const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes
   const [rejectReason, setRejectReason] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
+  const [notice, setNotice] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(4);
 
   // 0. Neural Socket Listener
   useEffect(() => {
@@ -42,6 +44,7 @@ function PayContent() {
       if (data.transactionId === transactionId) {
         if (data.status === 'SUCCESS') {
            setTxStatus('SUCCESS');
+           setShowSuccessPopup(true);
         } else if (data.status === 'FAILED') {
            setRejectReason(data.reason || 'Verification Failed');
            setTxStatus('FAILED');
@@ -51,6 +54,24 @@ function PayContent() {
 
     return () => { socket.disconnect(); };
   }, [transactionId]);
+
+  // Auto-redirect countdown when success popup is shown
+  useEffect(() => {
+    if (!showSuccessPopup) return;
+    setRedirectCountdown(4);
+    const interval = setInterval(() => {
+      setRedirectCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          router.push('/dashboard');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSuccessPopup]);
 
   // 1. Fetch Transaction & Seller Info
   useEffect(() => {
@@ -180,19 +201,9 @@ function PayContent() {
     router.push('/dashboard');
   };
 
-  if (txStatus === 'SUCCESS') {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center text-white">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xs">
-          <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mb-10 mx-auto shadow-2xl shadow-emerald-500/20">
-            <CheckCircle className="text-white" size={48} />
-          </div>
-          <h1 className="text-3xl font-black italic uppercase tracking-tighter">Settled!</h1>
-          <p className="text-slate-500 font-bold mt-4 leading-relaxed">Neural Protocol Completed. ₹{amount} has been merged.</p>
-          <button onClick={() => router.push('/dashboard')} className="mt-12 px-10 py-6 bg-emerald-600 rounded-[32px] text-white font-black uppercase italic shadow-2xl active:scale-95 transition-all w-full tracking-widest text-xs">Back to Dashboard</button>
-        </motion.div>
-      </div>
-    );
+  if (txStatus === 'SUCCESS' && !showSuccessPopup) {
+    // Already redirecting via popup countdown, show blank
+    return <div className="min-h-screen bg-slate-950" />;  
   }
 
   if (txStatus === 'FAILED') {
@@ -352,8 +363,22 @@ function PayContent() {
           <NeuralNotice 
             isOpen={notice.isOpen} 
             title={notice.title} 
-            message={notice.message} 
+            message={notice.message}
+            type={notice.type}
             onClose={() => setNotice({ ...notice, isOpen: false })} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Payment Success Popup */}
+      <AnimatePresence>
+        {showSuccessPopup && (
+          <NeuralNotice
+            isOpen={showSuccessPopup}
+            title="Payment Successful! 🎉"
+            message={`₹${amount} has been settled. Your wallet has been credited. Redirecting to home in ${redirectCountdown}s...`}
+            type="info"
+            onClose={() => { setShowSuccessPopup(false); router.push('/dashboard'); }}
           />
         )}
       </AnimatePresence>
