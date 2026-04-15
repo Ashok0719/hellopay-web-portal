@@ -669,15 +669,15 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
             });
 
             return displayList.length > 0 ? displayList.map((plan: any, i: number) => (
-              <div 
+               <div 
                 key={i} 
                 onClick={() => handleClaim(plan._id)}
-                className="min-w-[150px] bg-white rounded-3xl p-4 border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all"
+                className="min-w-[150px] bg-white/5 backdrop-blur-md rounded-3xl p-4 border border-white/5 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all"
               >
-                <div className="absolute top-0 right-0 w-12 h-12 bg-emerald-500/5 rounded-bl-3xl" />
-                <div className="text-xl font-black text-slate-800 italic mb-1 leading-none">₹{plan.price}</div>
+                <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/5 rounded-bl-3xl" />
+                <div className="text-xl font-black text-white italic mb-1 leading-none">₹{plan.price}</div>
                 <div className="flex items-center gap-1 mb-3">
-                   <div className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Get ₹{plan.total}</div>
+                   <div className="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">Get ₹{plan.total}</div>
                    <div className="text-[8px] font-bold text-slate-400">({config?.profitPercentage || 4}%)</div>
                 </div>
                 
@@ -691,8 +691,8 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                 </div>
               </div>
             )) : (
-               <div className="w-full h-24 bg-slate-50 border border-dashed border-slate-200 rounded-3xl flex items-center justify-center">
-                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Scanning Marketplace...</p>
+               <div className="w-full h-24 bg-white/5 border border-dashed border-white/10 rounded-3xl flex items-center justify-center">
+                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Scanning Marketplace...</p>
                </div>
             );
           })()}
@@ -700,9 +700,9 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       </div>
 
       {/* Recent Transactions List */}
-      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 min-h-[300px]">
+      <div className="bg-white/5 backdrop-blur-md rounded-[32px] p-6 shadow-sm border border-white/5 min-h-[300px]">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-slate-800">Transactions</h3>
+          <h3 className="text-lg font-bold text-white">Transactions</h3>
           <span 
             onClick={() => router.push('/dashboard/payment-history')}
             className="text-emerald-600 text-[11px] font-black uppercase tracking-widest cursor-pointer hover:underline underline-offset-4 decoration-emerald-200"
@@ -1202,14 +1202,14 @@ function TransactionItem({ tx }: any) {
   return (
     <div 
       onClick={handleResume}
-      className={`flex justify-between items-center group active:scale-[0.98] transition-all p-3 rounded-[28px] hover:bg-slate-50 border border-transparent hover:border-slate-100 gap-2 ${isPurchase && (isPending || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION') ? 'cursor-pointer' : ''}`}
+      className={`flex justify-between items-center group active:scale-[0.98] transition-all p-3 rounded-[28px] hover:bg-white/5 border border-transparent hover:border-white/10 gap-2 ${isPurchase && (isPending || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION') ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className={`shrink-0 w-11 h-11 rounded-2xl ${tx.direction === 'IN' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-400'} flex items-center justify-center transition-transform group-hover:scale-105`}>
+        <div className={`shrink-0 w-11 h-11 rounded-2xl ${tx.direction === 'IN' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white/5 text-slate-400'} flex items-center justify-center transition-transform group-hover:scale-105`}>
            {tx.direction === 'IN' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
         </div>
         <div className="min-w-0">
-          <h4 className="font-black text-[11px] text-slate-800 uppercase tracking-tight italic truncate leading-tight">
+          <h4 className="font-black text-[11px] text-white uppercase tracking-tight italic truncate leading-tight">
             {tx.description || (tx.type === 'ROTATION' ? `Stock Node ${tx.transactionId?.slice(-6)}` : tx.type.replace('_', ' '))}
           </h4>
           <div className="flex items-center gap-1.5 mt-1 font-bold text-[8px] text-slate-400 uppercase tracking-widest leading-none">
