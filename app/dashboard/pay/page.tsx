@@ -45,6 +45,10 @@ function PayContent() {
         if (data.status === 'SUCCESS') {
            setTxStatus('SUCCESS');
            setShowSuccessPopup(true);
+           // Native APK bridge — fires toast + redirect on Android WebView
+           if (typeof (window as any).AndroidBridge !== 'undefined') {
+             (window as any).AndroidBridge.showPaymentSuccess(data.amount || amount);
+           }
         } else if (data.status === 'FAILED') {
            setRejectReason(data.reason || 'Verification Failed');
            setTxStatus('FAILED');

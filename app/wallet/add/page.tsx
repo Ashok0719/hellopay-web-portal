@@ -119,6 +119,10 @@ export default function AddMoneyPage() {
       if (data.success) {
         setStatus('SUCCESS');
         setShowSuccessPopup(true);
+        // Native APK bridge — fires toast + redirect on Android WebView
+        if (typeof (window as any).AndroidBridge !== 'undefined') {
+          (window as any).AndroidBridge.showPaymentSuccess(amount);
+        }
         setTimeout(() => router.push('/dashboard'), 4000);
       } else {
         // Neural Fallback: Manual Audit Required

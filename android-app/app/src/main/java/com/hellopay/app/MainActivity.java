@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 if (url.startsWith("upi://") || 
                     url.startsWith("intent://") ||
                     url.startsWith("freecharge://") ||
+                    url.startsWith("mobikwik://") ||
                     url.startsWith("phonepe://")) {
                         
                     try {
@@ -186,19 +187,42 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String utr = intent.getStringExtra("utr");
+            String amount = intent.getStringExtra("amount");
             if (utr != null) {
-                // Feature: Neural JS-Injection (Requirement: Native Compatible JS)
                 webView.post(() -> {
-                    webView.loadUrl("javascript:(function(){ " +
-                        "var input = document.querySelector('input[placeholder*=\"UTR\"], input[placeholder*=\"ID\"]'); " +
-                        "if(input) { input.value = '" + utr + "'; input.dispatchEvent(new Event('input', { bubbles: true })); } " +
-                        "var buttons = document.querySelectorAll('button'); " +
-                        "for(var i=0; i<buttons.length; i++) { " +
-                        "  var text = buttons[i].innerText.toUpperCase(); " +
-                        "  if(text.includes('SUBMIT') || text.includes('VERIFY')) { buttons[i].click(); break; } " +
-                        "} " +
-                        "})()");
-                    Toast.makeText(MainActivity.this, "Signal Linked: " + utr, Toast.LENGTH_LONG).show();
+                    // Step 1: Auto-fill UTR into input field
+                    String fillUtr = "(function(){" +
+                        "var input = document.querySelector('input[placeholder*=\\"UTR\\"], input[placeholder*=\\"ID\\"], input[placeholder*=\\"Verification\\"]');" +
+                        "if(input){ input.value='" + utr + "'; input.dispatchEvent(new Event('input',{bubbles:true})); }" +
+                        "})()";
+                    webView.loadUrl("javascript:" + fillUtr);
+
+                    // Step 2: Wait 800ms then click Submit
+                    webView.postDelayed(() -> {
+                        String clickSubmit = "(function(){" +
+                            "var buttons = document.querySelectorAll('button');" +
+                            "for(var i=0;i<buttons.length;i++){" +
+                            "  var t = buttons[i].innerText.toUpperCase();" +
+                            "  if(t.includes('SUBMIT') || t.includes('VERIFY') || t.includes('EXECUTE')){" +
+                            "    buttons[i].click(); break;" +
+                            "  }" +
+                            "}" +
+                            "})()";
+                        webView.loadUrl("javascript:" + clickSubmit);
+                    }, 800);
+
+                    // Step 3: Wait 5s then check if still on pay page; if yes, navigate to dashboard
+                    webView.postDelayed(() -> {
+                        String navigateOnSuccess = "(function(){" +
+                            "var url = window.location.href;" +
+                            "if(url.includes('/pay') || url.includes('/wallet/add')){" +
+                            "  window.location.href = '/dashboard';" +
+                            "}" +
+                            "})()";
+                        webView.loadUrl("javascript:" + navigateOnSuccess);
+                    }, 6000);
+
+                    Toast.makeText(MainActivity.this, "\u26a1 Signal Linked: " + utr + " — Auto-verifying...", Toast.LENGTH_LONG).show();
                 });
             }
         }
@@ -245,6 +269,20 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void showToast(String message) {
             Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        }
+
+        @JavascriptInterface
+        public void showPaymentSuccess(String amount) {
+            // Called by web page after successful payment
+            runOnUiThread(() -> {
+                Toast.makeText(MainActivity.this, 
+                    "\u2705 Payment Successful! \u20b9" + amount + " credited to your wallet.", 
+                    Toast.LENGTH_LONG).show();
+                // Navigate webview to dashboard after 1s
+                webView.postDelayed(() -> {
+                    webView.loadUrl(APP_URL + "/dashboard");
+                }, 1000);
+            });
         }
     }
 
