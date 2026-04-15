@@ -77,6 +77,14 @@ function PayContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showSuccessPopup]);
 
+  // 0b. Notify admin that user entered payment section
+  useEffect(() => {
+    // Fire-and-forget — never block or error the payment flow
+    api.post('/stocks/notify-payment-entry', { amount, type: stockId ? 'stock_buy' : 'wallet_recharge' })
+      .catch(() => {}); // Silent fail
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 1. Fetch Transaction & Seller Info
   useEffect(() => {
     if (!transactionId) {
