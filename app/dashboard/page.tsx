@@ -373,9 +373,9 @@ function Dashboard() {
                 onClick={() => { window.open('https://t.me/+zqQiwcniaF45ZTY1', '_blank'); setShowSupportMenu(false); }}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-blue-50 hover:bg-blue-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-blue-500/10 flex items-center justify-center shadow-lg shadow-blue-500/10 group-hover/btn:scale-110 transition-transform">
-                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-blue-600 fill-current">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.35-.97.53-1.33.52-.4-.01-1.17-.22-1.74-.41-.7-.23-1.26-.35-1.21-.74.03-.2.3-.41.82-.64 3.2-1.39 5.34-2.31 6.42-2.75 3.05-1.25 3.68-1.47 4.1-.11z"/>
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover/btn:scale-110 transition-transform">
+                  <svg viewBox="0 0 24 24" style={{ width: '36px', height: '36px', fill: '#0088cc' }}>
+                    <path d="M11.944 0C5.346 0 0 5.348 0 11.95c0 5.286 3.428 9.771 8.188 11.353.597.109.816-.259.816-.575 0-.284-.011-1.037-.016-2.035-3.322.722-4.023-1.602-4.023-1.602-.544-1.381-1.328-1.748-1.328-1.748-1.084-.741.082-.726.082-.726 1.199.084 1.83 1.231 1.83 1.231 1.066 1.826 2.796 1.298 3.477.993.109-.773.418-1.299.761-1.597-2.651-.302-5.439-1.327-5.439-5.901 0-1.303.465-2.368 1.232-3.203-.124-.302-.535-1.516.117-3.159 0 0 1.002-.321 3.282 1.223.951-.264 1.972-.397 2.986-.402 1.012.005 2.033.138 2.986.402 2.278-1.544 3.278-1.223 3.278-1.223.655 1.643.244 2.857.121 3.159.769.835 1.23 1.9 1.23 3.203 0 4.586-2.792 5.595-5.451 5.892.428.369.81 1.096.81 2.209 0 1.595-.015 2.881-.015 3.272 0 .319.215.691.824.573C20.575 21.716 24 17.234 24 11.95 24 5.348 18.652 0 12.054 0h-.11z"/>
                   </svg>
                 </div>
                 <div className="text-left">
@@ -389,9 +389,9 @@ function Dashboard() {
                 onClick={() => setNotice({ isOpen: true, title: "Neural Link Pending", message: "The 24/7 AI Support Bot is currently undergoing neural calibration. Please check back soon or use our Telegram support hub." })}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-slate-50 opacity-60 grayscale-[0.5] hover:bg-slate-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center shadow-lg shadow-emerald-500/10 group-hover/btn:scale-110 transition-transform">
-                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-emerald-600 fill-current">
-                    <path d="M12 2c-4.97 0-9 4.03-9 9 0 4.17 2.84 7.67 6.69 8.69L12 22l2.31-2.31C18.16 18.67 21 15.17 21 11c0-4.97-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 3.16-2.11 5.84-5.01 6.71L12 19.69l-1.99-1.98C7.11 16.84 5 14.16 5 11c0-3.87 3.13-7 7-7zm0 2c-2.76 0-5 2.24-5 5 0 2.15 1.35 3.99 3.27 4.7l.73.27V12h2v4l.73-.27c1.92-.71 3.27-2.55 3.27-4.73 0-2.76-2.24-5-5-5z"/>
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover/btn:scale-110 transition-transform">
+                  <svg viewBox="0 0 24 24" style={{ width: '36px', height: '36px', fill: '#10b981' }}>
+                    <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm0-14c-1.654 0-3 1.346-3 3v3h1V9c0-1.103.897-2 2-2s2 .897 2 2v6h1V9c0-1.654-1.346-3-3-3m-1 7h2v2h-2v-2z"/>
                   </svg>
                 </div>
                 <div className="text-left">
