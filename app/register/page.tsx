@@ -255,7 +255,7 @@ function RegisterContent() {
         className="relative z-10 flex flex-col items-center mb-4 sm:mb-10"
       >
         <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl sm:rounded-[24px] flex items-center justify-center shadow-[0_0_40px_rgba(79,70,229,0.3)] border border-indigo-400/30">
-           <Zap className="text-white fill-white drop-shadow-md" size={24} sm:size={40} />
+           <Zap className="text-white fill-white drop-shadow-md w-6 h-6 sm:w-10 sm:h-10" />
         </div>
       </motion.div>
 
