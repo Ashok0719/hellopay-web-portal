@@ -23,6 +23,7 @@ import {
   Zap,
   HelpCircle,
   Star,
+  Cpu,
   ArrowRight,
   ShieldCheck,
   Trash2,
