@@ -425,12 +425,11 @@ function RegisterContent() {
       </motion.div>
 
       {/* Footer Info */}
-      <div className="relative z-10 mt-4 sm:mt-16 text-center opacity-30 hidden sm:block">
-        <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none mb-2">Registry: Encrypted</p>
-      </div>
+      <div className="relative z-10 mt-2 sm:mt-16 text-center opacity-30 hidden sm:block">
+        <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic mb-3">Registry: Encrypted</p>
         <div className="flex items-center justify-center gap-3 text-slate-800">
            <ShieldCheck size={14} />
-           <span className="text-[8px] font-black uppercase tracking-widest">Global ISO-27001 Security Protocol</span>
+           <span className="text-[8px] font-black uppercase tracking-widest">Global ISO-27001 Protocol</span>
         </div>
       </div>
     </div>
