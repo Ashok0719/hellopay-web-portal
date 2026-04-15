@@ -161,11 +161,11 @@ export default function TeamPage() {
            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
            <h3 className="text-[10px] font-black mb-8 text-slate-500 uppercase tracking-[0.4em] italic leading-none">Signal Propagation Hub</h3>
            <div className="grid grid-cols-4 gap-4">
-               <ShareIcon icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg"><img src="/telegram_support.png" alt="T" className="w-full h-full object-cover" /></div>} label="Telegram" color="transparent" />
+               <ShareIcon icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg"><img src="/tg.png" alt="T" className="w-full h-full object-cover" /></div>} label="Telegram" color="transparent" />
                <ShareIcon icon={<MessageSquare className="text-white fill-white" size={24}/>} label="Facebook" color="bg-blue-700" />
                <ShareIcon 
                  onClick={() => setNotice({ isOpen: true, title: "Neural Link Pending", message: "The AI Support node is currently initializing. Please use the Telegram hub for immediate assistance." })}
-                 icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg opacity-40"><img src="/neural_support.png" alt="S" className="w-full h-full object-cover grayscale" /></div>} 
+                 icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg opacity-40"><img src="/nb.png" alt="S" className="w-full h-full object-cover grayscale" /></div>} 
                  label="COMING SOON" 
                  color="transparent" 
                />
