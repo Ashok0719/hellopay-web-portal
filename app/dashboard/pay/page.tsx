@@ -260,7 +260,7 @@ function PayContent() {
           <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center mb-10 mx-auto shadow-2xl shadow-red-600/20">
             <XCircle className="text-white" size={48} />
           </div>
-          <h1 className="text-3xl font-black italic uppercase tracking-tighter">Payment Rejected</h1>
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter">Payment Failed</h1>
           <p className="text-slate-500 font-bold mt-4 leading-relaxed">{rejectReason || 'Neural signals mismatched. Node released.'}</p>
           <p className="text-[10px] font-black text-red-500/60 uppercase tracking-widest mt-6 animate-pulse">Auto-redirecting to dashboard in 5s...</p>
           <button onClick={() => router.push('/dashboard')} className="mt-8 px-10 py-6 bg-red-700 rounded-[32px] text-white font-black uppercase italic shadow-2xl active:scale-95 transition-all w-full tracking-widest text-xs">Go Now</button>
@@ -450,7 +450,7 @@ function PayContent() {
         {showSuccessPopup && (
           <NeuralNotice
             isOpen={showSuccessPopup}
-            title="Payment Successful! 🎉"
+            title="Payment Completed! 🎉"
             message={`₹${amount} has been settled. Your wallet has been credited. Redirecting to home in ${redirectCountdown}s...`}
             type="info"
             onClose={() => { setShowSuccessPopup(false); router.push('/dashboard'); }}

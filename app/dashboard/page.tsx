@@ -1222,12 +1222,14 @@ function TransactionItem({ tx }: any) {
           {tx.direction === 'IN' ? '+' : '-'}₹{tx.amount.toLocaleString()}
         </div>
         <div className={`text-[7px] px-2 py-1 rounded-lg font-black uppercase tracking-[0.1em] border ${
-          tx.status === 'COMPLETED' || tx.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-          tx.status === 'PENDING' || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-          tx.status === 'CANCELED' || tx.status === 'FAILED' ? 'bg-red-50 text-red-500 border-red-100' : 
+          tx.status?.toUpperCase() === 'COMPLETED' || tx.status?.toUpperCase() === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+          ['PENDING', 'PENDING_PAYMENT', 'PENDING_VERIFICATION', 'INIT'].includes(tx.status?.toUpperCase()) ? 'bg-amber-50 text-amber-600 border-amber-100' : 
+          ['CANCELED', 'FAILED', 'REJECTED', 'TIMEOUT'].includes(tx.status?.toUpperCase()) ? 'bg-red-50 text-red-500 border-red-100' : 
           'bg-slate-50 text-slate-400 border-slate-100'
         }`}>
-          {tx.status?.replace('_', ' ')}
+          {['COMPLETED', 'SUCCESS'].includes(tx.status?.toUpperCase()) ? 'COMPLETED' : 
+           ['FAILED', 'REJECTED', 'CANCELED'].includes(tx.status?.toUpperCase()) ? 'FAILED' : 
+           tx.status?.replace('_', ' ')}
         </div>
       </div>
     </div>

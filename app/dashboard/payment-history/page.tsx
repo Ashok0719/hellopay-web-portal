@@ -134,17 +134,19 @@ export default function PaymentHistoryPage() {
 
                     <div className="flex flex-col items-end gap-4 min-w-[80px]">
                       <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border shadow-sm ${
-                        item.status === 'COMPLETED' || item.status === 'success' || item.status === 'SUCCESS' || item.status === 'completed'
+                        item.status?.toUpperCase() === 'COMPLETED' || item.status?.toUpperCase() === 'SUCCESS'
                           ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                          : item.status === 'INIT' || item.status === 'PENDING' || item.status === 'pending' || item.status === 'TIMEOUT' || item.status === 'PENDING_VERIFICATION' || item.status === 'PENDING_PAYMENT'
+                          : ['PENDING', 'PENDING_PAYMENT', 'PENDING_VERIFICATION', 'INIT'].includes(item.status?.toUpperCase())
                           ? 'bg-amber-50 text-amber-600 border-amber-100'
                           : 'bg-rose-50 text-rose-600 border-rose-100'
                       }`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${
-                             item.status === 'COMPLETED' || item.status === 'success' || item.status === 'SUCCESS' || item.status === 'completed' ? 'bg-emerald-500' : 
-                             item.status === 'INIT' || item.status === 'PENDING' || item.status === 'pending' || item.status === 'TIMEOUT' || item.status === 'PENDING_VERIFICATION' || item.status === 'PENDING_PAYMENT' ? 'bg-amber-500' : 'bg-rose-500'
+                             item.status?.toUpperCase() === 'COMPLETED' || item.status?.toUpperCase() === 'SUCCESS' ? 'bg-emerald-500' : 
+                             ['PENDING', 'PENDING_PAYMENT', 'PENDING_VERIFICATION', 'INIT'].includes(item.status?.toUpperCase()) ? 'bg-amber-500' : 'bg-rose-500'
                           }`} />
-                          {item.status}
+                          {['COMPLETED', 'SUCCESS'].includes(item.status?.toUpperCase()) ? 'COMPLETED' : 
+                           ['FAILED', 'REJECTED', 'CANCELED'].includes(item.status?.toUpperCase()) ? 'FAILED' : 
+                           item.status?.replace('_', ' ')}
                       </div>
                       <div className="text-right">
                           <div className="text-slate-900 text-[10px] font-black italic">
