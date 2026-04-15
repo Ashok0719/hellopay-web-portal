@@ -344,6 +344,7 @@ function Dashboard() {
           />
         )}
         {activeTab === 'statistics' && <TeamHubView key="stats" stats={referralStats} user={user} setNotice={setNotice} setActiveTab={setActiveTab} />}
+        {activeTab === 'task' && <TaskView key="task" user={user} setNotice={setNotice} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} deferredPrompt={deferredPrompt} handleInstall={handleInstall} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} forceSync={forceSync} isSyncing={isSyncing} />}
         {activeTab === 'wallet' && (
@@ -499,13 +500,129 @@ function Dashboard() {
 
 
 // --- Home View ---
+// --- Task Hub View (Progressive Rewards) ---
+function TaskView({ user, setNotice }: any) {
+  const tasks = [
+    { 
+      id: 'daily', 
+      label: 'Daily Protocol', 
+      goal: 5000, 
+      reward: 500, 
+      current: user?.dailyDepositAmount || 0,
+      icon: <Zap size={16}/> 
+    },
+    { 
+      id: 'weekly', 
+      label: 'Weekly Protocol', 
+      goal: 150000, 
+      reward: 1000, 
+      current: user?.weeklyDepositAmount || 0,
+      icon: <TrendingUp size={16}/> 
+    },
+    { 
+      id: 'monthly', 
+      label: 'Monthly Protocol', 
+      goal: 500000, 
+      reward: 3000, 
+      current: user?.monthlyDepositAmount || 0,
+      icon: <Trophy size={16} /> 
+    }
+  ];
+
+  const handleClaimReward = (task: any) => {
+    if (task.current < task.goal) {
+       setNotice({ isOpen: true, title: "Signal Weak", message: `Neural protocol requires ₹${task.goal.toLocaleString()} within this timeframe to unlock this reward.` });
+       return;
+    }
+    // Logic for claiming reward would go here
+    setNotice({ isOpen: true, title: "Reward Active", message: `Protocol sequence verified. ₹${task.reward} added to your neural balance.` });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="p-4"
+    >
+      <div className="flex items-center gap-3 mb-6 px-2">
+         <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Target size={20} className="text-white" />
+         </div>
+         <div>
+            <h1 className="text-xl font-black italic uppercase tracking-tighter leading-none">Task Terminal</h1>
+            <p className="text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] mt-1 italic">Leveling Mesh Performance</p>
+         </div>
+      </div>
+
+      <div className="space-y-4">
+        {tasks.map(task => {
+          const progress = Math.min((task.current / task.goal) * 100, 100);
+          return (
+            <div key={task.id} className="bg-white border border-slate-100 rounded-[28px] p-5 shadow-sm relative overflow-hidden group">
+               <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                        {task.icon}
+                     </div>
+                     <div>
+                        <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">{task.label}</p>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Reward: ₹{task.reward}</p>
+                     </div>
+                  </div>
+                  <div className="text-right">
+                     <span className="text-xs font-black italic">₹{task.current.toLocaleString()}</span>
+                     <span className="text-[9px] text-slate-300 mx-1">/</span>
+                     <span className="text-[9px] font-bold text-slate-400">₹{task.goal.toLocaleString()}</span>
+                  </div>
+               </div>
+               
+               <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden mb-4 border border-slate-100">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    className={`h-full ${progress === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`}
+                  />
+               </div>
+
+               <button 
+                 onClick={() => handleClaimReward(task)}
+                 className={`w-full py-3 rounded-xl font-black uppercase text-[9px] tracking-[0.2em] transition-all ${progress === 100 ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-50 text-slate-300'}`}
+               >
+                 {progress === 100 ? 'Claim Reward' : 'Signal Processing...'}
+               </button>
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
+}
+
+// --- Status Info Bar (Ref Bonus Lock) ---
+function IdentityStatus({ user }: any) {
+  if (!user?.isSignupBonusLocked) return null;
+  return (
+    <div className="px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl mb-3 flex items-center justify-between">
+       <div className="flex items-center gap-2">
+          <AlertCircle size={14} className="text-amber-500" />
+          <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest">₹100 Signup Bonus Locked</p>
+       </div>
+       <div className="text-[8px] font-bold text-amber-500 uppercase tracking-widest px-2 py-0.5 bg-white rounded-full border border-amber-100 italic">
+          DEPOSIT TO UNLOCK
+       </div>
+    </div>
+  );
+}
+
 function HomeView({ user, history, listings, config, setActiveTab, handleClaim, router, forceSync, isSyncing, setNotice }: any) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="p-2 sm:p-4"
+      className="p-2 sm:p-4 h-full overflow-y-auto no-scrollbar pb-32"
     >
       {/* User Header */}
       <div className="flex justify-between items-center mb-3 px-2">
@@ -537,6 +654,8 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
           <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
         </div>
       </div>
+
+      <IdentityStatus user={user} />
 
       {/* UPI Identity Verification Signal (PURGED) */}
 
@@ -584,7 +703,7 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
         <QuickActionItem 
           icon={<div className="bg-emerald-50 w-8 h-8 rounded-lg flex items-center justify-center"><Target className="text-emerald-600" size={14}/></div>} 
           label="Task" 
-          onClick={() => setActiveTab('payment')} 
+          onClick={() => setActiveTab('task')} 
         />
         <QuickActionItem 
           icon={<div className="bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><Users className="text-blue-600" size={14}/></div>} 
