@@ -339,14 +339,14 @@ function PayContent() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 h-20">
              <button onClick={() => handleAppRedirect('freecharge')} className="bg-slate-900 border border-white/10 rounded-3xl flex items-center justify-center gap-3 hover:bg-slate-800 transition-all active:scale-95 group shadow-xl">
-                <img src="https://upload.wikimedia.org/wikipedia/en/2/23/Freecharge_Logo.png" className="w-8 h-8 rounded-lg brightness-110" alt="Freecharge" />
+                <img src="/logos/freecharge.png" className="w-8 h-8 rounded-lg brightness-110" alt="Freecharge" />
                 <div className="text-left">
                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Pay with</p>
                    <p className="text-xs font-black italic uppercase text-white leading-none">Freecharge</p>
                 </div>
              </button>
              <button onClick={() => handleAppRedirect('mobikwik')} className="bg-slate-900 border border-white/10 rounded-3xl flex items-center justify-center gap-3 hover:bg-slate-800 transition-all active:scale-95 group shadow-xl">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4c/MobiKwik_Logo.png" className="w-8 h-8 rounded-lg" alt="Mobikwik" />
+                <img src="/logos/mobikwik.png" className="w-8 h-8 rounded-lg" alt="Mobikwik" />
                 <div className="text-left">
                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Pay with</p>
                    <p className="text-xs font-black italic uppercase text-white leading-none">Mobikwik</p>
