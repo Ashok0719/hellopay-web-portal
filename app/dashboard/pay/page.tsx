@@ -6,6 +6,8 @@ import { ArrowLeft, CheckCircle, Zap, AlertCircle, XCircle } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import { io } from 'socket.io-client';
+import NeuralNotice from '../NeuralNotice';
+import { AnimatePresence } from 'framer-motion';
 
 function PayContent() {
   const searchParams = useSearchParams();
@@ -26,6 +28,7 @@ function PayContent() {
   const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes
   const [rejectReason, setRejectReason] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
 
   // 0. Neural Socket Listener
   useEffect(() => {
@@ -268,7 +271,7 @@ function PayContent() {
                 <button onClick={() => { 
                   const copyId = transaction?.sellerId?.upiId || config?.receiverUpiId || '';
                   navigator.clipboard.writeText(copyId); 
-                  alert('Address Bound to Clipboard!'); 
+                  setNotice({ isOpen: true, title: 'Identity Copied', message: 'The receiving node address has been bound to your clipboard for deployment.' });
                 }} className="text-[8px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-lg border border-indigo-500/20 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Copy</button>
              </div>
           </div>
@@ -344,6 +347,16 @@ function PayContent() {
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {notice.isOpen && (
+          <NeuralNotice 
+            isOpen={notice.isOpen} 
+            title={notice.title} 
+            message={notice.message} 
+            onClose={() => setNotice({ ...notice, isOpen: false })} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
