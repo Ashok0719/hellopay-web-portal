@@ -340,7 +340,7 @@ function Dashboard() {
             setNotice={setNotice}
           />
         )}
-        {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} setUser={setUser} setNotice={setNotice} />}
+        {activeTab === 'statistics' && <TeamHubView key="stats" stats={referralStats} user={user} setNotice={setNotice} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} deferredPrompt={deferredPrompt} handleInstall={handleInstall} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} forceSync={forceSync} isSyncing={isSyncing} />}
         {activeTab === 'wallet' && (
@@ -684,31 +684,16 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
   );
 }
 
-// --- Statistics View ---
-function StatisticsView({ user, config, setUser, setNotice }: any) {
-  const [isToggling, setIsToggling] = useState(false);
+// --- Team Hub View (Restored Premium View) ---
+function TeamHubView({ stats, user, setNotice }: any) {
+  const [copied, setCopied] = useState(false);
 
-  const handleToggleSelling = async () => {
-    setIsToggling(true);
-    try {
-      const { data } = await api.post('/auth/toggle-selling');
-      if (data.success) {
-        setUser({ ...user, isOpenSelling: data.isOpenSelling });
-        setNotice({ 
-          isOpen: true, 
-          title: data.isOpenSelling ? "Neural Marketplace Open" : "Marketplace Closed", 
-          message: data.message 
-        });
-      }
-    } catch (err: any) {
-      setNotice({ 
-        isOpen: true, 
-        title: "Toggle Signal Failure", 
-        message: err.response?.data?.message || "Could not synchronize marketplace status." 
-      });
-    } finally {
-      setIsToggling(false);
-    }
+  const copyRefLink = () => {
+    if (!stats?.referralCode) return;
+    const refLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode}`;
+    navigator.clipboard.writeText(refLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -716,60 +701,140 @@ function StatisticsView({ user, config, setUser, setNotice }: any) {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="p-4"
+      className="p-4 overflow-y-auto h-full pb-32 no-scrollbar"
     >
-      <h2 className="text-base font-black text-center text-[#10b981] mb-1 uppercase italic">Registry Hub</h2>
+      <div className="flex items-center justify-between mb-6 px-2">
+         <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+               <Users size={20} className="text-white" />
+            </div>
+            <div>
+               <h1 className="text-xl font-black italic uppercase tracking-tighter leading-none">Team Hub</h1>
+               <p className="text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] flex items-center gap-1 mt-1">
+                  <Activity size={10} className="text-indigo-500" />
+                  Neural Network Active
+               </p>
+            </div>
+         </div>
+         <button onClick={() => setActiveTab('home')} className="p-2.5 bg-white rounded-xl shadow-sm border border-slate-100 active:scale-90 transition-all text-slate-300 hover:text-slate-600">
+            <ArrowLeft size={18} />
+         </button>
+      </div>
 
-      <div className="bg-white rounded-[24px] p-3 shadow-sm border border-slate-100 mb-1.5 relative overflow-hidden">
-        <div className="flex items-center gap-1.5 mb-2">
-          <h3 className="font-bold flex items-center gap-1.5 uppercase text-[9px] tracking-widest text-slate-700">Analytics Sync</h3>
+      {/* Unique Referral Link Card */}
+      <div className="bg-indigo-600 rounded-[32px] p-6 mb-6 relative overflow-hidden shadow-xl shadow-indigo-600/10">
+        <div className="absolute top-0 right-0 p-4 opacity-10">
+          <Zap size={80} className="fill-white" />
         </div>
+        
+        <div className="relative z-10">
+          <p className="text-[9px] font-black text-indigo-200 uppercase tracking-widest mb-3">Your Unique Access Link</p>
+          <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md rounded-xl p-3 mb-4 border border-white/10">
+            <input 
+              readOnly 
+              className="bg-transparent border-none outline-none text-[10px] font-black truncate flex-1 tracking-wider text-white"
+              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats?.referralCode}`}
+            />
+            <button 
+              onClick={copyRefLink}
+              className="p-1.5 bg-white text-indigo-600 rounded-lg active:scale-90 transition-all"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+              <div className="bg-indigo-500 rounded-xl py-1.5 px-3 border border-white/10">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-white">Code: {stats?.referralCode}</span>
+              </div>
+              <p className="text-[8px] font-bold text-indigo-200 uppercase tracking-widest">
+                 Earn {stats?.commRate || 4}% Comm + ₹{stats?.referralBonus || 100} Bonus
+              </p>
+           </div>
+         </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-1.5">
-          <StatBox icon={<Wallet className="text-teal-500" size={12}/>} label="Bal" value={`₹ ${user?.walletBalance || '0'}`} color="bg-teal-600" />
-          <StatBox icon={<RefreshCcw className="text-amber-500" size={12}/>} label="Rwd" value={`₹ ${user?.rewardBalance || '0'}`} color="bg-amber-500" />
-          <StatBox icon={<Target className="text-emerald-500" size={12}/>} label="Dep" value={`₹ ${user?.totalDeposited || '0'}`} color="bg-emerald-600" />
-          <StatBox icon={<Activity className="text-pink-500" size={12}/>} label="Lvl" value={`₹ ${user?.totalRewards || '0'}`} color="bg-pink-500" />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+         <div className="bg-white border border-slate-100 rounded-[24px] p-4 shadow-sm">
+            <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center mb-2">
+               <Users className="text-blue-500" size={16} />
+            </div>
+            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Total Nodes</p>
+            <h3 className="text-2xl font-black italic">{stats?.totalReferrals || 0}</h3>
+         </div>
+         <div className="bg-white border border-slate-100 rounded-[24px] p-4 shadow-sm">
+            <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-2">
+               <TrendingUp className="text-emerald-500" size={16} />
+            </div>
+            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Total Volume</p>
+            <h3 className="text-2xl font-black italic">₹{stats?.totalBusinessVolume || 0}</h3>
+         </div>
+      </div>
+
+      {/* Earnings Card */}
+      <div className="bg-white border border-slate-100 rounded-[32px] p-6 mb-8 shadow-sm relative overflow-hidden group">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+                 <Wallet className="text-indigo-600" size={20} />
+              </div>
+              <div>
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Commision Earned</p>
+                <h3 className="text-3xl font-black italic text-slate-900">₹{stats?.referralEarnings || 0}</h3>
+              </div>
+          </div>
+          <div className="px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
+             <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest italic">Settled</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active Sub-Nodes</p>
+           <p className="text-xs font-black text-slate-900">{stats?.activeUsersCount || 0}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-[24px] p-4 shadow-sm border border-slate-100 mb-3">
-        <div className="flex items-center gap-1.5 mb-3">
-          <div className="w-1 h-4 bg-emerald-500 rounded-full" />
-          <h3 className="font-bold uppercase text-[9px] tracking-widest text-slate-700">Financial Terminal</h3>
-        </div>
-
-        <div className="bg-emerald-50 rounded-xl p-2.5 flex justify-between items-center mb-3">
-          <span className="text-emerald-800 text-[8px] font-black uppercase tracking-widest italic leading-none">Exchange (USDT)</span>
-          <span className="text-emerald-800 font-bold text-xs">103</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-x-3 gap-y-3">
-          <MiniStatBox label="Audit Amount" value="₹ 0.00" />
-          <MiniStatBox label="Active Nodes" value="0" />
-          <MiniStatBox label="Comm. Rate" value={`${user?.referralPercent || config?.referralCommissionPercent || 4}.00 %`} />
-          <MiniStatBox label="Est. Income" value="₹ 0.00" />
-        </div>
+      <div className="flex items-center justify-between mb-4 px-2">
+          <h2 className="text-lg font-black uppercase tracking-tighter italic text-slate-800">Network Terminal</h2>
+          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Sorted by Date</span>
       </div>
 
       <button 
-        onClick={handleToggleSelling}
-        disabled={isToggling}
-        className={`w-full py-4 text-white font-black uppercase italic tracking-[0.2em] rounded-full shadow-xl active:scale-95 transition-all text-[10px] flex items-center justify-center gap-3 relative overflow-hidden ${user?.isOpenSelling ? 'bg-emerald-600 shadow-emerald-200' : 'bg-slate-900 shadow-slate-200'}`}
+        onClick={copyRefLink}
+        className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl flex items-center justify-center gap-3 mb-8 text-[10px] uppercase tracking-widest border border-white/10 active:scale-95 transition-all"
       >
-        {isToggling ? (
-           <span className="animate-pulse">SYNCHING...</span>
-        ) : (
-          <>
-            <Zap size={16} className={user?.isOpenSelling ? "fill-yellow-400 text-yellow-400" : "text-slate-500"} />
-            {user?.isOpenSelling ? "Open Selling (Active)" : "Market Hidden (Off)"}
-          </>
-        )}
+        <Share2 size={16} />
+        {copied ? 'Link Copied!' : 'Recruit New Nodes'}
       </button>
-      
-      <p className="text-[8px] text-center text-slate-400 font-bold uppercase tracking-[0.3em] py-4 italic opacity-40">
-        Incognito Protocol Activated: Asset Visibility Sync
-      </p>
+
+      {/* Network List */}
+      <div className="space-y-3">
+          {stats?.referralList?.length > 0 ? stats.referralList.map((node: any, i: number) => (
+            <div 
+              key={node._id} 
+              className="bg-white border border-slate-100 p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-95 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 text-[10px] border border-slate-200">
+                   {node.name.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{node.name}</h4>
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{node.userIdNumber}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-black text-indigo-600 italic">+₹{node.commission}</p>
+                <p className="text-[7px] font-bold uppercase tracking-widest text-slate-300">
+                  {new Date(node.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          )) : (
+            <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">No nodes detected in mesh</p>
+            </div>
+          )}
+      </div>
     </motion.div>
   );
 }
