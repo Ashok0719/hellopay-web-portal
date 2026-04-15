@@ -23,6 +23,7 @@ function PayContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [txStatus, setTxStatus] = useState<'PENDING' | 'PENDING_AUDIT' | 'SUCCESS' | 'FAILED'>('PENDING');
+  const txStatusStr = txStatus as string; // cast for comparison checks
   const [transaction, setTransaction] = useState<any>(null);
   const [config, setConfig] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes
@@ -294,7 +295,7 @@ function PayContent() {
                 <button onClick={() => { 
                   const copyId = transaction?.sellerId?.upiId || config?.receiverUpiId || '';
                   navigator.clipboard.writeText(copyId); 
-                  setNotice({ isOpen: true, title: 'Identity Copied', message: 'The receiving node address has been bound to your clipboard for deployment.' });
+                  setNotice({ isOpen: true, title: 'Identity Copied', message: 'The receiving node address has been bound to your clipboard for deployment.', type: 'info' });
                 }} className="text-[8px] font-black bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-lg border border-indigo-500/20 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Copy</button>
              </div>
           </div>
@@ -334,7 +335,7 @@ function PayContent() {
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Screenshot Proof</label>
                 <div onClick={() => txStatus !== 'PENDING_AUDIT' && document.getElementById('ss-node')?.click()} className={`w-full h-32 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-2 transition-all ${txStatus === 'PENDING_AUDIT' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${screenshot ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 bg-black/40 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
-                   <input id="ss-node" type="file" hidden onChange={(e) => setScreenshot(e.target.files?.[0] || null)} accept="image/*" disabled={txStatus === 'PENDING_AUDIT'} />
+                   <input id="ss-node" type="file" hidden onChange={(e) => setScreenshot(e.target.files?.[0] || null)} accept="image/*" disabled={txStatusStr === 'PENDING_AUDIT'} />
                    {screenshot ? (
                      <>
                         <CheckCircle size={24} className="text-emerald-500" />
@@ -356,7 +357,7 @@ function PayContent() {
              <button 
                onClick={() => setShowCancelModal(true)}
                className="flex-1 h-16 bg-white/5 border border-white/10 rounded-2xl text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-               disabled={txStatus === 'PENDING_AUDIT'}
+               disabled={txStatusStr === 'PENDING_AUDIT'}
              >
                 Cancel
              </button>

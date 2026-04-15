@@ -17,7 +17,15 @@ interface User {
   totalCommission?: number;
   isBlocked?: boolean;
   isSeller?: boolean;
+  isOpenSelling?: boolean;
   verifiedUpiId?: string;
+  upiId?: string;
+  pin?: string;
+  referralPercent?: number;
+  profitPercent?: number;
+  referralEarnings?: number;
+  referralBonusAmount?: number;
+  [key: string]: any; // allow additional backend fields
 }
 
 interface AuthState {

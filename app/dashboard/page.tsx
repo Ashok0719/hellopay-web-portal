@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SupportChatModal from './SupportChatModal';
 import NeuralNotice from '@/components/NeuralNotice';
@@ -55,7 +55,7 @@ import { useAuthStore } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import { io } from 'socket.io-client';
 
-export default function Dashboard() {
+function Dashboard() {
   const { user, setUser, logout, token } = useAuthStore();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTabRaw] = useState(searchParams.get('tab') || 'home');
@@ -85,7 +85,7 @@ export default function Dashboard() {
   const [isClaiming, setIsClaiming] = useState(false);
   const [showSupportChat, setShowSupportChat] = useState(false);
   const [showSupportMenu, setShowSupportMenu] = useState(false);
-  const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
+  const [notice, setNotice] = useState<{ isOpen: boolean; title: string; message: string; type?: string }>({ isOpen: false, title: '', message: '', type: 'info' });
   const [pinModal, setPinModal] = useState({ isOpen: false, targetId: '' });
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const router = useRouter();
@@ -254,7 +254,8 @@ export default function Dashboard() {
       setNotice({
          isOpen: true,
          title: "Registry Fault",
-         message: err.response?.data?.message || 'The neural identity registry is busy. Failed to initiate claim.'
+         message: err.response?.data?.message || 'The neural identity registry is busy. Failed to initiate claim.',
+         type: 'error'
       });
     } finally {
       setIsClaiming(false);
@@ -1712,7 +1713,7 @@ function TeamModal({ isOpen, onClose, user, referralStats }: any) {
                     <div className="flex gap-4">
                        <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-5 flex items-center justify-between group hover:border-indigo-500/50 transition-all">
                           <span className="text-2xl font-black italic tracking-tighter text-indigo-400">{user?.referralCode}</span>
-                          <button onClick={() => { navigator.clipboard.writeText(user?.referralCode); setNotice({ isOpen: true, title: 'Code Copied', message: `Your referral code [${user?.referralCode}] has been copied to clipboard.` }); }} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"><Copy size={16} /></button>
+                          <button onClick={() => { navigator.clipboard.writeText(user?.referralCode || ''); setNotice({ isOpen: true, title: 'Code Copied', message: `Your referral code [${user?.referralCode}] has been copied to clipboard.`, type: 'info' }); }} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"><Copy size={16} /></button>
                        </div>
                     </div>
                  </div>
@@ -1780,5 +1781,20 @@ function TeamModal({ isOpen, onClose, user, referralStats }: any) {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Initializing Neural Node...</p>
+        </div>
+      </div>
+    }>
+      <Dashboard />
+    </Suspense>
   );
 }
