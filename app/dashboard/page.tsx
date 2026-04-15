@@ -284,7 +284,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white pb-24 font-sans w-full overflow-hidden relative">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans max-w-lg mx-auto shadow-2xl overflow-hidden relative border-x border-slate-200">
       {/* Neural Loading Overlay (Purchasing Speed Fix) */}
       <AnimatePresence>
         {isSyncing && (
@@ -418,7 +418,7 @@ function Dashboard() {
       </motion.div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 w-full h-20 bg-slate-900/90 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-6 z-50 pb-safe">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-20 bg-white border-t border-slate-100 flex items-center justify-between px-6 z-50 pb-safe">
         <BottomNavItem 
           icon={<HomeIcon active={activeTab === 'home'} />} 
           label="Home" 
@@ -507,11 +507,11 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       {/* User Header */}
       <div className="flex justify-between items-center mb-6 px-2">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full border-2 border-white/20 shadow-sm overflow-hidden bg-white/5 flex items-center justify-center text-slate-400">
+          <div className="w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400">
              <UserIcon size={28} fill="currentColor" />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-xl font-bold text-white leading-tight">{user?.name}</h2>
+            <h2 className="text-xl font-bold text-slate-800 leading-tight">{user?.name}</h2>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
               <span>{user?.phone}</span>
               <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
@@ -542,9 +542,9 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
             </div>
           </div>
         </div>
-        <div className="relative p-2 bg-white/5 rounded-2xl shadow-sm border border-white/10 active:scale-95 transition-all">
-          <Bell size={22} className="text-white" />
-          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-slate-900" />
+        <div className="relative p-2 bg-white rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-all">
+          <Bell size={22} className="text-slate-600" />
+          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
         </div>
       </div>
 
@@ -669,15 +669,15 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
             });
 
             return displayList.length > 0 ? displayList.map((plan: any, i: number) => (
-               <div 
+              <div 
                 key={i} 
                 onClick={() => handleClaim(plan._id)}
-                className="min-w-[150px] bg-white/5 backdrop-blur-md rounded-3xl p-4 border border-white/5 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all"
+                className="min-w-[150px] bg-white rounded-3xl p-4 border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all"
               >
-                <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/5 rounded-bl-3xl" />
-                <div className="text-xl font-black text-white italic mb-1 leading-none">₹{plan.price}</div>
+                <div className="absolute top-0 right-0 w-12 h-12 bg-emerald-500/5 rounded-bl-3xl" />
+                <div className="text-xl font-black text-slate-800 italic mb-1 leading-none">₹{plan.price}</div>
                 <div className="flex items-center gap-1 mb-3">
-                   <div className="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">Get ₹{plan.total}</div>
+                   <div className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Get ₹{plan.total}</div>
                    <div className="text-[8px] font-bold text-slate-400">({config?.profitPercentage || 4}%)</div>
                 </div>
                 
@@ -691,8 +691,8 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                 </div>
               </div>
             )) : (
-               <div className="w-full h-24 bg-white/5 border border-dashed border-white/10 rounded-3xl flex items-center justify-center">
-                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Scanning Marketplace...</p>
+               <div className="w-full h-24 bg-slate-50 border border-dashed border-slate-200 rounded-3xl flex items-center justify-center">
+                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Scanning Marketplace...</p>
                </div>
             );
           })()}
@@ -700,9 +700,9 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       </div>
 
       {/* Recent Transactions List */}
-      <div className="bg-white/5 backdrop-blur-md rounded-[32px] p-6 shadow-sm border border-white/5 min-h-[300px]">
+      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 min-h-[300px]">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-white">Transactions</h3>
+          <h3 className="text-lg font-bold text-slate-800">Transactions</h3>
           <span 
             onClick={() => router.push('/dashboard/payment-history')}
             className="text-emerald-600 text-[11px] font-black uppercase tracking-widest cursor-pointer hover:underline underline-offset-4 decoration-emerald-200"
@@ -1063,7 +1063,7 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
               className={`px-4 py-2 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
                 activeFilter === filter
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200 active:scale-90'
-                  : 'bg-white/5 text-slate-400 hover:bg-white/10 active:scale-95'
+                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95'
               }`}
             >
               {filter} ({count})
@@ -1088,7 +1088,7 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
               className={`rounded-[22px] p-5 shadow-sm border flex justify-between items-center active:scale-[0.98] transition-all relative ${
-                split.isPinned ? 'bg-amber-500/10 border-amber-500/20' : 'bg-white/5 border-white/10'
+                split.isPinned ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100'
               } ${isOtherLocked ? 'opacity-60 grayscale' : ''}`}
             >
               {split.isPinned ? (
@@ -1110,9 +1110,9 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
                   </span>
                 </div>
                 <div className="flex gap-3 text-xs">
-                  <span className="text-slate-400">Profit: <span className="text-emerald-500 font-bold">+₹{profit}</span></span>
-                  <span className="text-slate-500">|</span>
-                  <span className="text-slate-400">Net: <span className="text-white font-bold">₹{totalReturn.toLocaleString()}</span></span>
+                  <span className="text-slate-400">Profit: <span className="text-emerald-600 font-bold">+₹{profit}</span></span>
+                  <span className="text-slate-300">|</span>
+                  <span className="text-slate-400">Net: <span className="text-slate-800 font-bold">₹{totalReturn.toLocaleString()}</span></span>
                 </div>
                 {isOtherLocked && (
                    <p className="text-[10px] font-bold text-red-500 italic mt-1">⚠️ Selected by {split.selectedBy?.name}</p>
@@ -1147,10 +1147,10 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
 function QuickActionItem({ icon, label, onClick }: any) {
   return (
     <div onClick={onClick} className="flex flex-col items-center gap-1.5 cursor-pointer group active:scale-95 transition-all w-full">
-      <div className="w-14 h-14 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-all">
+      <div className="w-14 h-14 bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex items-center justify-center group-hover:shadow-md group-hover:-translate-y-0.5 transition-all">
          {icon}
       </div>
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{label}</span>
+      <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">{label}</span>
     </div>
   );
 }
@@ -1202,14 +1202,14 @@ function TransactionItem({ tx }: any) {
   return (
     <div 
       onClick={handleResume}
-      className={`flex justify-between items-center group active:scale-[0.98] transition-all p-3 rounded-[28px] hover:bg-white/5 border border-transparent hover:border-white/10 gap-2 ${isPurchase && (isPending || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION') ? 'cursor-pointer' : ''}`}
+      className={`flex justify-between items-center group active:scale-[0.98] transition-all p-3 rounded-[28px] hover:bg-slate-50 border border-transparent hover:border-slate-100 gap-2 ${isPurchase && (isPending || tx.status === 'PENDING_PAYMENT' || tx.status === 'PENDING_VERIFICATION') ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className={`shrink-0 w-11 h-11 rounded-2xl ${tx.direction === 'IN' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white/5 text-slate-400'} flex items-center justify-center transition-transform group-hover:scale-105`}>
+        <div className={`shrink-0 w-11 h-11 rounded-2xl ${tx.direction === 'IN' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-400'} flex items-center justify-center transition-transform group-hover:scale-105`}>
            {tx.direction === 'IN' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
         </div>
         <div className="min-w-0">
-          <h4 className="font-black text-[11px] text-white uppercase tracking-tight italic truncate leading-tight">
+          <h4 className="font-black text-[11px] text-slate-800 uppercase tracking-tight italic truncate leading-tight">
             {tx.description || (tx.type === 'ROTATION' ? `Stock Node ${tx.transactionId?.slice(-6)}` : tx.type.replace('_', ' '))}
           </h4>
           <div className="flex items-center gap-1.5 mt-1 font-bold text-[8px] text-slate-400 uppercase tracking-widest leading-none">
