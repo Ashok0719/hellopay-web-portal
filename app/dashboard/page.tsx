@@ -374,8 +374,8 @@ function Dashboard() {
                 onClick={() => { window.open('https://t.me/+zqQiwcniaF45ZTY1', '_blank'); setShowSupportMenu(false); }}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-blue-50 hover:bg-blue-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-blue-50 flex items-center justify-center shadow-lg shadow-blue-500/10 group-hover/btn:scale-110 transition-transform">
-                  <Send size={28} className="text-blue-600" />
+                <div className="w-14 h-14 rounded-2xl bg-white border border-blue-100 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover/btn:scale-110 transition-transform text-blue-600">
+                  <Send size={32} />
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-black uppercase text-blue-600 tracking-[0.2em] block leading-none mb-1">Telegram</span>
@@ -388,8 +388,8 @@ function Dashboard() {
                 onClick={() => setNotice({ isOpen: true, title: "Neural Link Pending", message: "The 24/7 AI Support Bot is currently undergoing neural calibration. Please check back soon or use our Telegram support hub." })}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-slate-50 opacity-60 grayscale-[0.5] hover:bg-slate-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-emerald-50 flex items-center justify-center shadow-lg shadow-emerald-500/10 group-hover/btn:scale-110 transition-transform">
-                  <Cpu size={28} className="text-emerald-600" />
+                <div className="w-14 h-14 rounded-2xl bg-white border border-emerald-100 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover/btn:scale-110 transition-transform text-emerald-600">
+                  <Cpu size={32} />
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] block leading-none mb-1">COMING SOON</span>
