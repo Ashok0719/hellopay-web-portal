@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuth';
 import SafetyPinModal from '../../dashboard/SafetyPinModal';
+import NeuralNotice from '@/components/NeuralNotice';
 
 export default function SendMoneyPage() {
   const [phone, setPhone] = useState('');
@@ -15,6 +16,7 @@ export default function SendMoneyPage() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [notice, setNotice] = useState({ isOpen: false, title: '', message: '' });
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -31,7 +33,7 @@ export default function SendMoneyPage() {
       });
       setStep(3); // Success step
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Transfer failed');
+      setNotice({ isOpen: true, title: 'Transfer Failed', message: err.response?.data?.message || 'Transfer failed. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -39,6 +41,7 @@ export default function SendMoneyPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
+      <NeuralNotice isOpen={notice.isOpen} title={notice.title} message={notice.message} onClose={() => setNotice({ ...notice, isOpen: false })} />
       <div className="max-w-2xl mx-auto">
         <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-white mb-12 transition-colors font-bold">
           <ArrowLeft size={20} /> Back to Dashboard

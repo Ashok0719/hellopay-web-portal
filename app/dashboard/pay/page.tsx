@@ -6,7 +6,7 @@ import { ArrowLeft, CheckCircle, Zap, AlertCircle, XCircle } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import { io } from 'socket.io-client';
-import NeuralNotice from '../NeuralNotice';
+import NeuralNotice from '@/components/NeuralNotice';
 import { AnimatePresence } from 'framer-motion';
 
 function PayContent() {

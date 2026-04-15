@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Zap, Trophy, Clock, CheckCircle2, TrendingUp, Calendar, Target, Sparkles, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import NeuralNotice from '../NeuralNotice';
+import NeuralNotice from '@/components/NeuralNotice';
 
 export default function TasksPage() {
   const router = useRouter();

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SupportChatModal from './SupportChatModal';
-import NeuralNotice from './NeuralNotice';
+import NeuralNotice from '@/components/NeuralNotice';
 import SafetyPinModal from './SafetyPinModal';
 import jsQR from 'jsqr';
 import {
