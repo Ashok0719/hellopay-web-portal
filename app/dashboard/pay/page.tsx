@@ -137,18 +137,15 @@ function PayContent() {
     const fetchTx = async () => {
       try {
         const { data } = await api.get(`/stocks/transactions/${transactionId}`);
-        if (data.success) {
-          setTransaction(data.transaction);
-          setAmount(data.transaction.amount.toString());
-          setTxStatus(data.transaction.status);
-        } else {
-          // Neural Self-Healing: Redirect if node is lost
-          router.push('/dashboard');
-        }
-      } catch (err) {
-        router.push('/dashboard');
+      if (data.success) {
+        setTransaction(data.transaction);
+        setAmount(data.transaction.amount.toString());
+        setTxStatus(data.transaction.status);
       }
-    };
+    } catch (err) {
+      console.error('Fetch error:', err);
+    }
+  };
     fetchTx();
   }, [transactionId]);
 
@@ -257,7 +254,7 @@ function PayContent() {
         setNotice({
           isOpen: true,
           title: 'SIGNALS SUBMITTED',
-          message: 'Your proof is now being audited by the Neural Node.',
+          message: 'Your proof is now being audited. Please stay on this page to track your status.',
           type: 'success'
         });
       } else {
@@ -274,11 +271,7 @@ function PayContent() {
         }
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Neural Gateway Timeout.';
-      setError(msg);
-      if (msg.includes('INVALID') || msg.includes('EXPECTED')) {
-         setTimeout(() => router.push('/dashboard'), 2000);
-      }
+      setError(err.response?.data?.message || 'Neural Gateway Timeout.');
     } finally {
       setLoading(false);
     }
