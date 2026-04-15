@@ -206,7 +206,11 @@ function PayContent() {
       // ⚡ LIVE NEURAL SYNC: Auto-upload preview for Admin visibility
       const formData = new FormData();
       formData.append('screenshot', file);
+      // Send both internal and external IDs for perfect sync
       formData.append('transactionId', transactionId || '');
+      if (transaction?.transactionId) {
+        formData.append('humanId', transaction.transactionId);
+      }
       
       api.post('/payments/preview-proof', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
