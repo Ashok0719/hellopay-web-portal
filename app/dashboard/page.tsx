@@ -382,17 +382,17 @@ function Dashboard() {
                 </div>
               </button>
 
-              {/* 24/7 Support Option */}
+              {/* 24/7 Support Option (COMING SOON) */}
               <button 
-                onClick={() => { setShowSupportChat(true); setShowSupportMenu(false); }}
-                className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-emerald-50 hover:bg-emerald-50 transition-all group/btn active:scale-95 whitespace-nowrap"
+                onClick={() => setNotice({ isOpen: true, title: "Neural Link Pending", message: "The 24/7 AI Support Bot is currently undergoing neural calibration. Please check back soon or use our Telegram support hub." })}
+                className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-slate-50 opacity-60 grayscale-[0.5] hover:bg-slate-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
                 <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/10 group-hover/btn:scale-110 transition-transform">
                   <img src="/neural_support.png" alt="Support" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-left">
-                  <span className="text-[10px] font-black uppercase text-emerald-600 tracking-[0.2em] block leading-none mb-1">24/7 Support</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Open Neural Bot</span>
+                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] block leading-none mb-1">COMING SOON</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">AI Support Hub</span>
                 </div>
               </button>
             </motion.div>

@@ -163,7 +163,12 @@ export default function TeamPage() {
            <div className="grid grid-cols-4 gap-4">
                <ShareIcon icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg"><img src="/telegram_support.png" alt="T" className="w-full h-full object-cover" /></div>} label="Telegram" color="transparent" />
                <ShareIcon icon={<MessageSquare className="text-white fill-white" size={24}/>} label="Facebook" color="bg-blue-700" />
-               <ShareIcon icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg"><img src="/neural_support.png" alt="S" className="w-full h-full object-cover" /></div>} label="Support" color="transparent" />
+               <ShareIcon 
+                 onClick={() => setNotice({ isOpen: true, title: "Neural Link Pending", message: "The AI Support node is currently initializing. Please use the Telegram hub for immediate assistance." })}
+                 icon={<div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg opacity-40"><img src="/neural_support.png" alt="S" className="w-full h-full object-cover grayscale" /></div>} 
+                 label="COMING SOON" 
+                 color="transparent" 
+               />
                <ShareIcon icon={<Share2 className="text-white" size={24}/>} label="Copy Node" color="bg-gradient-to-br from-indigo-500 to-purple-600" />
            </div>
         </div>
@@ -224,9 +229,9 @@ function MetricBox({ label, val, active }: any) {
   );
 }
 
-function ShareIcon({ icon, label, color }: any) {
+function ShareIcon({ icon, label, color, onClick }: any) {
   return (
-    <div className="flex flex-col items-center gap-3 group cursor-pointer active:scale-95 transition-transform">
+    <div onClick={onClick} className="flex flex-col items-center gap-3 group cursor-pointer active:scale-95 transition-transform">
        <div className={`w-14 h-14 rounded-2xl ${color} flex items-center justify-center shadow-lg transition-all group-hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] group-hover:-translate-y-1`}>
          {icon}
        </div>
