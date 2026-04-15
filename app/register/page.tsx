@@ -230,7 +230,7 @@ function RegisterContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-6 sm:py-20 px-4 sm:px-6 font-sans relative overflow-x-hidden overflow-y-auto w-full">
+    <div className="h-full bg-[#020617] flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden w-full">
       <NeuralBackground />
       
       {/* 3D Animated Background Elements */}
@@ -262,9 +262,9 @@ function RegisterContent() {
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[520px] p-0.5 shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[40px] sm:rounded-[48px] bg-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto"
+        className="w-full max-w-[520px] max-h-[90vh] shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[40px] sm:rounded-[48px] bg-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto flex flex-col overflow-hidden"
       >
-        <div className="p-6 sm:p-12">
+        <div className="p-6 sm:p-12 overflow-y-auto scroll-smooth-native flex-1 custom-scrollbar">
             <div className="text-center mb-8 sm:mb-10">
                 <h2 className="text-2xl sm:text-4xl font-black text-white italic uppercase tracking-tighter mb-3 drop-shadow-lg">New Node Activation</h2>
                 <p className="text-indigo-200 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">Bind your identity to the network</p>
