@@ -576,12 +576,12 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
         </div>
       </div>
 
-      {/* Quick Action Grid (As per Screenshot) */}
+      {/* Quick Action Grid (Restored Features) */}
       <div className="grid grid-cols-4 gap-1 mb-2">
         <QuickActionItem 
-          icon={<div className="bg-emerald-50 w-8 h-8 rounded-lg flex items-center justify-center"><Home className="text-emerald-600" size={14}/></div>} 
-          label="Home" 
-          onClick={() => setActiveTab('home')} 
+          icon={<div className="bg-emerald-50 w-8 h-8 rounded-lg flex items-center justify-center"><Target className="text-emerald-600" size={14}/></div>} 
+          label="Task" 
+          onClick={() => setActiveTab('payment')} 
         />
         <QuickActionItem 
           icon={<div className="bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><Users className="text-blue-600" size={14}/></div>} 
@@ -594,9 +594,9 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
           onClick={() => router.push('/dashboard/payment-history')}
         />
         <QuickActionItem 
-          icon={<div className="bg-purple-50 w-8 h-8 rounded-lg flex items-center justify-center"><Settings className="text-purple-600" size={14}/></div>} 
-          label="Set" 
-          onClick={() => setActiveTab('my')}
+          icon={<div className="bg-indigo-50 w-8 h-8 rounded-lg flex items-center justify-center"><UserPlus className="text-indigo-600" size={14}/></div>} 
+          label="Referral" 
+          onClick={() => setActiveTab('statistics')}
         />
       </div>
 
