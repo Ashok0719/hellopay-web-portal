@@ -49,7 +49,7 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/hooks/useAuth';
 import api from '@/lib/api';
@@ -57,7 +57,22 @@ import { io } from 'socket.io-client';
 
 export default function Dashboard() {
   const { user, setUser, logout, token } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('home');
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTabRaw] = useState(searchParams.get('tab') || 'home');
+  
+  const setActiveTab = (tab: string) => {
+    setActiveTabRaw(tab);
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && tab !== activeTab) {
+      setActiveTabRaw(tab);
+    }
+  }, [searchParams]);
   const [history, setHistory] = useState<any[]>([]);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [listings, setListings] = useState<any[]>([]);
@@ -208,31 +223,7 @@ export default function Dashboard() {
   }, [user, setUser]);
 
   const forceSync = async () => {
-    setIsSyncing(true);
-    try {
-
-      const [profile, stocks, config, history] = await Promise.allSettled([
-        api.get('/auth/profile'),
-        api.get('/stocks'),
-        api.get('/wallet/config'),
-        api.get('/transactions/history')
-      ]);
-      if (profile.status === 'fulfilled')  setUser(profile.value.data);
-      if (stocks.status === 'fulfilled') {
-        const newStocks = stocks.value.data.stocks || [];
-        setListings(newStocks);
-        setNotice({ 
-          isOpen: true, 
-          title: "Neural Sync Success", 
-          message: newStocks.length > 0 
-            ? `Marketplace Synchronized: ${newStocks.length} nodes detected in the mesh.` 
-            : "Marketplace Synchronized: Mesh is currently clear. No active splits detected." 
-        });
-      }
-      if (config.status === 'fulfilled')   setConfig(config.value.data);
-      if (history.status === 'fulfilled')  setHistory(history.value.data || []);
-    } catch (err) {}
-    setTimeout(() => setIsSyncing(false), 800);
+    window.location.reload(); // Physical reload is now safe because we persist activeTab in URL
   };
 
   const handleClaim = (idOrAmount: string | number) => {
