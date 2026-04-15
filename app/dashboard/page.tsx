@@ -284,7 +284,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans max-w-lg mx-auto shadow-2xl overflow-hidden relative border-x border-slate-200">
+    <div className="min-h-screen bg-[#020617] text-white pb-24 font-sans w-full overflow-hidden relative">
       {/* Neural Loading Overlay (Purchasing Speed Fix) */}
       <AnimatePresence>
         {isSyncing && (
@@ -418,7 +418,7 @@ function Dashboard() {
       </motion.div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-20 bg-white border-t border-slate-100 flex items-center justify-between px-6 z-50 pb-safe">
+      <nav className="fixed bottom-0 left-0 w-full h-20 bg-slate-900/90 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-6 z-50 pb-safe">
         <BottomNavItem 
           icon={<HomeIcon active={activeTab === 'home'} />} 
           label="Home" 
@@ -507,11 +507,11 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       {/* User Header */}
       <div className="flex justify-between items-center mb-6 px-2">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400">
+          <div className="w-12 h-12 rounded-full border-2 border-white/20 shadow-sm overflow-hidden bg-white/5 flex items-center justify-center text-slate-400">
              <UserIcon size={28} fill="currentColor" />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-xl font-bold text-slate-800 leading-tight">{user?.name}</h2>
+            <h2 className="text-xl font-bold text-white leading-tight">{user?.name}</h2>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
               <span>{user?.phone}</span>
               <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
@@ -542,9 +542,9 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
             </div>
           </div>
         </div>
-        <div className="relative p-2 bg-white rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-all">
-          <Bell size={22} className="text-slate-600" />
-          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
+        <div className="relative p-2 bg-white/5 rounded-2xl shadow-sm border border-white/10 active:scale-95 transition-all">
+          <Bell size={22} className="text-white" />
+          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-slate-900" />
         </div>
       </div>
 
@@ -1063,7 +1063,7 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
               className={`px-4 py-2 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
                 activeFilter === filter
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200 active:scale-90'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95'
+                  : 'bg-white/5 text-slate-400 hover:bg-white/10 active:scale-95'
               }`}
             >
               {filter} ({count})
@@ -1088,7 +1088,7 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
               className={`rounded-[22px] p-5 shadow-sm border flex justify-between items-center active:scale-[0.98] transition-all relative ${
-                split.isPinned ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100'
+                split.isPinned ? 'bg-amber-500/10 border-amber-500/20' : 'bg-white/5 border-white/10'
               } ${isOtherLocked ? 'opacity-60 grayscale' : ''}`}
             >
               {split.isPinned ? (
@@ -1110,9 +1110,9 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
                   </span>
                 </div>
                 <div className="flex gap-3 text-xs">
-                  <span className="text-slate-400">Profit: <span className="text-emerald-600 font-bold">+₹{profit}</span></span>
-                  <span className="text-slate-300">|</span>
-                  <span className="text-slate-400">Net: <span className="text-slate-800 font-bold">₹{totalReturn.toLocaleString()}</span></span>
+                  <span className="text-slate-400">Profit: <span className="text-emerald-500 font-bold">+₹{profit}</span></span>
+                  <span className="text-slate-500">|</span>
+                  <span className="text-slate-400">Net: <span className="text-white font-bold">₹{totalReturn.toLocaleString()}</span></span>
                 </div>
                 {isOtherLocked && (
                    <p className="text-[10px] font-bold text-red-500 italic mt-1">⚠️ Selected by {split.selectedBy?.name}</p>
@@ -1147,10 +1147,10 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
 function QuickActionItem({ icon, label, onClick }: any) {
   return (
     <div onClick={onClick} className="flex flex-col items-center gap-1.5 cursor-pointer group active:scale-95 transition-all w-full">
-      <div className="w-14 h-14 bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex items-center justify-center group-hover:shadow-md group-hover:-translate-y-0.5 transition-all">
+      <div className="w-14 h-14 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-all">
          {icon}
       </div>
-      <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">{label}</span>
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{label}</span>
     </div>
   );
 }
