@@ -1039,10 +1039,10 @@ function PaymentView({ user, config, handleClaim, listings, forceSync, isSyncing
         </div>
       </div>
 
-      {/* Virtual Split Info Banner */}
+      {/* Deposit Method Info Banner */}
       <div className="flex items-start gap-3 text-[11px] text-emerald-700 font-semibold mb-4 px-3 py-3 bg-emerald-50 rounded-2xl border border-emerald-100">
         <ShieldCheck size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-        <p>Your wallet is <strong>never deducted during split</strong>. Money is only deducted from the seller when you confirm payment and the split unit is purchased.</p>
+        <p>Use <strong>Freecharge</strong> or <strong>Mobikwik</strong> for deposit. These are the only supported payment methods for fast and secure transactions.</p>
       </div>
 
       {/* Filter chips */}
