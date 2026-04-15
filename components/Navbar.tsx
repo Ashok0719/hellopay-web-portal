@@ -9,14 +9,12 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-[100] bg-[#020617]/80 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
-            <Zap size={20} className="text-white fill-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-black italic uppercase tracking-tighter leading-none">HelloPay</span>
-            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-indigo-400 leading-none mt-1">Neural Node</span>
-          </div>
+        <Link href="/dashboard" className="flex items-center group">
+          <img
+            src="/hellopay-logo.png"
+            alt="HelloPay"
+            className="h-10 w-auto object-contain group-hover:scale-105 transition-transform"
+          />
         </Link>
 
         <div className="flex items-center gap-4">

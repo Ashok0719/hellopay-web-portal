@@ -297,12 +297,13 @@ export default function LoginPage() {
         <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
           <div className="relative z-10">
             <div className="text-center mb-10">
-              <motion.div whileHover={{ rotate: 90, scale: 1.1 }} className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl mx-auto flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.3)] mb-6">
-                <Zap className="text-white fill-current" size={30} />
-              </motion.div>
-              <h1 className="text-3xl font-bold tracking-tight text-white flex items-center justify-center gap-3">
-                HelloPay <span className="text-[10px] uppercase font-black tracking-widest bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20">Node 2.0</span>
-              </h1>
+              <div className="flex justify-center mb-4">
+                <img
+                  src="/hellopay-logo.png"
+                  alt="HelloPay"
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
               <p className="text-slate-500 text-[10px] uppercase tracking-[0.4em] mt-3 font-semibold">Neural Wallet Matrix</p>
             </div>
 
