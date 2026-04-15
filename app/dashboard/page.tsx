@@ -512,9 +512,9 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
           </div>
           <div className="flex flex-col">
             <h2 className="text-xl font-bold text-slate-800 leading-tight">{user?.name}</h2>
-            <div className="flex items-center gap-2 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
               <span>{user?.phone}</span>
-              <span className="w-1 h-1 bg-slate-300 rounded-full" />
+              <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
               <div 
                 onClick={() => {
                    if (user?.userIdNumber) {
@@ -529,13 +529,13 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                     <Copy size={8} />
                  </div>
               </div>
-              <span className="w-1 h-1 bg-slate-300 rounded-full" />
+              <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
               <div className="flex items-center gap-1.5 text-blue-600 font-black px-2 bg-blue-50 rounded-md border border-blue-100">
                  <Users size={10} />
                  <span>Nodes: {config?.totalUsers || '...'}</span>
               </div>
               {user?.isSeller && (
-                <Link href="/dashboard/seller" className="bg-emerald-600 text-white px-2 py-0.5 rounded-md flex items-center gap-1 ml-2">
+                <Link href="/dashboard/seller" className="bg-emerald-600 text-white px-2 py-0.5 rounded-md flex items-center gap-1 ml-1 sm:ml-2">
                   <ShieldCheck size={10} /> HelloPay Seller
                 </Link>
               )}
@@ -561,7 +561,7 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                <div className="flex justify-between items-center sm:items-start">
                   <div className="flex items-center gap-4 sm:gap-6">
                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-600/20 rounded-2xl sm:rounded-[32px] flex items-center justify-center border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
-                        <Zap size={24} className="text-indigo-400 fill-indigo-400 animate-pulse sm:size-32" />
+                        <Zap size={28} className="text-indigo-400 fill-indigo-400 animate-pulse" />
                      </div>
                      <div>
                         <h2 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-slate-500 mb-1 sm:mb-2">Neural Asset Value</h2>
@@ -571,7 +571,7 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                              onClick={forceSync}
                              className={`p-1.5 sm:p-2 rounded-full hover:bg-white/10 transition-all ${isSyncing ? 'animate-spin opacity-100' : 'opacity-40'}`}
                            >
-                             <RefreshCcw size={14} className="text-indigo-400 sm:size-16" />
+                             <RefreshCcw size={16} className="text-indigo-400" />
                            </button>
                         </div>
                         {user?.totalDeposited < (config?.minDeposit || 100) && user?.referralBonusAmount > 0 && (
