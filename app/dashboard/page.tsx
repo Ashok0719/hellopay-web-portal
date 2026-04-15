@@ -284,7 +284,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-32 font-sans max-w-lg mx-auto shadow-2xl relative border-x border-slate-200 overflow-y-auto scroll-smooth-native">
+    <div className="h-[100dvh] bg-slate-50 text-slate-900 pb-20 font-sans max-w-lg mx-auto shadow-2xl relative border-x border-slate-200 overflow-hidden flex flex-col touch-action-none">
       {/* Neural Loading Overlay (Purchasing Speed Fix) */}
       <AnimatePresence>
         {isSyncing && (
@@ -502,19 +502,19 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="p-4"
+      className="p-2 sm:p-4"
     >
       {/* User Header */}
-      <div className="flex justify-between items-center mb-6 px-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400">
-             <UserIcon size={28} fill="currentColor" />
+      <div className="flex justify-between items-center mb-3 px-2">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full border border-white shadow-sm overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400">
+             <UserIcon size={24} fill="currentColor" />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-xl font-bold text-slate-800 leading-tight">{user?.name}</h2>
-            <div className="flex items-center gap-2 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
+            <h2 className="text-base font-bold text-slate-800 leading-none">{user?.name}</h2>
+            <div className="flex items-center gap-1.5 text-slate-500 text-[8px] font-black uppercase tracking-tighter">
               <span>{user?.phone}</span>
-              <span className="w-1 h-1 bg-slate-300 rounded-full" />
+              <span className="w-0.5 h-0.5 bg-slate-300 rounded-full" />
               <div 
                 onClick={() => {
                    if (user?.userIdNumber) {
@@ -522,70 +522,39 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                       setNotice({ isOpen: true, title: "Identity Copied", message: `Your unique Neural ID [${user.userIdNumber}] has been successfully bound to the clipboard.` });
                    }
                 }}
-                className="flex items-center gap-1.5 cursor-pointer hover:text-emerald-700 transition-colors"
+                className="flex items-center gap-1 cursor-pointer hover:text-emerald-700 transition-colors"
               >
                  <span className="text-emerald-600 font-black">ID: {user?.userIdNumber || '******'}</span>
-                 <div className="w-4 h-4 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
-                    <Copy size={8} />
-                 </div>
               </div>
-              <span className="w-1 h-1 bg-slate-300 rounded-full" />
-              <div className="flex items-center gap-1.5 text-blue-600 font-black px-2 bg-blue-50 rounded-md border border-blue-100">
-                 <Users size={10} />
-                 <span>Nodes: {config?.totalUsers || '...'}</span>
-              </div>
-              {user?.isSeller && (
-                <Link href="/dashboard/seller" className="bg-emerald-600 text-white px-2 py-0.5 rounded-md flex items-center gap-1 ml-2">
-                  <ShieldCheck size={10} /> HelloPay Seller
-                </Link>
-              )}
             </div>
           </div>
         </div>
-        <div className="relative p-2 bg-white rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-all">
-          <Bell size={22} className="text-slate-600" />
-          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
+        <div className="relative p-1.5 bg-white rounded-xl shadow-sm border border-slate-100 active:scale-95 transition-all">
+          <Bell size={18} className="text-slate-600" />
+          <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
         </div>
       </div>
 
       {/* UPI Identity Verification Signal (PURGED) */}
 
       {/* Main Balance Card (Emerald Theme) */}
-      <div className="relative overflow-hidden rounded-[40px] bg-slate-900 border border-white/5 p-8 text-white shadow-2xl mb-8 neo-card">
-        {/* Futuristic Neural Overlay */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px] pointer-events-none" />
-        
+      <div className="relative overflow-hidden rounded-[32px] bg-slate-900 border border-white/5 p-4 text-white shadow-xl mb-3 neo-card">
         <div className="relative z-10">
-          <div className="flex flex-col gap-10">
-               <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-6">
-                     <div className="w-20 h-20 bg-indigo-600/20 rounded-[32px] flex items-center justify-center border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
-                        <Zap size={32} className="text-indigo-400 fill-indigo-400 animate-pulse" />
-                     </div>
-                     <div>
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-2">Neural Asset Value</h2>
-                        <div className="flex items-center gap-4">
-                           <h1 className="text-5xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
-                           <button 
-                             onClick={forceSync}
-                             className={`p-2 rounded-full hover:bg-white/10 transition-all ${isSyncing ? 'animate-spin opacity-100' : 'opacity-40'}`}
-                           >
-                             <RefreshCcw size={16} className="text-indigo-400" />
-                           </button>
-                        </div>
-                        {user?.totalDeposited < (config?.minDeposit || 100) && user?.referralBonusAmount > 0 && (
-                          <div className="mt-2 flex items-center gap-2">
-                             <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
-                             <span className="text-[9px] font-black text-yellow-500 uppercase tracking-widest">₹{user.referralBonusAmount} Locked (Min Deposit ₹{config?.minDeposit || 100} Required)</span>
-                          </div>
-                        )}
-                     </div>
-                  </div>
-                  <button onClick={() => setActiveTab('payment')} className="w-16 h-16 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
-                     <Plus size={36} />
-                  </button>
-               </div>
+          <div className="flex justify-between items-center">
+             <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-indigo-600/20 rounded-2xl flex items-center justify-center border border-indigo-500/30">
+                   <Zap size={24} className="text-indigo-400 fill-indigo-400 animate-pulse" />
+                </div>
+                <div>
+                   <h2 className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-500 mb-0.5">Neural Assets</h2>
+                   <div className="flex items-center gap-2">
+                      <h1 className="text-3xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
+                   </div>
+                </div>
+             </div>
+             <button onClick={() => setActiveTab('payment')} className="w-12 h-12 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
+                <Plus size={24} />
+             </button>
           </div>
         </div>
       </div>
@@ -615,37 +584,37 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       </div>
 
       {/* Quick Action Grid (As per Screenshot) */}
-      <div className="grid grid-cols-4 gap-4 mb-8 px-2">
+      <div className="grid grid-cols-4 gap-2 mb-3">
         <QuickActionItem 
-          icon={<img src="/icons-v2/deposit.png" className="w-14 h-14 object-contain shadow-sm" />} 
-          label="Deposit" 
-          onClick={() => setActiveTab('payment')}
+          icon={<div className="bg-emerald-50 w-10 h-10 rounded-xl flex items-center justify-center"><Home className="text-emerald-600" size={18}/></div>} 
+          label="Home" 
+          onClick={() => setActiveTab('home')} 
         />
         <QuickActionItem 
-          icon={<img src="/icons-v2/task.png" className="w-14 h-14 object-contain shadow-sm" />} 
-          label="Task" 
-          onClick={() => router.push('/dashboard/tasks')}
-        />
-        <QuickActionItem 
-          icon={<img src="/icons-v2/team.png" className="w-14 h-14 object-contain shadow-sm" />} 
+          icon={<div className="bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center"><Users className="text-blue-600" size={18}/></div>} 
           label="Team" 
-          onClick={() => router.push('/team')}
+          onClick={() => setActiveTab('statistics')}
         />
         <QuickActionItem 
-          icon={<img src="/icons-v2/order.png" className="w-14 h-14 object-contain shadow-sm" />} 
+          icon={<div className="bg-amber-50 w-10 h-10 rounded-xl flex items-center justify-center"><History className="text-amber-600" size={18}/></div>} 
           label="Order" 
           onClick={() => router.push('/dashboard/payment-history')}
         />
+        <QuickActionItem 
+          icon={<div className="bg-purple-50 w-10 h-10 rounded-xl flex items-center justify-center"><Settings className="text-purple-600" size={18}/></div>} 
+          label="Set" 
+          onClick={() => setActiveTab('my')}
+        />
       </div>
 
-      {/* Market Fragmentation Listing (Excludes Own Splits) */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4 px-2 mt-4 text-slate-400">
+      {/* Market Fragmentation Listing */}
+      <div className="mb-3">
+        <div className="flex justify-between items-center mb-2 px-1 text-slate-400">
           <div className="flex items-center gap-2">
-            <Target size={18} className="text-emerald-500" />
-            <h3 className="text-lg font-black italic uppercase tracking-tighter text-slate-800">Active Splits</h3>
+            <Target size={14} className="text-emerald-500" />
+            <h3 className="text-xs font-black italic uppercase tracking-tighter text-slate-800">Market Splits</h3>
           </div>
-          <span onClick={() => setActiveTab('payment')} className="text-emerald-600 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:underline bg-emerald-50 px-3 py-1 rounded-full">Explore All</span>
+          <span onClick={() => setActiveTab('payment')} className="text-emerald-600 text-[8px] font-black uppercase tracking-widest cursor-pointer px-2 py-0.5 rounded-full bg-emerald-50">View All</span>
         </div>
         
         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 px-1">
@@ -700,15 +669,9 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       </div>
 
       {/* Recent Transactions List */}
-      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 min-h-[300px]">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-slate-800">Transactions</h3>
-          <span 
-            onClick={() => router.push('/dashboard/payment-history')}
-            className="text-emerald-600 text-[11px] font-black uppercase tracking-widest cursor-pointer hover:underline underline-offset-4 decoration-emerald-200"
-          >
-            See All
-          </span>
+      <div className="bg-white rounded-[28px] p-4 shadow-sm border border-slate-100 flex-1 overflow-hidden">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-sm font-bold text-slate-800 tracking-tight">Recent Signals</h3>
         </div>
 
         <div className="space-y-6">
@@ -762,20 +725,18 @@ function StatisticsView({ user, config, setUser, setNotice }: any) {
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <h2 className="text-2xl font-bold text-center text-[#10b981] mb-6 uppercase italic tracking-tighter">Statistics</h2>
+      <h2 className="text-lg font-black text-center text-[#10b981] mb-2 uppercase italic">Registry Hub</h2>
 
-      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl" />
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-          <h3 className="font-bold flex items-center gap-2 uppercase text-xs tracking-widest text-slate-700">Analytics <span className="text-slate-400 text-[10px] font-normal tracking-normal">(Real-Time Sync)</span></h3>
+      <div className="bg-white rounded-[28px] p-4 shadow-sm border border-slate-100 mb-2 relative overflow-hidden">
+        <div className="flex items-center gap-2 mb-3">
+          <h3 className="font-bold flex items-center gap-2 uppercase text-[10px] tracking-widest text-slate-700">Analytics Sync</h3>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <StatBox icon={<Wallet className="text-teal-500" size={16}/>} label="Balance" value={`₹ ${user?.walletBalance || '0'}`} color="bg-teal-600" />
-          <StatBox icon={<RefreshCcw className="text-amber-500" size={16}/>} label="Reward" value={`₹ ${user?.rewardBalance || '0'}`} color="bg-amber-500" />
-          <StatBox icon={<Target className="text-emerald-500" size={16}/>} label="Deposit" value={`₹ ${user?.totalDeposited || '0'}`} color="bg-emerald-600" />
-          <StatBox icon={<Activity className="text-pink-500" size={16}/>} label="Total Rewards" value={`₹ ${user?.totalRewards || '0'}`} color="bg-pink-500" />
+        <div className="grid grid-cols-2 gap-2">
+          <StatBox icon={<Wallet className="text-teal-500" size={14}/>} label="Bal" value={`₹ ${user?.walletBalance || '0'}`} color="bg-teal-600" />
+          <StatBox icon={<RefreshCcw className="text-amber-500" size={14}/>} label="Rwd" value={`₹ ${user?.rewardBalance || '0'}`} color="bg-amber-500" />
+          <StatBox icon={<Target className="text-emerald-500" size={14}/>} label="Dep" value={`₹ ${user?.totalDeposited || '0'}`} color="bg-emerald-600" />
+          <StatBox icon={<Activity className="text-pink-500" size={14}/>} label="Lvl" value={`₹ ${user?.totalRewards || '0'}`} color="bg-pink-500" />
         </div>
       </div>
 
@@ -866,26 +827,25 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <h2 className="text-2xl font-bold text-center text-[#10b981] mb-8">My Asset</h2>
+      <h2 className="text-lg font-black text-center text-[#10b981] mb-2 uppercase italic">My Control</h2>
 
       <div className="flex flex-col gap-4 mb-4">
         {/* Gift Code Integration */}
-        <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-2">
-           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 ml-1 italic">Gift Signal Redemption</p>
-           <div className="flex gap-3">
+        <div className="bg-white rounded-[24px] p-3 shadow-sm border border-slate-100 mb-1">
+           <div className="flex gap-2">
               <input 
                  type="text" 
-                 placeholder="Enter 10-char signal"
+                 placeholder="Signal Code"
                  value={giftCode}
                  onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
-                 className="flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-xs font-black italic tracking-widest focus:outline-emerald-500"
+                 className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] font-black italic tracking-widest focus:outline-emerald-500"
               />
               <button 
                 onClick={handleClaimGift}
                 disabled={isClaiming}
-                className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
+                className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all"
               >
-                {isClaiming ? 'SYNCING...' : 'CLAIM'}
+                {isClaiming ? 'SYNC' : 'CLAIM'}
               </button>
            </div>
         </div>
@@ -937,22 +897,20 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
         <AssetCard icon={<RefreshCcw size={20}/>} label="Reward Balance" value={`₹ ${user?.rewardBalance || '0'}`} color="text-amber-500" />
       </div>
 
-      <div className="bg-white rounded-[32px] p-10 shadow-sm border border-slate-100 grid grid-cols-3 gap-y-10 mb-10 relative">
+      <div className="bg-white rounded-[24px] p-4 shadow-sm border border-slate-100 grid grid-cols-3 gap-y-4 mb-2 relative">
         <MyGridItem 
-          icon={<Wallet size={28}/>} 
+          icon={<Wallet size={20}/>} 
           label="Wallet" 
           onClick={() => { setActiveTab('wallet'); }} 
         />
         <MyGridItem 
-          icon={<Activity size={28}/>} 
-          label="Integral" 
+          icon={<Activity size={20}/>} 
+          label="History" 
           onClick={() => router.push('/dashboard/payment-history')} 
         />
-        <MyGridItem icon={<Smartphone size={28}/>} label="Service" href="/dashboard/service" />
-        <MyGridItem icon={<MessageSquare size={28}/>} label="Message" href="/dashboard/message" />
-        <MyGridItem icon={<Lock size={28}/>} label="Pin" href="/dashboard/pin" />
-        
-        <span className="absolute bottom-4 right-6 text-[10px] text-slate-300 font-mono">v1.1.4</span>
+        <MyGridItem icon={<Smartphone size={20}/>} label="Service" href="/dashboard/service" />
+        <MyGridItem icon={<MessageSquare size={20}/>} label="Chat" href="/dashboard/message" />
+        <MyGridItem icon={<Lock size={20}/>} label="Pin" href="/dashboard/pin" />
       </div>
 
       <button 
