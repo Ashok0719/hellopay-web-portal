@@ -42,11 +42,14 @@ function PayContent() {
     const socket = io(backendUrl);
 
     socket.on('payment_settled', (data: any) => {
-      if (data.transactionId === transactionId) {
+      // Match by transactionId (stock buy) OR if no txnId, match any settlement for this session
+      const isMatch = (transactionId && data.transactionId === transactionId) || 
+                      (!transactionId && (data.status === 'SUCCESS' || data.status === 'FAILED'));
+      if (isMatch) {
         if (data.status === 'SUCCESS') {
            setTxStatus('SUCCESS');
            setShowSuccessPopup(true);
-           // Native APK bridge — fires toast + redirect on Android WebView
+           // Native APK bridge
            if (typeof (window as any).AndroidBridge !== 'undefined') {
              (window as any).AndroidBridge.showPaymentSuccess(data.amount || amount);
            }
@@ -57,26 +60,57 @@ function PayContent() {
       }
     });
 
+    // Also listen to userStatusChanged for wallet recharge (no transactionId in URL)
+    socket.on('userStatusChanged', (data: any) => {
+      if (data.paymentStatus === 'SUCCESS') {
+        setTxStatus('SUCCESS');
+        setShowSuccessPopup(true);
+      } else if (data.paymentStatus === 'FAILED') {
+        setRejectReason(data.message || 'Payment rejected by admin');
+        setTxStatus('FAILED');
+      }
+    });
+
     return () => { socket.disconnect(); };
   }, [transactionId]);
 
-  // Auto-redirect countdown when success popup is shown
+  // Auto-redirect on SUCCESS popup
   useEffect(() => {
     if (!showSuccessPopup) return;
+    // Play success chime
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playTone = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine'; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.5, start);
+        gain.gain.linearRampToValueAtTime(0, start + dur);
+        osc.start(start); osc.stop(start + dur);
+      };
+      playTone(523, ctx.currentTime,        0.2);
+      playTone(659, ctx.currentTime + 0.15, 0.2);
+      playTone(784, ctx.currentTime + 0.30, 0.4);
+    } catch(e) {}
     setRedirectCountdown(4);
     const interval = setInterval(() => {
       setRedirectCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          router.push('/dashboard');
-          return 0;
-        }
+        if (prev <= 1) { clearInterval(interval); router.push('/dashboard'); return 0; }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showSuccessPopup]);
+
+  // Auto-redirect on FAILED (5 seconds)
+  useEffect(() => {
+    if (txStatus !== 'FAILED') return;
+    const t = setTimeout(() => router.push('/dashboard'), 5000);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [txStatus]);
 
   // 0b. Notify admin that user entered payment section
   useEffect(() => {
@@ -226,9 +260,10 @@ function PayContent() {
           <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center mb-10 mx-auto shadow-2xl shadow-red-600/20">
             <XCircle className="text-white" size={48} />
           </div>
-          <h1 className="text-3xl font-black italic uppercase tracking-tighter">Rejected</h1>
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter">Payment Rejected</h1>
           <p className="text-slate-500 font-bold mt-4 leading-relaxed">{rejectReason || 'Neural signals mismatched. Node released.'}</p>
-          <button onClick={() => router.push('/dashboard')} className="mt-12 px-10 py-6 bg-red-700 rounded-[32px] text-white font-black uppercase italic shadow-2xl active:scale-95 transition-all w-full tracking-widest text-xs">Home Page</button>
+          <p className="text-[10px] font-black text-red-500/60 uppercase tracking-widest mt-6 animate-pulse">Auto-redirecting to dashboard in 5s...</p>
+          <button onClick={() => router.push('/dashboard')} className="mt-8 px-10 py-6 bg-red-700 rounded-[32px] text-white font-black uppercase italic shadow-2xl active:scale-95 transition-all w-full tracking-widest text-xs">Go Now</button>
         </motion.div>
       </div>
     );
