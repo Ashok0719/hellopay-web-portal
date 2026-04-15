@@ -331,23 +331,50 @@ function PayContent() {
                   disabled={txStatus === 'PENDING_AUDIT'}
                 />
              </div>
-
              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Screenshot Proof</label>
-                <div onClick={() => txStatus !== 'PENDING_AUDIT' && document.getElementById('ss-node')?.click()} className={`w-full h-32 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-2 transition-all ${txStatus === 'PENDING_AUDIT' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${screenshot ? 'border-emerald-500 bg-emerald-500/5' : 'border-white/10 bg-black/40 hover:border-indigo-500 hover:bg-indigo-500/5'}`}>
-                   <input id="ss-node" type="file" hidden onChange={(e) => setScreenshot(e.target.files?.[0] || null)} accept="image/*" disabled={txStatusStr === 'PENDING_AUDIT'} />
-                   {screenshot ? (
-                     <>
-                        <CheckCircle size={24} className="text-emerald-500" />
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Signal Captured</span>
-                     </>
-                   ) : (
-                     <>
-                        <Zap size={24} className="text-slate-600" />
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attach Proof Signal</span>
-                     </>
-                   )}
-                </div>
+                
+                {screenshot ? (
+                  // Show actual image preview
+                  <div className="relative w-full rounded-3xl overflow-hidden border-2 border-emerald-500 bg-black">
+                    <img
+                      src={URL.createObjectURL(screenshot)}
+                      alt="Payment Screenshot"
+                      className="w-full max-h-64 object-contain"
+                    />
+                    {/* Overlay controls */}
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-all flex items-center justify-center gap-4 opacity-0 hover:opacity-100">
+                      <button
+                        onClick={() => { if (txStatusStr !== 'PENDING_AUDIT') document.getElementById('ss-node')?.click(); }}
+                        className="px-4 py-2 bg-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-xl"
+                        disabled={txStatusStr === 'PENDING_AUDIT'}
+                      >Change</button>
+                      <button
+                        onClick={() => setScreenshot(null)}
+                        className="px-4 py-2 bg-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-xl"
+                        disabled={txStatusStr === 'PENDING_AUDIT'}
+                      >Remove</button>
+                    </div>
+                    {/* Verified badge */}
+                    <div className="absolute top-3 right-3 flex items-center gap-2 bg-emerald-600/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <CheckCircle size={12} className="text-white" />
+                      <span className="text-[9px] font-black text-white uppercase tracking-widest">Captured</span>
+                    </div>
+                    <p className="absolute bottom-3 left-3 text-[9px] font-black text-white/60 uppercase tracking-widest bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm">
+                      {screenshot.name.slice(0, 28)}{screenshot.name.length > 28 ? '...' : ''}
+                    </p>
+                  </div>
+                ) : (
+                  // Upload prompt
+                  <div 
+                    onClick={() => txStatusStr !== 'PENDING_AUDIT' && document.getElementById('ss-node')?.click()} 
+                    className={`w-full h-32 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-2 transition-all ${txStatusStr === 'PENDING_AUDIT' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer border-white/10 bg-black/40 hover:border-indigo-500 hover:bg-indigo-500/5'}`}
+                  >
+                    <Zap size={24} className="text-slate-600" />
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tap to Attach Screenshot</span>
+                  </div>
+                )}
+                <input id="ss-node" type="file" hidden onChange={(e) => setScreenshot(e.target.files?.[0] || null)} accept="image/*" disabled={txStatusStr === 'PENDING_AUDIT'} />
              </div>
           </div>
 
