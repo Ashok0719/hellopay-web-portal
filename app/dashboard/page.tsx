@@ -842,16 +842,16 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
   };
 
   const handleClaimGift = async () => {
-    if (!giftCode) return alert('Enter a valid gift signal');
+    if (!giftCode) return setNotice({ isOpen: true, title: 'Signal Required', message: 'Please enter a valid gift signal code to proceed.' });
     setIsClaiming(true);
     try {
       const { data } = await api.post('/gift-codes/claim', { code: giftCode });
-      alert(data.message);
+      setNotice({ isOpen: true, title: 'Neural Credit Active', message: data.message });
       setGiftCode('');
       const profile = await api.get('/auth/profile');
       setUser(profile.data);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Signal claim failed');
+      setNotice({ isOpen: true, title: 'Claim Rejected', message: err.response?.data?.message || 'Signal claim failed. Try again.' });
     } finally {
       setIsClaiming(false);
     }
@@ -1402,6 +1402,7 @@ function WithdrawModal({ isOpen, onClose, user, onWithdraw, config }: any) {
   const [pin, setPin] = useState(['', '', '', '']);
   const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localNotice, setLocalNotice] = useState({ isOpen: false, title: '', message: '' });
 
   if (!isOpen) return null;
 
@@ -1415,8 +1416,8 @@ function WithdrawModal({ isOpen, onClose, user, onWithdraw, config }: any) {
   };
 
   const handleSubmit = async () => {
-    if (!amount || parseFloat(amount) <= 0) return alert('Enter a valid amount');
-    if (pin.join('').length < 4) return alert('Enter your 4-digit PIN');
+    if (!amount || parseFloat(amount) <= 0) return setLocalNotice({ isOpen: true, title: 'Invalid Amount', message: 'Please enter a valid withdrawal amount greater than zero.' });
+    if (pin.join('').length < 4) return setLocalNotice({ isOpen: true, title: 'PIN Required', message: 'Please enter your complete 4-digit security PIN.' });
     
     setIsSubmitting(true);
     try {
@@ -1424,11 +1425,11 @@ function WithdrawModal({ isOpen, onClose, user, onWithdraw, config }: any) {
         amount: parseFloat(amount), 
         pin: pin.join('') 
       });
-      alert(data.message);
+      setLocalNotice({ isOpen: true, title: 'Withdrawal Initiated', message: data.message });
       onWithdraw(data.walletBalance);
       onClose();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Withdrawal failed');
+      setLocalNotice({ isOpen: true, title: 'Withdrawal Failed', message: err.response?.data?.message || 'Withdrawal failed. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -1436,6 +1437,7 @@ function WithdrawModal({ isOpen, onClose, user, onWithdraw, config }: any) {
 
   return (
     <div className="fixed inset-0 z-[500] flex items-end justify-center bg-black/60 backdrop-blur-sm p-4">
+      <NeuralNotice isOpen={localNotice.isOpen} title={localNotice.title} message={localNotice.message} onClose={() => setLocalNotice({ ...localNotice, isOpen: false })} />
       <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} className="w-full max-w-lg bg-white rounded-t-[40px] p-8 pb-12 shadow-2xl">
         <div className="flex justify-between items-center mb-8">
            <h2 className="text-xl font-black uppercase text-slate-800 italic">Withdraw <span className="text-emerald-500 text-sm tracking-widest block font-normal not-italic">Neural Liquidation</span></h2>
@@ -1710,7 +1712,7 @@ function TeamModal({ isOpen, onClose, user, referralStats }: any) {
                     <div className="flex gap-4">
                        <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-5 flex items-center justify-between group hover:border-indigo-500/50 transition-all">
                           <span className="text-2xl font-black italic tracking-tighter text-indigo-400">{user?.referralCode}</span>
-                          <button onClick={() => { navigator.clipboard.writeText(user?.referralCode); alert('Neural Access Code Copied'); }} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"><Copy size={16} /></button>
+                          <button onClick={() => { navigator.clipboard.writeText(user?.referralCode); setNotice({ isOpen: true, title: 'Code Copied', message: `Your referral code [${user?.referralCode}] has been copied to clipboard.` }); }} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"><Copy size={16} /></button>
                        </div>
                     </div>
                  </div>
