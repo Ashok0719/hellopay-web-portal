@@ -48,7 +48,10 @@ import {
   ArrowDown,
   Clock,
   Check,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft,
+  Share2,
+  UserPlus
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -340,7 +343,7 @@ function Dashboard() {
             setNotice={setNotice}
           />
         )}
-        {activeTab === 'statistics' && <TeamHubView key="stats" stats={referralStats} user={user} setNotice={setNotice} />}
+        {activeTab === 'statistics' && <TeamHubView key="stats" stats={referralStats} user={user} setNotice={setNotice} setActiveTab={setActiveTab} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} deferredPrompt={deferredPrompt} handleInstall={handleInstall} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} forceSync={forceSync} isSyncing={isSyncing} />}
         {activeTab === 'wallet' && (
@@ -685,8 +688,17 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
 }
 
 // --- Team Hub View (Restored Premium View) ---
-function TeamHubView({ stats, user, setNotice }: any) {
+function TeamHubView({ stats, user, setNotice, setActiveTab }: any) {
   const [copied, setCopied] = useState(false);
+
+  if (!stats) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50">
+         <RefreshCcw className="text-slate-200 animate-spin mb-4" size={40} />
+         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Awaiting Neural Mesh Signal...</p>
+      </div>
+    );
+  }
 
   const copyRefLink = () => {
     if (!stats?.referralCode) return;
