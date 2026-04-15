@@ -51,7 +51,8 @@ import {
   AlertCircle,
   ArrowLeft,
   Share2,
-  UserPlus
+  UserPlus,
+  Trophy
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
