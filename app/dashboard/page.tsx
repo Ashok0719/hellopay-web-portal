@@ -373,8 +373,10 @@ function Dashboard() {
                 onClick={() => { window.open('https://t.me/+zqQiwcniaF45ZTY1', '_blank'); setShowSupportMenu(false); }}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-blue-50 hover:bg-blue-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/10 group-hover/btn:scale-110 transition-transform">
-                  <img src="/tg.png" alt="Telegram" className="w-full h-full object-cover" />
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-blue-500/10 flex items-center justify-center shadow-lg shadow-blue-500/10 group-hover/btn:scale-110 transition-transform">
+                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-blue-600 fill-current">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.35-.97.53-1.33.52-.4-.01-1.17-.22-1.74-.41-.7-.23-1.26-.35-1.21-.74.03-.2.3-.41.82-.64 3.2-1.39 5.34-2.31 6.42-2.75 3.05-1.25 3.68-1.47 4.1-.11z"/>
+                  </svg>
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-black uppercase text-blue-600 tracking-[0.2em] block leading-none mb-1">Telegram</span>
@@ -387,8 +389,10 @@ function Dashboard() {
                 onClick={() => setNotice({ isOpen: true, title: "Neural Link Pending", message: "The 24/7 AI Support Bot is currently undergoing neural calibration. Please check back soon or use our Telegram support hub." })}
                 className="flex items-center gap-4 bg-white px-6 py-4 rounded-[28px] shadow-2xl border border-slate-50 opacity-60 grayscale-[0.5] hover:bg-slate-50 transition-all group/btn active:scale-95 whitespace-nowrap"
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/10 group-hover/btn:scale-110 transition-transform">
-                  <img src="/nb.png" alt="Support" className="w-full h-full object-cover" />
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center shadow-lg shadow-emerald-500/10 group-hover/btn:scale-110 transition-transform">
+                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-emerald-600 fill-current">
+                    <path d="M12 2c-4.97 0-9 4.03-9 9 0 4.17 2.84 7.67 6.69 8.69L12 22l2.31-2.31C18.16 18.67 21 15.17 21 11c0-4.97-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 3.16-2.11 5.84-5.01 6.71L12 19.69l-1.99-1.98C7.11 16.84 5 14.16 5 11c0-3.87 3.13-7 7-7zm0 2c-2.76 0-5 2.24-5 5 0 2.15 1.35 3.99 3.27 4.7l.73.27V12h2v4l.73-.27c1.92-.71 3.27-2.55 3.27-4.73 0-2.76-2.24-5-5-5z"/>
+                  </svg>
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] block leading-none mb-1">COMING SOON</span>
