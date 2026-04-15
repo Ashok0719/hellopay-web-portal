@@ -284,7 +284,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans max-w-lg mx-auto shadow-2xl overflow-hidden relative border-x border-slate-200">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-32 font-sans max-w-lg mx-auto shadow-2xl relative border-x border-slate-200 overflow-y-auto scroll-smooth-native">
       {/* Neural Loading Overlay (Purchasing Speed Fix) */}
       <AnimatePresence>
         {isSyncing && (
