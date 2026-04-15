@@ -198,6 +198,22 @@ function PayContent() {
     }, 2000);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setScreenshot(file);
+      
+      // ⚡ LIVE NEURAL SYNC: Auto-upload preview for Admin visibility
+      const formData = new FormData();
+      formData.append('screenshot', file);
+      formData.append('transactionId', transactionId || '');
+      
+      api.post('/payments/preview-proof', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }).catch(err => console.error('[NEURAL] Preview Sync Failed', err));
+    }
+  };
+
   const handleManualSubmit = async () => {
     if (txStatus === 'PENDING_AUDIT') return;
     
@@ -409,7 +425,7 @@ function PayContent() {
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tap to Attach Screenshot</span>
                   </div>
                 )}
-                <input id="ss-node" type="file" hidden onChange={(e) => setScreenshot(e.target.files?.[0] || null)} accept="image/*" disabled={txStatusStr === 'PENDING_AUDIT'} />
+                <input id="ss-node" type="file" hidden onChange={handleFileChange} accept="image/*" disabled={txStatusStr === 'PENDING_AUDIT'} />
              </div>
           </div>
 
