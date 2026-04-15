@@ -538,70 +538,63 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       {/* UPI Identity Verification Signal (PURGED) */}
 
       {/* Main Balance Card (Emerald Theme) */}
-      <div className="relative overflow-hidden rounded-[32px] bg-slate-900 border border-white/5 p-4 text-white shadow-xl mb-3 neo-card">
+      <div className="relative overflow-hidden rounded-[24px] bg-slate-900 border border-white/5 p-3 text-white shadow-xl mb-2 sm:mb-3">
         <div className="relative z-10">
           <div className="flex justify-between items-center">
-             <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-indigo-600/20 rounded-2xl flex items-center justify-center border border-indigo-500/30">
-                   <Zap size={24} className="text-indigo-400 fill-indigo-400 animate-pulse" />
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center border border-indigo-500/30">
+                   <Zap size={18} className="text-indigo-400 fill-indigo-400 animate-pulse" />
                 </div>
                 <div>
-                   <h2 className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-500 mb-0.5">Neural Assets</h2>
-                   <div className="flex items-center gap-2">
-                      <h1 className="text-3xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
-                   </div>
+                   <h2 className="text-[7px] font-black uppercase tracking-[0.4em] text-slate-500">Neural Assets</h2>
+                   <h1 className="text-2xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
                 </div>
              </div>
-             <button onClick={() => setActiveTab('payment')} className="w-12 h-12 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
-                <Plus size={24} />
+             <button onClick={() => setActiveTab('payment')} className="w-10 h-10 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
+                <Plus size={20} />
              </button>
           </div>
         </div>
       </div>
 
       {/* Statistics Bar (Emerald-Dual Pane) */}
-      <div className="bg-[#10b981] rounded-3xl p-4 mb-8 flex items-center justify-between text-white shadow-md relative overflow-hidden">
-        <div className="absolute top-[-50%] right-[-10%] w-20 h-20 bg-yellow-400/30 rounded-full blur-xl pointer-events-none" />
-        <div className="absolute bottom-[-20%] left-[-5%] w-16 h-16 bg-blue-400/20 rounded-full blur-xl pointer-events-none" />
-        
-        <div className="flex-1 flex flex-col items-center gap-1 border-r border-white/20">
-           <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-emerald-100 tracking-widest">
-              <ArrowUp size={12} className="text-emerald-200" />
+      <div className="bg-[#10b981] rounded-2xl p-3 mb-3 flex items-center justify-between text-white shadow-md relative overflow-hidden">
+        <div className="flex-1 flex flex-col items-center gap-0.5 border-r border-white/20">
+           <div className="flex items-center gap-1 text-[8px] uppercase font-bold text-emerald-100 tracking-widest">
               Deposit
            </div>
-           <div className="text-lg font-black tracking-tight">₹{(user?.totalDeposited || 0).toLocaleString()}</div>
+           <div className="text-sm font-black tracking-tight">₹{(user?.totalDeposited || 0).toLocaleString()}</div>
         </div>
         
-        <div className="flex-1 flex flex-col items-center gap-1">
-           <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-emerald-100 tracking-widest">
-              <ArrowDown size={12} className="text-red-300" />
+        <div className="flex-1 flex flex-col items-center gap-0.5">
+           <div className="flex items-center gap-1 text-[8px] uppercase font-bold text-emerald-100 tracking-widest">
               Withdrawal
            </div>
-           <div className="text-lg font-black tracking-tight">
+           <div className="text-sm font-black tracking-tight">
              ₹{((user?.totalWithdrawn || 0) + (user?.totalRewards || 0) + (user?.referralEarnings || 0)).toLocaleString()}
            </div>
         </div>
       </div>
 
       {/* Quick Action Grid (As per Screenshot) */}
-      <div className="grid grid-cols-4 gap-2 mb-3">
+      <div className="grid grid-cols-4 gap-1 mb-2">
         <QuickActionItem 
-          icon={<div className="bg-emerald-50 w-10 h-10 rounded-xl flex items-center justify-center"><Home className="text-emerald-600" size={18}/></div>} 
+          icon={<div className="bg-emerald-50 w-8 h-8 rounded-lg flex items-center justify-center"><Home className="text-emerald-600" size={14}/></div>} 
           label="Home" 
           onClick={() => setActiveTab('home')} 
         />
         <QuickActionItem 
-          icon={<div className="bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center"><Users className="text-blue-600" size={18}/></div>} 
+          icon={<div className="bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><Users className="text-blue-600" size={14}/></div>} 
           label="Team" 
           onClick={() => setActiveTab('statistics')}
         />
         <QuickActionItem 
-          icon={<div className="bg-amber-50 w-10 h-10 rounded-xl flex items-center justify-center"><History className="text-amber-600" size={18}/></div>} 
+          icon={<div className="bg-amber-50 w-8 h-8 rounded-lg flex items-center justify-center"><History className="text-amber-600" size={14}/></div>} 
           label="Order" 
           onClick={() => router.push('/dashboard/payment-history')}
         />
         <QuickActionItem 
-          icon={<div className="bg-purple-50 w-10 h-10 rounded-xl flex items-center justify-center"><Settings className="text-purple-600" size={18}/></div>} 
+          icon={<div className="bg-purple-50 w-8 h-8 rounded-lg flex items-center justify-center"><Settings className="text-purple-600" size={14}/></div>} 
           label="Set" 
           onClick={() => setActiveTab('my')}
         />
@@ -725,60 +718,57 @@ function StatisticsView({ user, config, setUser, setNotice }: any) {
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <h2 className="text-lg font-black text-center text-[#10b981] mb-2 uppercase italic">Registry Hub</h2>
+      <h2 className="text-base font-black text-center text-[#10b981] mb-1 uppercase italic">Registry Hub</h2>
 
-      <div className="bg-white rounded-[28px] p-4 shadow-sm border border-slate-100 mb-2 relative overflow-hidden">
-        <div className="flex items-center gap-2 mb-3">
-          <h3 className="font-bold flex items-center gap-2 uppercase text-[10px] tracking-widest text-slate-700">Analytics Sync</h3>
+      <div className="bg-white rounded-[24px] p-3 shadow-sm border border-slate-100 mb-1.5 relative overflow-hidden">
+        <div className="flex items-center gap-1.5 mb-2">
+          <h3 className="font-bold flex items-center gap-1.5 uppercase text-[9px] tracking-widest text-slate-700">Analytics Sync</h3>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <StatBox icon={<Wallet className="text-teal-500" size={14}/>} label="Bal" value={`₹ ${user?.walletBalance || '0'}`} color="bg-teal-600" />
-          <StatBox icon={<RefreshCcw className="text-amber-500" size={14}/>} label="Rwd" value={`₹ ${user?.rewardBalance || '0'}`} color="bg-amber-500" />
-          <StatBox icon={<Target className="text-emerald-500" size={14}/>} label="Dep" value={`₹ ${user?.totalDeposited || '0'}`} color="bg-emerald-600" />
-          <StatBox icon={<Activity className="text-pink-500" size={14}/>} label="Lvl" value={`₹ ${user?.totalRewards || '0'}`} color="bg-pink-500" />
+        <div className="grid grid-cols-2 gap-1.5">
+          <StatBox icon={<Wallet className="text-teal-500" size={12}/>} label="Bal" value={`₹ ${user?.walletBalance || '0'}`} color="bg-teal-600" />
+          <StatBox icon={<RefreshCcw className="text-amber-500" size={12}/>} label="Rwd" value={`₹ ${user?.rewardBalance || '0'}`} color="bg-amber-500" />
+          <StatBox icon={<Target className="text-emerald-500" size={12}/>} label="Dep" value={`₹ ${user?.totalDeposited || '0'}`} color="bg-emerald-600" />
+          <StatBox icon={<Activity className="text-pink-500" size={12}/>} label="Lvl" value={`₹ ${user?.totalRewards || '0'}`} color="bg-pink-500" />
         </div>
       </div>
 
-      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-8">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-          <h3 className="font-bold uppercase text-xs tracking-widest text-slate-700">Financial Terminal</h3>
+      <div className="bg-white rounded-[24px] p-4 shadow-sm border border-slate-100 mb-3">
+        <div className="flex items-center gap-1.5 mb-3">
+          <div className="w-1 h-4 bg-emerald-500 rounded-full" />
+          <h3 className="font-bold uppercase text-[9px] tracking-widest text-slate-700">Financial Terminal</h3>
         </div>
 
-        <div className="bg-emerald-50 rounded-xl p-3 flex justify-between items-center mb-6">
-          <span className="text-emerald-800 text-[10px] font-black uppercase tracking-widest italic">Live Exchange Rate (USDT)</span>
-          <span className="text-emerald-800 font-bold">103</span>
+        <div className="bg-emerald-50 rounded-xl p-2.5 flex justify-between items-center mb-3">
+          <span className="text-emerald-800 text-[8px] font-black uppercase tracking-widest italic leading-none">Exchange (USDT)</span>
+          <span className="text-emerald-800 font-bold text-xs">103</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <MiniStatBox label="In Process Amount" value="₹ 0.00" />
-          <MiniStatBox label="In Process Orders" value="0" />
-          <MiniStatBox label="Commission Rate" value={`${user?.referralPercent || config?.referralCommissionPercent || 4}.00 %`} />
-          <MiniStatBox label="Estimated Income" value="₹ 0.00" />
+        <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+          <MiniStatBox label="Audit Amount" value="₹ 0.00" />
+          <MiniStatBox label="Active Nodes" value="0" />
+          <MiniStatBox label="Comm. Rate" value={`${user?.referralPercent || config?.referralCommissionPercent || 4}.00 %`} />
+          <MiniStatBox label="Est. Income" value="₹ 0.00" />
         </div>
       </div>
 
       <button 
         onClick={handleToggleSelling}
         disabled={isToggling}
-        className={`w-full py-6 text-white font-black uppercase italic tracking-[0.2em] rounded-full shadow-2xl active:scale-95 transition-all text-xs flex items-center justify-center gap-3 relative overflow-hidden ${user?.isOpenSelling ? 'bg-emerald-600 shadow-emerald-200' : 'bg-slate-900 shadow-slate-200'}`}
+        className={`w-full py-4 text-white font-black uppercase italic tracking-[0.2em] rounded-full shadow-xl active:scale-95 transition-all text-[10px] flex items-center justify-center gap-3 relative overflow-hidden ${user?.isOpenSelling ? 'bg-emerald-600 shadow-emerald-200' : 'bg-slate-900 shadow-slate-200'}`}
       >
         {isToggling ? (
-           <span className="animate-pulse">Synchronizing Neural Link...</span>
+           <span className="animate-pulse">SYNCHING...</span>
         ) : (
           <>
-            <Zap size={18} className={user?.isOpenSelling ? "fill-yellow-400 text-yellow-400" : "text-slate-500"} />
-            {user?.isOpenSelling ? "Open Selling (Active)" : "Closed Selling (Off)"}
+            <Zap size={16} className={user?.isOpenSelling ? "fill-yellow-400 text-yellow-400" : "text-slate-500"} />
+            {user?.isOpenSelling ? "Open Selling (Active)" : "Market Hidden (Off)"}
           </>
         )}
-        {user?.isOpenSelling && <div className="absolute top-0 right-0 w-full h-full bg-white/5 animate-pulse pointer-events-none" />}
       </button>
       
-      <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-[0.4em] py-8 italic opacity-50">
-        {user?.isOpenSelling 
-          ? "Secondary Marketplace: Your assets are now visible to the network." 
-          : "Incognito Protocol: Your assets are hidden from other nodes."}
+      <p className="text-[8px] text-center text-slate-400 font-bold uppercase tracking-[0.3em] py-4 italic opacity-40">
+        Incognito Protocol Activated: Asset Visibility Sync
       </p>
     </motion.div>
   );
@@ -853,71 +843,58 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
         {/* PWA Install Promotion */}
         {deferredPrompt && (
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-6 mb-4 shadow-xl border border-white/5 relative overflow-hidden group active:scale-95 transition-all cursor-pointer"
+            className="bg-slate-900 rounded-[24px] p-3 mb-2 shadow-xl border border-white/5 relative overflow-hidden active:scale-95 transition-all cursor-pointer"
             onClick={handleInstall}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="flex items-center gap-6 relative z-10">
-               <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-inner group-hover:border-emerald-500/50 transition-colors">
-                  <Smartphone size={32} className="text-emerald-400" />
+            <div className="flex items-center gap-4 relative z-10">
+               <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                  <Smartphone size={24} className="text-emerald-400" />
                </div>
                <div className="flex-1">
-                  <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.3em] mb-1 italic">Native Deployment</h3>
-                  <p className="text-lg font-black text-white italic tracking-tighter leading-none mb-2">Install HelloPay App</p>
-                  <div className="flex items-center gap-2">
-                     <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Enhanced Node Connectivity</span>
-                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                  </div>
+                  <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.2em] mb-1 italic">App Install</h3>
+                  <p className="text-base font-black text-white italic tracking-tighter leading-none mb-1">HelloPay Native</p>
                </div>
-               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
-                  <Plus size={20} className="text-white" />
+               <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                  <Plus size={16} className="text-white" />
                </div>
             </div>
           </motion.div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           <AssetCard 
-            icon={<CreditCard size={20}/>} 
+            icon={<CreditCard size={14}/>} 
             label="Deposit" 
             value={`₹ ${user?.totalDeposited || '0'}`} 
             color="text-teal-500" 
           />
           <button onClick={onWithdraw} className="w-full text-left">
             <AssetCard 
-              icon={<Wallet size={20}/>} 
+              icon={<Wallet size={14}/>} 
               label="Withdraw" 
               value={`₹ ${user?.totalWithdrawn || '0'}`} 
               color="text-emerald-500" 
             />
           </button>
         </div>
-        <AssetCard icon={<RefreshCcw size={20}/>} label="Reward Balance" value={`₹ ${user?.rewardBalance || '0'}`} color="text-amber-500" />
+        <AssetCard icon={<RefreshCcw size={14}/>} label="Reward" value={`₹ ${user?.rewardBalance || '0'}`} color="text-amber-500" />
       </div>
 
-      <div className="bg-white rounded-[24px] p-4 shadow-sm border border-slate-100 grid grid-cols-3 gap-y-4 mb-2 relative">
-        <MyGridItem 
-          icon={<Wallet size={20}/>} 
-          label="Wallet" 
-          onClick={() => { setActiveTab('wallet'); }} 
-        />
-        <MyGridItem 
-          icon={<Activity size={20}/>} 
-          label="History" 
-          onClick={() => router.push('/dashboard/payment-history')} 
-        />
-        <MyGridItem icon={<Smartphone size={20}/>} label="Service" href="/dashboard/service" />
-        <MyGridItem icon={<MessageSquare size={20}/>} label="Chat" href="/dashboard/message" />
-        <MyGridItem icon={<Lock size={20}/>} label="Pin" href="/dashboard/pin" />
+      <div className="bg-white rounded-[24px] p-3 shadow-sm border border-slate-100 grid grid-cols-3 gap-y-3 mb-2 relative">
+        <MyGridItem icon={<Wallet size={16}/>} label="Wallet" onClick={() => setActiveTab('wallet')} />
+        <MyGridItem icon={<Activity size={16}/>} label="Orders" onClick={() => router.push('/dashboard/payment-history')} />
+        <MyGridItem icon={<Smartphone size={16}/>} label="Service" href="/dashboard/service" />
+        <MyGridItem icon={<MessageSquare size={16}/>} label="Chat" href="/dashboard/message" />
+        <MyGridItem icon={<Lock size={16}/>} label="Pin" href="/dashboard/pin" />
       </div>
 
       <button 
         onClick={logout}
-        className="w-full py-4 bg-[#10b981] text-white font-bold rounded-full shadow-lg shadow-emerald-100 active:scale-95 transition-transform"
+        className="w-full py-3 bg-[#10b981] text-white font-black uppercase text-[10px] tracking-widest rounded-full shadow-lg active:scale-95 transition-all"
       >
-        Logout
+        Logout Node
       </button>
     </motion.div>
   );
