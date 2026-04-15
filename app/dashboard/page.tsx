@@ -48,11 +48,7 @@ import {
   ArrowDown,
   Clock,
   Check,
-  AlertCircle,
-  ArrowLeft,
-  Share2,
-  UserPlus,
-  Trophy
+  AlertCircle
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -288,7 +284,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="h-[100dvh] bg-slate-50 text-slate-900 pb-20 font-sans max-w-lg mx-auto shadow-2xl relative border-x border-slate-200 overflow-hidden flex flex-col touch-action-none">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans max-w-lg mx-auto shadow-2xl overflow-hidden relative border-x border-slate-200">
       {/* Neural Loading Overlay (Purchasing Speed Fix) */}
       <AnimatePresence>
         {isSyncing && (
@@ -344,8 +340,7 @@ function Dashboard() {
             setNotice={setNotice}
           />
         )}
-        {activeTab === 'statistics' && <TeamHubView key="stats" stats={referralStats} user={user} setNotice={setNotice} setActiveTab={setActiveTab} />}
-        {activeTab === 'task' && <TaskView key="task" user={user} setNotice={setNotice} />}
+        {activeTab === 'statistics' && <StatisticsView key="stats" user={user} config={config} setUser={setUser} setNotice={setNotice} />}
         {activeTab === 'my' && <MyView key="my" user={user} setUser={setUser} logout={() => { logout(); router.push('/login'); }} referralStats={referralStats} setNotice={setNotice} setActiveTab={setActiveTab} router={router} onWithdraw={() => setShowWithdrawModal(true)} deferredPrompt={deferredPrompt} handleInstall={handleInstall} />}
         {activeTab === 'payment' && <PaymentView key="payment" user={user} config={config} handleClaim={handleClaim} listings={listings} forceSync={forceSync} isSyncing={isSyncing} />}
         {activeTab === 'wallet' && (
@@ -501,44 +496,7 @@ function Dashboard() {
 
 
 // --- Home View ---
-// --- Task Hub View (Progressive Rewards) ---
-function TaskView({ user, setNotice }: any) {
-  const tasks = [
-    { 
-      id: 'daily', 
-      label: 'Daily Protocol', 
-      goal: 5000, 
-      reward: 500, 
-      current: user?.dailyDepositAmount || 0,
-      icon: <Zap size={16}/> 
-    },
-    { 
-      id: 'weekly', 
-      label: 'Weekly Protocol', 
-      goal: 150000, 
-      reward: 1000, 
-      current: user?.weeklyDepositAmount || 0,
-      icon: <TrendingUp size={16}/> 
-    },
-    { 
-      id: 'monthly', 
-      label: 'Monthly Protocol', 
-      goal: 500000, 
-      reward: 3000, 
-      current: user?.monthlyDepositAmount || 0,
-      icon: <Trophy size={16} /> 
-    }
-  ];
-
-  const handleClaimReward = (task: any) => {
-    if (task.current < task.goal) {
-       setNotice({ isOpen: true, title: "Signal Weak", message: `Neural protocol requires ₹${task.goal.toLocaleString()} within this timeframe to unlock this reward.` });
-       return;
-    }
-    // Logic for claiming reward would go here
-    setNotice({ isOpen: true, title: "Reward Active", message: `Protocol sequence verified. ₹${task.reward} added to your neural balance.` });
-  };
-
+function HomeView({ user, history, listings, config, setActiveTab, handleClaim, router, forceSync, isSyncing, setNotice }: any) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -546,96 +504,17 @@ function TaskView({ user, setNotice }: any) {
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <div className="flex items-center gap-3 mb-6 px-2">
-         <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Target size={20} className="text-white" />
-         </div>
-         <div>
-            <h1 className="text-xl font-black italic uppercase tracking-tighter leading-none">Task Terminal</h1>
-            <p className="text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] mt-1 italic">Leveling Mesh Performance</p>
-         </div>
-      </div>
-
-      <div className="space-y-4">
-        {tasks.map(task => {
-          const progress = Math.min((task.current / task.goal) * 100, 100);
-          return (
-            <div key={task.id} className="bg-white border border-slate-100 rounded-[28px] p-5 shadow-sm relative overflow-hidden group">
-               <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                     <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
-                        {task.icon}
-                     </div>
-                     <div>
-                        <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">{task.label}</p>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Reward: ₹{task.reward}</p>
-                     </div>
-                  </div>
-                  <div className="text-right">
-                     <span className="text-xs font-black italic">₹{task.current.toLocaleString()}</span>
-                     <span className="text-[9px] text-slate-300 mx-1">/</span>
-                     <span className="text-[9px] font-bold text-slate-400">₹{task.goal.toLocaleString()}</span>
-                  </div>
-               </div>
-               
-               <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden mb-4 border border-slate-100">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    className={`h-full ${progress === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`}
-                  />
-               </div>
-
-               <button 
-                 onClick={() => handleClaimReward(task)}
-                 className={`w-full py-3 rounded-xl font-black uppercase text-[9px] tracking-[0.2em] transition-all ${progress === 100 ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-50 text-slate-300'}`}
-               >
-                 {progress === 100 ? 'Claim Reward' : 'Signal Processing...'}
-               </button>
-            </div>
-          );
-        })}
-      </div>
-    </motion.div>
-  );
-}
-}
-
-// --- Status Info Bar (Ref Bonus Lock) ---
-function IdentityStatus({ user }: any) {
-  if (!user?.isSignupBonusLocked) return null;
-  return (
-    <div className="px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl mb-3 flex items-center justify-between">
-       <div className="flex items-center gap-2">
-          <AlertCircle size={14} className="text-amber-500" />
-          <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest">₹100 Signup Bonus Locked</p>
-       </div>
-       <div className="text-[8px] font-bold text-amber-500 uppercase tracking-widest px-2 py-0.5 bg-white rounded-full border border-amber-100 italic">
-          DEPOSIT TO UNLOCK
-       </div>
-    </div>
-  );
-}
-
-function HomeView({ user, history, listings, config, setActiveTab, handleClaim, router, forceSync, isSyncing, setNotice }: any) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="p-2 sm:p-4 h-full overflow-y-auto no-scrollbar pb-32"
-    >
       {/* User Header */}
-      <div className="flex justify-between items-center mb-3 px-2">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full border border-white shadow-sm overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400">
-             <UserIcon size={24} fill="currentColor" />
+      <div className="flex justify-between items-center mb-6 px-2">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400">
+             <UserIcon size={28} fill="currentColor" />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-base font-bold text-slate-800 leading-none">{user?.name}</h2>
-            <div className="flex items-center gap-1.5 text-slate-500 text-[8px] font-black uppercase tracking-tighter">
+            <h2 className="text-xl font-bold text-slate-800 leading-tight">{user?.name}</h2>
+            <div className="flex items-center gap-2 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
               <span>{user?.phone}</span>
-              <span className="w-0.5 h-0.5 bg-slate-300 rounded-full" />
+              <span className="w-1 h-1 bg-slate-300 rounded-full" />
               <div 
                 onClick={() => {
                    if (user?.userIdNumber) {
@@ -643,94 +522,130 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
                       setNotice({ isOpen: true, title: "Identity Copied", message: `Your unique Neural ID [${user.userIdNumber}] has been successfully bound to the clipboard.` });
                    }
                 }}
-                className="flex items-center gap-1 cursor-pointer hover:text-emerald-700 transition-colors"
+                className="flex items-center gap-1.5 cursor-pointer hover:text-emerald-700 transition-colors"
               >
                  <span className="text-emerald-600 font-black">ID: {user?.userIdNumber || '******'}</span>
+                 <div className="w-4 h-4 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
+                    <Copy size={8} />
+                 </div>
               </div>
+              <span className="w-1 h-1 bg-slate-300 rounded-full" />
+              <div className="flex items-center gap-1.5 text-blue-600 font-black px-2 bg-blue-50 rounded-md border border-blue-100">
+                 <Users size={10} />
+                 <span>Nodes: {config?.totalUsers || '...'}</span>
+              </div>
+              {user?.isSeller && (
+                <Link href="/dashboard/seller" className="bg-emerald-600 text-white px-2 py-0.5 rounded-md flex items-center gap-1 ml-2">
+                  <ShieldCheck size={10} /> HelloPay Seller
+                </Link>
+              )}
             </div>
           </div>
         </div>
-        <div className="relative p-1.5 bg-white rounded-xl shadow-sm border border-slate-100 active:scale-95 transition-all">
-          <Bell size={18} className="text-slate-600" />
-          <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
+        <div className="relative p-2 bg-white rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-all">
+          <Bell size={22} className="text-slate-600" />
+          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
         </div>
       </div>
-
-      <IdentityStatus user={user} />
 
       {/* UPI Identity Verification Signal (PURGED) */}
 
       {/* Main Balance Card (Emerald Theme) */}
-      <div className="relative overflow-hidden rounded-[24px] bg-slate-900 border border-white/5 p-3 text-white shadow-xl mb-2 sm:mb-3">
+      <div className="relative overflow-hidden rounded-[32px] sm:rounded-[40px] bg-slate-900 border border-white/5 p-6 sm:p-8 text-white shadow-2xl mb-8 neo-card">
+        {/* Futuristic Neural Overlay */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px] pointer-events-none" />
+        
         <div className="relative z-10">
-          <div className="flex justify-between items-center">
-             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center border border-indigo-500/30">
-                   <Zap size={18} className="text-indigo-400 fill-indigo-400 animate-pulse" />
-                </div>
-                <div>
-                   <h2 className="text-[7px] font-black uppercase tracking-[0.4em] text-slate-500">Neural Assets</h2>
-                   <h1 className="text-2xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
-                </div>
-             </div>
-             <button onClick={() => setActiveTab('payment')} className="w-10 h-10 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
-                <Plus size={20} />
-             </button>
+          <div className="flex flex-col">
+               <div className="flex justify-between items-center sm:items-start">
+                  <div className="flex items-center gap-4 sm:gap-6">
+                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-600/20 rounded-2xl sm:rounded-[32px] flex items-center justify-center border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
+                        <Zap size={24} className="text-indigo-400 fill-indigo-400 animate-pulse sm:size-32" />
+                     </div>
+                     <div>
+                        <h2 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-slate-500 mb-1 sm:mb-2">Neural Asset Value</h2>
+                        <div className="flex items-center gap-2 sm:gap-4">
+                           <h1 className="text-3xl sm:text-5xl font-black italic tracking-tighter tabular-nums text-white">₹{(user?.walletBalance || 0).toLocaleString()}</h1>
+                           <button 
+                             onClick={forceSync}
+                             className={`p-1.5 sm:p-2 rounded-full hover:bg-white/10 transition-all ${isSyncing ? 'animate-spin opacity-100' : 'opacity-40'}`}
+                           >
+                             <RefreshCcw size={14} className="text-indigo-400 sm:size-16" />
+                           </button>
+                        </div>
+                        {user?.totalDeposited < (config?.minDeposit || 100) && user?.referralBonusAmount > 0 && (
+                          <div className="mt-1 flex items-center gap-1.5">
+                             <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
+                             <span className="text-[8px] sm:text-[9px] font-black text-yellow-500 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">₹{user.referralBonusAmount} Locked (Min Deposit Required)</span>
+                          </div>
+                        )}
+                     </div>
+                  </div>
+                  <button onClick={() => setActiveTab('payment')} className="w-14 h-14 sm:w-16 sm:h-16 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all shrink-0">
+                     <Plus size={32} />
+                  </button>
+               </div>
           </div>
         </div>
       </div>
 
       {/* Statistics Bar (Emerald-Dual Pane) */}
-      <div className="bg-[#10b981] rounded-2xl p-3 mb-3 flex items-center justify-between text-white shadow-md relative overflow-hidden">
-        <div className="flex-1 flex flex-col items-center gap-0.5 border-r border-white/20">
-           <div className="flex items-center gap-1 text-[8px] uppercase font-bold text-emerald-100 tracking-widest">
+      <div className="bg-[#10b981] rounded-3xl p-4 mb-8 flex items-center justify-between text-white shadow-md relative overflow-hidden">
+        <div className="absolute top-[-50%] right-[-10%] w-20 h-20 bg-yellow-400/30 rounded-full blur-xl pointer-events-none" />
+        <div className="absolute bottom-[-20%] left-[-5%] w-16 h-16 bg-blue-400/20 rounded-full blur-xl pointer-events-none" />
+        
+        <div className="flex-1 flex flex-col items-center gap-1 border-r border-white/20">
+           <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-emerald-100 tracking-widest">
+              <ArrowUp size={12} className="text-emerald-200" />
               Deposit
            </div>
-           <div className="text-sm font-black tracking-tight">₹{(user?.totalDeposited || 0).toLocaleString()}</div>
+           <div className="text-lg font-black tracking-tight">₹{(user?.totalDeposited || 0).toLocaleString()}</div>
         </div>
         
-        <div className="flex-1 flex flex-col items-center gap-0.5">
-           <div className="flex items-center gap-1 text-[8px] uppercase font-bold text-emerald-100 tracking-widest">
+        <div className="flex-1 flex flex-col items-center gap-1">
+           <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-emerald-100 tracking-widest">
+              <ArrowDown size={12} className="text-red-300" />
               Withdrawal
            </div>
-           <div className="text-sm font-black tracking-tight">
+           <div className="text-lg font-black tracking-tight">
              ₹{((user?.totalWithdrawn || 0) + (user?.totalRewards || 0) + (user?.referralEarnings || 0)).toLocaleString()}
            </div>
         </div>
       </div>
 
-      {/* Quick Action Grid (Restored Features) */}
-      <div className="grid grid-cols-4 gap-1 mb-2">
+      {/* Quick Action Grid (As per Screenshot) */}
+      <div className="grid grid-cols-4 gap-4 mb-8 px-2">
         <QuickActionItem 
-          icon={<div className="bg-emerald-50 w-8 h-8 rounded-lg flex items-center justify-center"><Target className="text-emerald-600" size={14}/></div>} 
+          icon={<img src="/icons-v2/deposit.png" className="w-14 h-14 object-contain shadow-sm" />} 
+          label="Deposit" 
+          onClick={() => setActiveTab('payment')}
+        />
+        <QuickActionItem 
+          icon={<img src="/icons-v2/task.png" className="w-14 h-14 object-contain shadow-sm" />} 
           label="Task" 
-          onClick={() => setActiveTab('task')} 
+          onClick={() => router.push('/dashboard/tasks')}
         />
         <QuickActionItem 
-          icon={<div className="bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><Users className="text-blue-600" size={14}/></div>} 
+          icon={<img src="/icons-v2/team.png" className="w-14 h-14 object-contain shadow-sm" />} 
           label="Team" 
-          onClick={() => setActiveTab('statistics')}
+          onClick={() => router.push('/team')}
         />
         <QuickActionItem 
-          icon={<div className="bg-amber-50 w-8 h-8 rounded-lg flex items-center justify-center"><History className="text-amber-600" size={14}/></div>} 
+          icon={<img src="/icons-v2/order.png" className="w-14 h-14 object-contain shadow-sm" />} 
           label="Order" 
           onClick={() => router.push('/dashboard/payment-history')}
         />
-        <QuickActionItem 
-          icon={<div className="bg-indigo-50 w-8 h-8 rounded-lg flex items-center justify-center"><UserPlus className="text-indigo-600" size={14}/></div>} 
-          label="Referral" 
-          onClick={() => setActiveTab('statistics')}
-        />
       </div>
 
-      {/* Market Fragmentation Listing */}
-      <div className="mb-3">
-        <div className="flex justify-between items-center mb-2 px-1 text-slate-400">
+      {/* Market Fragmentation Listing (Excludes Own Splits) */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4 px-2 mt-4 text-slate-400">
           <div className="flex items-center gap-2">
-            <Target size={14} className="text-emerald-500" />
-            <h3 className="text-xs font-black italic uppercase tracking-tighter text-slate-800">Market Splits</h3>
+            <Target size={18} className="text-emerald-500" />
+            <h3 className="text-lg font-black italic uppercase tracking-tighter text-slate-800">Active Splits</h3>
           </div>
-          <span onClick={() => setActiveTab('payment')} className="text-emerald-600 text-[8px] font-black uppercase tracking-widest cursor-pointer px-2 py-0.5 rounded-full bg-emerald-50">View All</span>
+          <span onClick={() => setActiveTab('payment')} className="text-emerald-600 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:underline bg-emerald-50 px-3 py-1 rounded-full">Explore All</span>
         </div>
         
         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 px-1">
@@ -785,9 +700,15 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
       </div>
 
       {/* Recent Transactions List */}
-      <div className="bg-white rounded-[28px] p-4 shadow-sm border border-slate-100 flex-1 overflow-hidden">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-bold text-slate-800 tracking-tight">Recent Signals</h3>
+      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 min-h-[300px]">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-bold text-slate-800">Transactions</h3>
+          <span 
+            onClick={() => router.push('/dashboard/payment-history')}
+            className="text-emerald-600 text-[11px] font-black uppercase tracking-widest cursor-pointer hover:underline underline-offset-4 decoration-emerald-200"
+          >
+            See All
+          </span>
         </div>
 
         <div className="space-y-6">
@@ -807,25 +728,31 @@ function HomeView({ user, history, listings, config, setActiveTab, handleClaim, 
   );
 }
 
-// --- Team Hub View (Restored Premium View) ---
-function TeamHubView({ stats, user, setNotice, setActiveTab }: any) {
-  const [copied, setCopied] = useState(false);
+// --- Statistics View ---
+function StatisticsView({ user, config, setUser, setNotice }: any) {
+  const [isToggling, setIsToggling] = useState(false);
 
-  if (!stats) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50">
-         <RefreshCcw className="text-slate-200 animate-spin mb-4" size={40} />
-         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Awaiting Neural Mesh Signal...</p>
-      </div>
-    );
-  }
-
-  const copyRefLink = () => {
-    if (!stats?.referralCode) return;
-    const refLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode}`;
-    navigator.clipboard.writeText(refLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleToggleSelling = async () => {
+    setIsToggling(true);
+    try {
+      const { data } = await api.post('/auth/toggle-selling');
+      if (data.success) {
+        setUser({ ...user, isOpenSelling: data.isOpenSelling });
+        setNotice({ 
+          isOpen: true, 
+          title: data.isOpenSelling ? "Neural Marketplace Open" : "Marketplace Closed", 
+          message: data.message 
+        });
+      }
+    } catch (err: any) {
+      setNotice({ 
+        isOpen: true, 
+        title: "Toggle Signal Failure", 
+        message: err.response?.data?.message || "Could not synchronize marketplace status." 
+      });
+    } finally {
+      setIsToggling(false);
+    }
   };
 
   return (
@@ -833,140 +760,65 @@ function TeamHubView({ stats, user, setNotice, setActiveTab }: any) {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="p-4 overflow-y-auto h-full pb-32 no-scrollbar"
+      className="p-4"
     >
-      <div className="flex items-center justify-between mb-6 px-2">
-         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-               <Users size={20} className="text-white" />
-            </div>
-            <div>
-               <h1 className="text-xl font-black italic uppercase tracking-tighter leading-none">Team Hub</h1>
-               <p className="text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] flex items-center gap-1 mt-1">
-                  <Activity size={10} className="text-indigo-500" />
-                  Neural Network Active
-               </p>
-            </div>
-         </div>
-         <button onClick={() => setActiveTab('home')} className="p-2.5 bg-white rounded-xl shadow-sm border border-slate-100 active:scale-90 transition-all text-slate-300 hover:text-slate-600">
-            <ArrowLeft size={18} />
-         </button>
-      </div>
+      <h2 className="text-2xl font-bold text-center text-[#10b981] mb-6 uppercase italic tracking-tighter">Statistics</h2>
 
-      {/* Unique Referral Link Card */}
-      <div className="bg-indigo-600 rounded-[32px] p-6 mb-6 relative overflow-hidden shadow-xl shadow-indigo-600/10">
-        <div className="absolute top-0 right-0 p-4 opacity-10">
-          <Zap size={80} className="fill-white" />
+      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl" />
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+          <h3 className="font-bold flex items-center gap-2 uppercase text-xs tracking-widest text-slate-700">Analytics <span className="text-slate-400 text-[10px] font-normal tracking-normal">(Real-Time Sync)</span></h3>
         </div>
-        
-        <div className="relative z-10">
-          <p className="text-[9px] font-black text-indigo-200 uppercase tracking-widest mb-3">Your Unique Access Link</p>
-          <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md rounded-xl p-3 mb-4 border border-white/10">
-            <input 
-              readOnly 
-              className="bg-transparent border-none outline-none text-[10px] font-black truncate flex-1 tracking-wider text-white"
-              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats?.referralCode}`}
-            />
-            <button 
-              onClick={copyRefLink}
-              className="p-1.5 bg-white text-indigo-600 rounded-lg active:scale-90 transition-all"
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-            </button>
-          </div>
-          <div className="flex items-center gap-3">
-              <div className="bg-indigo-500 rounded-xl py-1.5 px-3 border border-white/10">
-                 <span className="text-[9px] font-black uppercase tracking-widest text-white">Code: {stats?.referralCode}</span>
-              </div>
-              <p className="text-[8px] font-bold text-indigo-200 uppercase tracking-widest">
-                 Earn {stats?.commRate || 4}% Comm + ₹{stats?.referralBonus || 100} Bonus
-              </p>
-           </div>
-         </div>
-      </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-         <div className="bg-white border border-slate-100 rounded-[24px] p-4 shadow-sm">
-            <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center mb-2">
-               <Users className="text-blue-500" size={16} />
-            </div>
-            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Total Nodes</p>
-            <h3 className="text-2xl font-black italic">{stats?.totalReferrals || 0}</h3>
-         </div>
-         <div className="bg-white border border-slate-100 rounded-[24px] p-4 shadow-sm">
-            <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-2">
-               <TrendingUp className="text-emerald-500" size={16} />
-            </div>
-            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Total Volume</p>
-            <h3 className="text-2xl font-black italic">₹{stats?.totalBusinessVolume || 0}</h3>
-         </div>
-      </div>
-
-      {/* Earnings Card */}
-      <div className="bg-white border border-slate-100 rounded-[32px] p-6 mb-8 shadow-sm relative overflow-hidden group">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-                 <Wallet className="text-indigo-600" size={20} />
-              </div>
-              <div>
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Commision Earned</p>
-                <h3 className="text-3xl font-black italic text-slate-900">₹{stats?.referralEarnings || 0}</h3>
-              </div>
-          </div>
-          <div className="px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
-             <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest italic">Settled</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active Sub-Nodes</p>
-           <p className="text-xs font-black text-slate-900">{stats?.activeUsersCount || 0}</p>
+        <div className="grid grid-cols-2 gap-4">
+          <StatBox icon={<Wallet className="text-teal-500" size={16}/>} label="Balance" value={`₹ ${user?.walletBalance || '0'}`} color="bg-teal-600" />
+          <StatBox icon={<RefreshCcw className="text-amber-500" size={16}/>} label="Reward" value={`₹ ${user?.rewardBalance || '0'}`} color="bg-amber-500" />
+          <StatBox icon={<Target className="text-emerald-500" size={16}/>} label="Deposit" value={`₹ ${user?.totalDeposited || '0'}`} color="bg-emerald-600" />
+          <StatBox icon={<Activity className="text-pink-500" size={16}/>} label="Total Rewards" value={`₹ ${user?.totalRewards || '0'}`} color="bg-pink-500" />
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4 px-2">
-          <h2 className="text-lg font-black uppercase tracking-tighter italic text-slate-800">Network Terminal</h2>
-          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Sorted by Date</span>
+      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-8">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+          <h3 className="font-bold uppercase text-xs tracking-widest text-slate-700">Financial Terminal</h3>
+        </div>
+
+        <div className="bg-emerald-50 rounded-xl p-3 flex justify-between items-center mb-6">
+          <span className="text-emerald-800 text-[10px] font-black uppercase tracking-widest italic">Live Exchange Rate (USDT)</span>
+          <span className="text-emerald-800 font-bold">103</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+          <MiniStatBox label="In Process Amount" value="₹ 0.00" />
+          <MiniStatBox label="In Process Orders" value="0" />
+          <MiniStatBox label="Commission Rate" value={`${user?.referralPercent || config?.referralCommissionPercent || 4}.00 %`} />
+          <MiniStatBox label="Estimated Income" value="₹ 0.00" />
+        </div>
       </div>
 
       <button 
-        onClick={copyRefLink}
-        className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl flex items-center justify-center gap-3 mb-8 text-[10px] uppercase tracking-widest border border-white/10 active:scale-95 transition-all"
+        onClick={handleToggleSelling}
+        disabled={isToggling}
+        className={`w-full py-6 text-white font-black uppercase italic tracking-[0.2em] rounded-full shadow-2xl active:scale-95 transition-all text-xs flex items-center justify-center gap-3 relative overflow-hidden ${user?.isOpenSelling ? 'bg-emerald-600 shadow-emerald-200' : 'bg-slate-900 shadow-slate-200'}`}
       >
-        <Share2 size={16} />
-        {copied ? 'Link Copied!' : 'Recruit New Nodes'}
+        {isToggling ? (
+           <span className="animate-pulse">Synchronizing Neural Link...</span>
+        ) : (
+          <>
+            <Zap size={18} className={user?.isOpenSelling ? "fill-yellow-400 text-yellow-400" : "text-slate-500"} />
+            {user?.isOpenSelling ? "Open Selling (Active)" : "Closed Selling (Off)"}
+          </>
+        )}
+        {user?.isOpenSelling && <div className="absolute top-0 right-0 w-full h-full bg-white/5 animate-pulse pointer-events-none" />}
       </button>
-
-      {/* Network List */}
-      <div className="space-y-3">
-          {stats?.referralList?.length > 0 ? stats.referralList.map((node: any, i: number) => (
-            <div 
-              key={node._id} 
-              className="bg-white border border-slate-100 p-4 rounded-2xl flex items-center justify-between shadow-sm active:scale-95 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 text-[10px] border border-slate-200">
-                   {node.name.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{node.name}</h4>
-                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{node.userIdNumber}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] font-black text-indigo-600 italic">+₹{node.commission}</p>
-                <p className="text-[7px] font-bold uppercase tracking-widest text-slate-300">
-                  {new Date(node.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          )) : (
-            <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">No nodes detected in mesh</p>
-            </div>
-          )}
-      </div>
+      
+      <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-[0.4em] py-8 italic opacity-50">
+        {user?.isOpenSelling 
+          ? "Secondary Marketplace: Your assets are now visible to the network." 
+          : "Incognito Protocol: Your assets are hidden from other nodes."}
+      </p>
     </motion.div>
   );
 }
@@ -1014,25 +866,26 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <h2 className="text-lg font-black text-center text-[#10b981] mb-2 uppercase italic">My Control</h2>
+      <h2 className="text-2xl font-bold text-center text-[#10b981] mb-8">My Asset</h2>
 
       <div className="flex flex-col gap-4 mb-4">
         {/* Gift Code Integration */}
-        <div className="bg-white rounded-[24px] p-3 shadow-sm border border-slate-100 mb-1">
-           <div className="flex gap-2">
+        <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-2">
+           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 ml-1 italic">Gift Signal Redemption</p>
+           <div className="flex gap-3">
               <input 
                  type="text" 
-                 placeholder="Signal Code"
+                 placeholder="Enter 10-char signal"
                  value={giftCode}
                  onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
-                 className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] font-black italic tracking-widest focus:outline-emerald-500"
+                 className="flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-xs font-black italic tracking-widest focus:outline-emerald-500"
               />
               <button 
                 onClick={handleClaimGift}
                 disabled={isClaiming}
-                className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
               >
-                {isClaiming ? 'SYNC' : 'CLAIM'}
+                {isClaiming ? 'SYNCING...' : 'CLAIM'}
               </button>
            </div>
         </div>
@@ -1040,58 +893,73 @@ function MyView({ user, setUser, logout, referralStats, setNotice, setActiveTab,
         {/* PWA Install Promotion */}
         {deferredPrompt && (
           <motion.div 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900 rounded-[24px] p-3 mb-2 shadow-xl border border-white/5 relative overflow-hidden active:scale-95 transition-all cursor-pointer"
+            className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-6 mb-4 shadow-xl border border-white/5 relative overflow-hidden group active:scale-95 transition-all cursor-pointer"
             onClick={handleInstall}
           >
-            <div className="flex items-center gap-4 relative z-10">
-               <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
-                  <Smartphone size={24} className="text-emerald-400" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex items-center gap-6 relative z-10">
+               <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-inner group-hover:border-emerald-500/50 transition-colors">
+                  <Smartphone size={32} className="text-emerald-400" />
                </div>
                <div className="flex-1">
-                  <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.2em] mb-1 italic">App Install</h3>
-                  <p className="text-base font-black text-white italic tracking-tighter leading-none mb-1">HelloPay Native</p>
+                  <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.3em] mb-1 italic">Native Deployment</h3>
+                  <p className="text-lg font-black text-white italic tracking-tighter leading-none mb-2">Install HelloPay App</p>
+                  <div className="flex items-center gap-2">
+                     <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Enhanced Node Connectivity</span>
+                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+                  </div>
                </div>
-               <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-                  <Plus size={16} className="text-white" />
+               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+                  <Plus size={20} className="text-white" />
                </div>
             </div>
           </motion.div>
         )}
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-4">
           <AssetCard 
-            icon={<CreditCard size={14}/>} 
+            icon={<CreditCard size={20}/>} 
             label="Deposit" 
             value={`₹ ${user?.totalDeposited || '0'}`} 
             color="text-teal-500" 
           />
           <button onClick={onWithdraw} className="w-full text-left">
             <AssetCard 
-              icon={<Wallet size={14}/>} 
+              icon={<Wallet size={20}/>} 
               label="Withdraw" 
               value={`₹ ${user?.totalWithdrawn || '0'}`} 
               color="text-emerald-500" 
             />
           </button>
         </div>
-        <AssetCard icon={<RefreshCcw size={14}/>} label="Reward" value={`₹ ${user?.rewardBalance || '0'}`} color="text-amber-500" />
+        <AssetCard icon={<RefreshCcw size={20}/>} label="Reward Balance" value={`₹ ${user?.rewardBalance || '0'}`} color="text-amber-500" />
       </div>
 
-      <div className="bg-white rounded-[24px] p-3 shadow-sm border border-slate-100 grid grid-cols-3 gap-y-3 mb-2 relative">
-        <MyGridItem icon={<Wallet size={16}/>} label="Wallet" onClick={() => setActiveTab('wallet')} />
-        <MyGridItem icon={<Activity size={16}/>} label="Orders" onClick={() => router.push('/dashboard/payment-history')} />
-        <MyGridItem icon={<Smartphone size={16}/>} label="Service" href="/dashboard/service" />
-        <MyGridItem icon={<MessageSquare size={16}/>} label="Chat" href="/dashboard/message" />
-        <MyGridItem icon={<Lock size={16}/>} label="Pin" href="/dashboard/pin" />
+      <div className="bg-white rounded-[32px] p-10 shadow-sm border border-slate-100 grid grid-cols-3 gap-y-10 mb-10 relative">
+        <MyGridItem 
+          icon={<Wallet size={28}/>} 
+          label="Wallet" 
+          onClick={() => { setActiveTab('wallet'); }} 
+        />
+        <MyGridItem 
+          icon={<Activity size={28}/>} 
+          label="Integral" 
+          onClick={() => router.push('/dashboard/payment-history')} 
+        />
+        <MyGridItem icon={<Smartphone size={28}/>} label="Service" href="/dashboard/service" />
+        <MyGridItem icon={<MessageSquare size={28}/>} label="Message" href="/dashboard/message" />
+        <MyGridItem icon={<Lock size={28}/>} label="Pin" href="/dashboard/pin" />
+        
+        <span className="absolute bottom-4 right-6 text-[10px] text-slate-300 font-mono">v1.1.4</span>
       </div>
 
       <button 
         onClick={logout}
-        className="w-full py-3 bg-[#10b981] text-white font-black uppercase text-[10px] tracking-widest rounded-full shadow-lg active:scale-95 transition-all"
+        className="w-full py-4 bg-[#10b981] text-white font-bold rounded-full shadow-lg shadow-emerald-100 active:scale-95 transition-transform"
       >
-        Logout Node
+        Logout
       </button>
     </motion.div>
   );

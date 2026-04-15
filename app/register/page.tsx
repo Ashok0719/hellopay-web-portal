@@ -230,7 +230,7 @@ function RegisterContent() {
   }
 
   return (
-    <div className="h-[100dvh] bg-[#020617] flex flex-col items-center justify-center p-2 sm:p-4 font-sans relative overflow-hidden w-full fixed inset-0 touch-action-none">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-6 sm:py-20 px-4 sm:px-6 font-sans relative overflow-x-hidden overflow-y-auto w-full">
       <NeuralBackground />
       
       {/* 3D Animated Background Elements */}
@@ -250,24 +250,24 @@ function RegisterContent() {
 
       {/* Brand Node */}
       <motion.div 
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-10 flex flex-col items-center mb-4 sm:mb-10"
+        className="relative z-10 flex flex-col items-center mb-10"
       >
-        <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl sm:rounded-[24px] flex items-center justify-center shadow-[0_0_40px_rgba(79,70,229,0.3)] border border-indigo-400/30">
-           <Zap className="text-white fill-white drop-shadow-md w-6 h-6 sm:w-10 sm:h-10" />
+        <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[24px] flex items-center justify-center shadow-[0_0_40px_rgba(79,70,229,0.3)] border border-indigo-400/30">
+           <Zap className="text-white fill-white drop-shadow-md" size={40} />
         </div>
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[480px] shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[32px] sm:rounded-[48px] bg-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto overflow-hidden"
+        className="w-full max-w-[520px] p-0.5 shadow-[0_20px_80px_rgba(0,0,0,0.5)] rounded-[40px] sm:rounded-[48px] bg-slate-900/60 backdrop-blur-3xl border border-indigo-500/20 relative z-10 mx-auto"
       >
-        <div className="p-5 sm:p-12 overflow-hidden">
-            <div className="text-center mb-4 sm:mb-10">
-                <h2 className="text-xl sm:text-4xl font-black text-white italic uppercase tracking-tighter mb-1 sm:mb-3 drop-shadow-lg">Activation</h2>
-                <p className="text-indigo-200 text-[9px] sm:text-xs font-bold uppercase tracking-[0.2em]">Neural Network Registration</p>
+        <div className="p-6 sm:p-12">
+            <div className="text-center mb-8 sm:mb-10">
+                <h2 className="text-2xl sm:text-4xl font-black text-white italic uppercase tracking-tighter mb-3 drop-shadow-lg">New Node Activation</h2>
+                <p className="text-indigo-200 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">Bind your identity to the network</p>
             </div>
 
             {error && (
@@ -281,7 +281,7 @@ function RegisterContent() {
               </motion.div>
             )}
 
-            <form onSubmit={handleRegister} className="space-y-3 sm:space-y-6">
+            <form onSubmit={handleRegister} className="space-y-6">
               
               {/* Full Width Name */}
               <div className="group relative">
@@ -292,7 +292,10 @@ function RegisterContent() {
                       required
                       type="text"
                       placeholder="FULL NAME"
-                      className="w-full bg-black/30 border border-white/10 rounded-xl sm:rounded-3xl py-3 sm:py-5 pl-12 sm:pl-16 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-xs sm:text-xs tracking-widest"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      className="w-full bg-black/30 border border-white/10 rounded-2xl sm:rounded-3xl py-5 sm:py-5 pl-14 sm:pl-16 pr-6 sm:pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-indigo-500 shadow-inner text-xs tracking-widest"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -306,8 +309,11 @@ function RegisterContent() {
                    <input
                       required
                       type="email"
-                      placeholder="EMAIL"
-                      className="w-full bg-black/30 border border-white/10 rounded-xl sm:rounded-3xl py-3 sm:py-5 pl-12 sm:pl-16 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-xs sm:text-xs tracking-widest"
+                      placeholder="EMAIL ADDRESS"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      className="w-full bg-black/30 border border-white/10 rounded-2xl sm:rounded-3xl py-5 sm:py-5 pl-14 sm:pl-16 pr-6 sm:pr-8 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-blue-500 shadow-inner text-xs tracking-widest"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -322,8 +328,8 @@ function RegisterContent() {
                        <input
                           required
                           type="password"
-                          placeholder="PASSWORD"
-                          className="w-full bg-black/30 border border-white/10 rounded-xl sm:rounded-3xl py-3 sm:py-5 pl-10 sm:pl-14 pr-4 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-xs tracking-widest"
+                          placeholder="CREATE PASSWORD"
+                          className="w-full bg-black/30 border border-white/10 rounded-2xl sm:rounded-3xl py-5 sm:py-5 pl-12 sm:pl-14 pr-6 text-white font-black placeholder:text-slate-600 outline-none transition-all focus:border-amber-500 shadow-inner text-xs tracking-widest"
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       />
@@ -354,7 +360,7 @@ function RegisterContent() {
                       type="password"
                       maxLength={1}
                       inputMode="numeric"
-                      className="w-10 h-10 sm:w-14 sm:h-16 bg-black/40 border border-white/10 rounded-lg sm:rounded-2xl text-center text-white font-bold text-lg focus:border-indigo-500 outline-none transition-all"
+                      className="w-12 h-14 sm:w-14 sm:h-16 bg-black/40 border border-white/10 rounded-xl sm:rounded-2xl text-center text-white font-bold text-xl sm:text-2xl focus:border-indigo-500 outline-none transition-all"
                       value={formData.pin[idx]}
                       onChange={(e) => handlePinChange(idx, e.target.value)}
                       onKeyDown={(e) => {
@@ -388,21 +394,22 @@ function RegisterContent() {
                   </div>
               </div>
 
-              <div className="pt-2 space-y-3">
+              <div className="pt-8 space-y-6">
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-black rounded-2xl shadow-xl active:scale-95 transition-all disabled:opacity-50 text-[10px] uppercase tracking-[0.2em]"
+                    className="w-full py-6 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-black rounded-3xl shadow-xl active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-4 text-xs uppercase tracking-[0.2em]"
                 >
-                    {loading ? 'SYNCING...' : 'ACTIVATE NODE'}
+                    {loading ? 'SYNCHRONIZING MESH...' : 'ACTIVATE NEURAL LINK'}
+                    <ArrowRight size={20} />
                 </button>
 
-                <div className="relative py-1">
+                <div className="relative py-2">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-white/5"></div>
                   </div>
-                  <div className="relative flex justify-center text-[8px] uppercase font-black tracking-[0.3em]">
-                    <span className="bg-slate-900/60 backdrop-blur-3xl px-4 text-slate-500">Identity Sync</span>
+                  <div className="relative flex justify-center text-[9px] uppercase font-black tracking-[0.3em]">
+                    <span className="bg-slate-900/60 backdrop-blur-3xl px-4 text-slate-500">Quick Identity Sync</span>
                   </div>
                 </div>
 
@@ -410,10 +417,10 @@ function RegisterContent() {
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={loading}
-                    className="w-full py-3 bg-white text-slate-900 font-black rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 text-[9px] uppercase tracking-widest"
+                    className="w-full py-5 bg-white text-slate-900 font-black rounded-3xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-4 text-[10px] uppercase tracking-widest"
                 >
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4" />
-                    Google Sync
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                    Connect with Google
                 </button>
                 
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 text-center">
@@ -425,11 +432,11 @@ function RegisterContent() {
       </motion.div>
 
       {/* Footer Info */}
-      <div className="relative z-10 mt-2 sm:mt-16 text-center opacity-30 hidden sm:block">
-        <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic mb-3">Registry: Encrypted</p>
+      <div className="relative z-10 mt-16 text-center opacity-50 group-hover:opacity-100 transition-opacity">
+        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] italic mb-4">Neural Registry Connection: Encrypted</p>
         <div className="flex items-center justify-center gap-3 text-slate-800">
            <ShieldCheck size={14} />
-           <span className="text-[8px] font-black uppercase tracking-widest">Global ISO-27001 Protocol</span>
+           <span className="text-[8px] font-black uppercase tracking-widest">Global ISO-27001 Security Protocol</span>
         </div>
       </div>
     </div>

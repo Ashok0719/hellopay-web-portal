@@ -292,7 +292,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-full relative flex items-center justify-center px-4 sm:px-6 overflow-hidden bg-[#020617] font-outfit w-full fixed inset-0">
+  return (
+    <div className="min-h-screen relative flex items-center justify-center px-4 sm:px-6 overflow-hidden bg-[#020617] font-outfit w-full">
       <NeuralBackground />
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
@@ -300,9 +301,9 @@ export default function LoginPage() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md max-h-[90vh] relative z-10 mx-auto flex flex-col overflow-hidden"
+        className="w-full max-w-md relative z-10 mx-auto"
       >
-        <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-6 sm:p-10 border border-white/5 shadow-2xl relative flex-1 overflow-y-auto scroll-smooth-native group">
+        <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-6 sm:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
           <div className="relative z-10">
             <div className="text-center mb-10">
               <div className="flex justify-center mb-4">
